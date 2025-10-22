@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oai Design Pro - Chia sẻ tài nguyên & Khoá học Chuyên nghiệp</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Thay đổi font chữ sang Open Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="antialiased">
+    <!-- Nền Gradient Mờ Ảo -->
+    <div class="background-container">
+        <div id="logo-animation-container"></div> <!-- Container cho logo bay -->
+        <!-- NÂNG CẤP: Màu blob sáng hơn và kích thước lớn hơn -->
+        <div class="absolute top-0 -left-16 w-[36rem] h-[36rem] bg-sky-500 rounded-full blob opacity-40"></div>
+        <div class="absolute top-0 -right-16 w-[36rem] h-[36rem] bg-yellow-400 rounded-full blob opacity-40 animation-delay-2000">
+        </div>
+        <div class="absolute -bottom-16 left-20 w-[36rem] h-[36rem] bg-purple-600 rounded-full blob opacity-30 animation-delay-4000">
+        </div>
+        <div
+            class="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-emerald-500 rounded-full blob opacity-20 animation-delay-2000">
+        </div>
+        <div class="absolute bottom-1/2 right-1/4 w-80 h-80 bg-teal-500 rounded-full blob opacity-20"></div>
+    </div>
+
+    <!-- Header -->
+    <header class="bg-gray-900/50 backdrop-blur-lg sticky top-0 z-50 border-b border-gray-800">
+        <nav class="mx-auto px-6 py-3 flex justify-between items-center" style="width: 85%;">
+            <a href="#" class="flex items-center space-x-3" onclick="showPage('home', event)">
+                <img src="https://i.imgur.com/9Rul623.png" alt="Logo" class="h-12 w-auto">
+            </a>
+            <!-- NÂNG CẤP: Sắp xếp lại thứ tự menu -->
+            <div class="hidden md:flex items-center space-x-2 nav-container" id="desktop-nav">
+                <div class="nav-glass-bg"></div>
+                <a href="#" id="nav-home" class="nav-link active" onclick="showPage('home', event)">
+                    <img src="https://i.imgur.com/DFTQldS.png" alt="Home Icon">
+                    <span>Trang Chủ</span>
+                </a>
+                <a href="#" id="nav-resources" class="nav-link font-bold" onclick="showPage('resources', event)">
+                    <img src="https://i.imgur.com/cMc8Dyi.png" alt="Resources Icon">
+                    <span class="text-yellow-400">Tài Nguyên</span>
+                </a>
+                <a href="#" id="nav-software" class="nav-link" onclick="showPage('software', event)">
+                    <img src="https://i.imgur.com/n3ERJTh.png" alt="Software Icon">
+                    <span>Phần Mềm</span>
+                </a>
+                <a href="#" id="nav-oai-studio" class="nav-link" onclick="showPage('oai-studio', event)">
+                    <img src="https://i.imgur.com/ev0dyZI.png" alt="OAI Studio Icon">
+                    <span>O-AI Studio</span>
+                </a>
+                <a href="#" id="nav-contact" class="nav-link font-bold" onclick="showPage('contact', event)">
+                    <img src="https://i.imgur.com/WHofi7l.png" alt="Donate Icon">
+                    <span class="text-yellow-400">Donate</span>
+                </a>
+                 <!-- === NÂNG CẤP: Nút Đăng nhập/Tài khoản === -->
+                 <div id="auth-button-container" class="ml-4">
+                    <a href="#" id="nav-login" class="nav-link" onclick="showPage('auth', event)">
+                         <img src="https://i.imgur.com/3Z4Yp4J.png" alt="Login Icon" style="height: 20px;">
+                        <span>Đăng Nhập</span>
+                    </a>
+                </div>
+            </div>
+            <button id="mobile-menu-button" class="md:hidden text-white focus:outline-none">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 6h16M4 12h16m-7 6h7"></path>
+                </svg>
+            </button>
+        </nav>
+        <!-- Mobile Menu -->
+        <!-- NÂNG CẤP: Sắp xếp lại thứ tự menu mobile -->
+        <div id="mobile-menu" class="hidden md:hidden">
+            <a href="#" class="flex items-center justify-center gap-2 text-center py-2 px-4 text-sm hover:bg-gray-800 transition-colors" onclick="showPage('home', event)">
+                <img src="https://i.imgur.com/DFTQldS.png" alt="Home Icon" class="h-5">
+                <span>Trang Chủ</span>
+            </a>
+            <a href="#" class="flex items-center justify-center gap-2 text-center py-2 px-4 text-sm font-bold text-yellow-400 hover:bg-gray-800 transition-colors" onclick="showPage('resources', event)">
+                <img src="https://i.imgur.com/cMc8Dyi.png" alt="Resources Icon" class="h-5">
+                <span>Tài Nguyên</span>
+            </a>
+            <a href="#" class="flex items-center justify-center gap-2 text-center py-2 px-4 text-sm hover:bg-gray-800 transition-colors" onclick="showPage('software', event)">
+                <img src="https://i.imgur.com/n3ERJTh.png" alt="Software Icon" class="h-5">
+                <span>Phần Mềm</span>
+            </a>
+            <a href="#" class="flex items-center justify-center gap-2 text-center py-2 px-4 text-sm hover:bg-gray-800 transition-colors" onclick="showPage('oai-studio', event)">
+                <img src="https://i.imgur.com/ev0dyZI.png" alt="OAI Studio Icon" class="h-5">
+                <span>O-AI Studio</span>
+            </a>
+            <a href="#" class="flex items-center justify-center gap-2 text-center py-2 px-4 text-sm font-bold text-yellow-400 hover:bg-gray-800 transition-colors" onclick="showPage('contact', event)">
+                <img src="https://i.imgur.com/WHofi7l.png" alt="Donate Icon" class="h-5">
+                <span>Donate</span>
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Page 1: Home -->
+        <div id="page-home">
+            <!-- NÂNG CẤP: Bố cục, chiều cao section, và khung text -->
+            <section id="hero" class="relative flex items-center justify-center px-6 overflow-hidden"
+                style="height: 79vh;">
+                <div class="mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 items-center w-full h-full"
+                    style="width: 85%;">
+                    <!-- Left Column: Character Image (Full Height) -->
+                    <div class="md:col-span-1 flex items-center justify-center h-full">
+                        <!-- NÂNG CẤP: Thêm hiệu ứng cho ảnh nhân vật -->
+                        <img id="hero-character" src="https://i.imgur.com/IjN0Gaq.png" alt="Oai Design Pro Illustration" class="h-full w-auto object-contain sway-animation">
+                    </div>
+
+                    <!-- Right Column: Logo and Text (Centered) -->
+                    <div class="md:col-span-2 flex flex-col justify-center items-center -translate-y-16">
+                        <!-- Logo (Smaller) -->
+                        <img id="hero-logo" src="https://i.imgur.com/hlTV7rr.png" alt="Oai Design Pro Logo" class="w-full max-w-64 mb-[-70px] z-10">
+
+                        <!-- Text Box (Higher and Wider) -->
+                        <div id="ai-textbox"
+                            class="relative rounded-2xl p-6 w-full max-w-4xl italic text-gray-200 shadow-lg backdrop-blur-sm overflow-hidden">
+                            <p id="hero-text-content" class="text-xl leading-relaxed text-justify min-h-[200px]">
+                                <span id="typed-text"></span><span class="cursor">&nbsp;</span>
+                            </p>
+                            <p id="hero-signature"
+                                class="text-right mt-4 text-xl leading-relaxed opacity-0 transition-opacity duration-1000">
+                                Oai Design - Người đồng hành cùng bạn
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="services" class="py-24 bg-gray-900/50 reveal">
+                <div class="mx-auto px-6" style="width: 85%;">
+                    <div class="text-center mb-16">
+                        <h2 class="text-4xl font-bold mb-4">Trung Tâm Tài Nguyên & Công Cụ Thiết Kế</h2>
+                        <p class="text-gray-400 max-w-2xl mx-auto">Mong rằng ở đây có thứ bạn cần để bắt đầu hành trình
+                            làm thiết kế chuyên nghiệp.</p>
+                    </div>
+                    <div class="flex flex-wrap items-stretch justify-center gap-8">
+                        <!-- Service 1: Livestream -->
+                        <div class="service-card-wrapper glow-gray w-full md:w-1/3 lg:w-1/4">
+                            <div class="service-card rounded-xl p-6 shadow-lg flex flex-col">
+                                <div class="flex items-center gap-4 mb-4">
+                                    <img src="https://i.imgur.com/9kzZZa4.png" alt="Livestream Icon"
+                                        class="h-10 w-10">
+                                    <h3 class="text-2xl font-bold text-sky-400">Các Buổi Livestream Thiết Kế</h3>
+                                </div>
+                                <p class="text-gray-400 mb-4 flex-grow">Giao lưu, chia sẻ kinh nghiệm và thủ thuật thiết
+                                    kế trực tiếp.</p>
+                                <div class="service-card-content mt-auto">
+                                    <p class="text-gray-300 mb-4 text-sm">Nơi chia sẻ góc nhìn cá nhân của Oai Design về
+                                        thiết kế: Cách mình làm, mẹo mình dùng, chuyện vui buồn trong nghề. Đây không
+                                        phải lớp học mà cũng không phải là khóa học, nó chỉ đơn giản là nơi anh em ngồi
+                                        coi mình làm rồi bàn tán cho vui.</p>
+                                    <button
+                                        class="w-full bg-sky-500 hover:bg-sky-600 text-white font-bold py-2 px-4 rounded-lg transition-colors"
+                                        onclick="event.stopPropagation(); window.open('https://www.youtube.com/@hocvalamdesigner', '_blank');">
+                                        Xem trên Youtube
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Service 2: Software -->
+                        <div class="relative w-full md:w-1/3 lg:w-1/4" style="transform: scale(1.05); z-index: 10;">
+                            <span
+                                class="absolute top-0 right-0 -mt-3 -mr-3 px-3 py-1 bg-yellow-400 text-gray-900 text-sm font-bold rounded-full shadow-lg z-20">Nổi
+                                Bật</span>
+                            <div class="service-card-wrapper glow-yellow h-full">
+                                <div class="service-card rounded-xl p-8 shadow-2xl flex flex-col">
+                                    <div class="flex items-center gap-4 mb-4">
+                                        <img src="https://i.imgur.com/Ub9dPwF.png" alt="Software Icon"
+                                            class="h-12 w-12">
+                                        <h3 class="text-3xl font-bold text-yellow-400">Phần Mềm</h3>
+                                    </div>
+                                    <p class="text-gray-300 mb-6 flex-grow">Bản quyền Photoshop & Adobe. Hỗ trợ nhanh
+                                        chóng 24/7.</p>
+                                    <div class="service-card-content mt-auto">
+                                        <p class="text-gray-300 mb-4 text-sm">Cung cấp các gói phần mềm Adobe bản quyền
+                                            theo tháng hoặc theo năm. Cam kết uy tín, chất lượng và hỗ trợ kỹ thuật
+                                            nhanh chóng. Bảo hành suốt quá trình sử dụng.</p>
+                                        <button
+                                            class="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold py-3 px-6 rounded-lg transition-colors"
+                                            onclick="event.stopPropagation(); showPage('software', event);">
+                                            Xem Bảng Giá
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <!-- Service 3: Design Resources -->
+                        <div class="service-card-wrapper glow-purple w-full md:w-1/3 lg:w-1/4">
+                            <div class="service-card rounded-xl p-6 shadow-lg flex flex-col">
+                                <div class="flex items-center gap-4 mb-4">
+                                    <img src="https://i.imgur.com/L3SRQaN.png" alt="Resources Icon"
+                                        class="h-10 w-10">
+                                    <h3 class="text-3xl font-bold text-yellow-400">Tài Nguyên</h3>
+                                </div>
+                                <p class="text-gray-400 mb-4 flex-grow">Stock, preset, font, template... Cập nhật liên
+                                    tục. Độc quyền bởi Oai Design và anh em</p>
+                                <div class="service-card-content mt-auto">
+                                    <p class="text-gray-300 mb-4 text-sm">Khám phá kho tài nguyên phong phú được tôi thực
+                                        hiện, sưu tầm và chọn lọc kỹ lưỡng, giúp bạn tiết kiệm thời gian và nâng cao
+                                        chất lượng sản phẩm.</p>
+                                    <button
+                                        class="w-full bg-sky-500 hover:bg-sky-600 text-white font-bold py-2 px-4 rounded-lg transition-colors"
+                                        onclick="event.stopPropagation(); showPage('resources', event);">
+                                        Khám Phá Ngay
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Video Gallery Section -->
+            <section id="video-gallery" class="py-24 bg-gray-900/50 reveal">
+                <div class="mx-auto px-6" style="width: 85%;">
+                    <div class="text-center mb-16">
+                        <h2 class="text-4xl font-bold mb-4">Các Buổi Livestream Nổi Bật Của Oai Design</h2>
+                        <p class="text-gray-400 max-w-2xl mx-auto">Tổng hợp các video hướng dẫn, chia sẻ thủ thuật và
+                            kiến thức thiết kế đã phát sóng.</p>
+                    </div>
+                    <div id="video-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        <!-- Video cards will be populated by JavaScript -->
+                    </div>
+                </div>
+            </section>
+
+            <section id="software-showcase" class="py-24 bg-gray-900 reveal">
+                <div class="mx-auto px-6" style="width: 85%;">
+                    <div class="text-center mb-16">
+                        <h2 class="text-4xl font-bold mb-4">Công Cụ Thiết Yếu Cho Mọi Designer</h2>
+                        <p class="text-gray-400 max-w-2xl mx-auto">Cung cấp bộ phần mềm Adobe bản quyền, nền tảng cho
+                            mọi tác phẩm sáng tạo đỉnh cao.</p>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                        <!-- Photoshop -->
+                        <div
+                            class="software-card bg-gray-800/50 border border-gray-700 p-6 rounded-xl text-center flex flex-col items-center">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/Adobe_Photoshop_CC_icon.svg/1024px-Adobe_Photoshop_CC_icon.svg.png"
+                                alt="Photoshop Logo" class="w-16 h-16 mb-4">
+                            <h3 class="text-xl font-semibold mb-2">Photoshop</h3>
+                            <p class="text-gray-400 text-sm">Chỉnh sửa ảnh, thiết kế đồ họa & nghệ thuật số.</p>
+                            <div class="software-card-info text-left w-full">
+                                <p class="text-gray-400 text-sm mb-4">
+                                    Photoshop là công cụ tiêu chuẩn ngành cho việc chỉnh sửa ảnh, đồ họa kỹ thuật số và
+                                    sáng tác nghệ thuật.
+                                </p>
+                                <button onclick="event.stopPropagation(); showPage('software', event);"
+                                    class="w-full bg-sky-500 hover:bg-sky-600 text-white font-bold py-2 px-4 rounded-lg transition-colors">
+                                    Xem Chi Tiết
+                                </button>
+                            </div>
+                        </div>
+                        <!-- Illustrator -->
+                        <div
+                            class="software-card bg-gray-800/50 border border-gray-700 p-6 rounded-xl text-center flex flex-col items-center">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fb/Adobe_Illustrator_CC_icon.svg/1024px-Adobe_Illustrator_CC_icon.svg.png"
+                                alt="Illustrator Logo" class="w-16 h-16 mb-4">
+                            <h3 class="text-xl font-semibold mb-2">Illustrator</h3>
+                            <p class="text-gray-400 text-sm">Đồ họa vector, logo & hình minh họa sắc nét.</p>
+                            <div class="software-card-info text-left w-full">
+                                <p class="text-gray-400 text-sm mb-4">
+                                    Illustrator là phần mềm hàng đầu để tạo đồ họa vector, cho phép bạn thiết kế logo,
+                                    icon, và hình minh họa sắc nét.
+                                </p>
+                                <button onclick="event.stopPropagation(); showPage('software', event);"
+                                    class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-lg transition-colors">
+                                    Xem Chi Tiết
+                                </button>
+                            </div>
+                        </div>
+                        <!-- Premiere Pro -->
+                        <div
+                            class="software-card bg-gray-800/50 border border-gray-700 p-6 rounded-xl text-center flex flex-col items-center">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Adobe_Premiere_Pro_CC_icon.svg/1024px-Adobe_Premiere_Pro_CC_icon.svg.png"
+                                alt="Premiere Pro Logo" class="w-16 h-16 mb-4">
+                            <h3 class="text-xl font-semibold mb-2">Premiere Pro</h3>
+                            <p class="text-gray-400 text-sm">Chỉnh sửa & dựng phim chuyên nghiệp.</p>
+                            <div class="software-card-info text-left w-full">
+                                <p class="text-gray-400 text-sm mb-4">
+                                    Premiere Pro là ứng dụng chỉnh sửa video chuyên nghiệp, cung cấp các công cụ toàn
+                                    diện để dựng phim và nội dung số.
+                                </p>
+                                <button onclick="event.stopPropagation(); showPage('software', event);"
+                                    class="w-full bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-lg transition-colors">
+                                    Xem Chi Tiết
+                                </button>
+                            </div>
+                        </div>
+                        <!-- After Effects -->
+                        <div
+                            class="software-card bg-gray-800/50 border border-gray-700 p-6 rounded-xl text-center flex flex-col items-center">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Adobe_After_Effects_CC_icon.svg/1024px-Adobe_After_Effects_CC_icon.svg.png"
+                                alt="After Effects Logo" class="w-16 h-16 mb-4">
+                            <h3 class="text-xl font-semibold mb-2">After Effects</h3>
+                            <p class="text-gray-400 text-sm">Hiệu ứng hình ảnh và đồ họa chuyển động.</p>
+                            <div class="software-card-info text-left w-full">
+                                <p class="text-gray-400 text-sm mb-4">
+                                    After Effects được sử dụng để tạo hiệu ứng hình ảnh (VFX) và đồ họa chuyển động,
+                                    một công cụ không thể thiếu cho motion designer.
+                                </p>
+                                <button onclick="event.stopPropagation(); showPage('software', event);"
+                                    class="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg transition-colors">
+                                    Xem Chi Tiết
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Image Carousel Section -->
+            <section id="image-carousel" class="py-24 bg-gray-900/50 reveal overflow-hidden">
+                <div class="mx-auto px-6 text-center" style="width: 85%;">
+                    <h2 class="text-4xl font-bold mb-12">Các Khoảnh Khắc Đáng Nhớ</h2>
+                </div>
+                <div class="w-full inline-flex flex-nowrap image-carousel-container">
+                    <div
+                        class="flex items-center justify-center md:justify-start [&_img]:max-w-none animate-scroll carousel-track">
+                        <img class="h-64 rounded-xl mx-4" src="https://i.imgur.com/GeeJHTq.jpeg" alt="Product Image 1">
+                        <img class="h-64 rounded-xl mx-4" src="https://i.imgur.com/DcLrUuE.jpeg" alt="Product Image 2">
+                        <img class="h-64 rounded-xl mx-4" src="https://i.imgur.com/xjaOzN2.jpeg" alt="Product Image 3">
+                        <img class="h-64 rounded-xl mx-4" src="https://i.imgur.com/xN05WuW.jpeg" alt="Product Image 4">
+                        <img class="h-64 rounded-xl mx-4" src="https://i.imgur.com/VpyXhkW.jpeg" alt="Product Image 5">
+                        <img class="h-64 rounded-xl mx-4" src="https://i.imgur.com/ZJF4nSc.jpeg" alt="Product Image 6">
+                        <img class="h-64 rounded-xl mx-4" src="https://i.imgur.com/V7r9H9S.jpeg" alt="Product Image 7">
+                        <img class="h-64 rounded-xl mx-4" src="https://i.imgur.com/6PsTHip.jpeg" alt="Product Image 8">
+                        <!-- Duplicated for infinite scroll -->
+                        <img class="h-64 rounded-xl mx-4" src="https://i.imgur.com/GeeJHTq.jpeg" alt="Product Image 1">
+                        <img class="h-64 rounded-xl mx-4" src="https://i.imgur.com/DcLrUuE.jpeg" alt="Product Image 2">
+                        <img class="h-64 rounded-xl mx-4" src="https://i.imgur.com/xjaOzN2.jpeg" alt="Product Image 3">
+                        <img class="h-64 rounded-xl mx-4" src="https://i.imgur.com/xN05WuW.jpeg" alt="Product Image 4">
+                        <img class="h-64 rounded-xl mx-4" src="https://i.imgur.com/VpyXhkW.jpeg" alt="Product Image 5">
+                        <img class="h-64 rounded-xl mx-4" src="https://i.imgur.com/ZJF4nSc.jpeg" alt="Product Image 6">
+                        <img class="h-64 rounded-xl mx-4" src="https://i.imgur.com/V7r9H9S.jpeg" alt="Product Image 7">
+                        <img class="h-64 rounded-xl mx-4" src="https://i.imgur.com/6PsTHip.jpeg" alt="Product Image 8">
+                    </div>
+                </div>
+            </section>
+
+            <section id="why-us" class="py-24 bg-gray-900/50 reveal">
+                <div class="mx-auto px-6" style="width: 85%;">
+                    <div class="grid md:grid-cols-2 gap-16 items-center">
+                        <div class="">
+                            <h2 class="text-4xl font-bold mb-6 text-sky-400">Học và Làm Designer</h2>
+                            <p class="text-gray-300 mb-4 leading-relaxed">
+                                Học và Làm Designer là cộng đồng do Oai Design xây dựng, tập trung vào livestream, chia
+                                sẻ kiến thức và kết nối những người yêu thiết kế đồ họa. Thành viên có thể theo dõi và
+                                đồng hành cùng Oai Design thông qua nội dung trên livestream, hỏi & đáp trực tiếp và các
+                                hoạt động gắn kết.
+                            </p>
+                            <p class="text-gray-400 leading-relaxed">
+                                YouTube “Học Và Làm Designer”: Kênh truyền thông chính, đăng tải video hướng dẫn, kinh
+                                nghiệm làm nghề và các buổi livestream giao lưu. Hầu hết nội dung do Oai Design tự sản
+                                xuất và trình bày, chú trọng tính thực tế và dễ áp dụng.
+                            </p>
+                            <p class="text-gray-400 leading-relaxed">
+                                Group Facebook “Học và Làm Designer”: Không gian tương tác dành cho anh em member,
+                                viewer, chia sẻ sản phẩm, nhận góp ý và kết nối. Oai Design trực tiếp quản trị, định
+                                hướng hoạt động để giữ chất lượng nội dung và tinh thần hỗ trợ lẫn nhau.
+                            </p>
+                            </p>
+                        </div>
+                        <div class="space-y-8">
+                            <div class="flex items-start gap-4">
+                                <div class="bg-sky-500/10 p-3 rounded-full text-sky-400"><svg
+                                        xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                    </svg></div>
+                                <div>
+                                    <h3 class="text-xl font-semibold mb-1">Chia sẻ không giới hạn:</h3>
+                                    <p class="text-gray-400">Mọi thành viên đều có thể chia sẻ tài nguyên, mẹo nghề,
+                                        preset, plugin và kinh nghiệm thực chiến để cùng nhau nâng tầm sáng tạo. Tôn
+                                        trọng nguồn và credit rõ ràng.</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-4">
+                                <div class="bg-sky-500/10 p-3 rounded-full text-sky-400"><svg
+                                        xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                    </svg></div>
+                                <div>
+                                    <h3 class="text-xl font-semibold mb-1">Học hỏi & Phát triển:</h3>
+                                    <p class="text-gray-400">Oai Design thường xuyên tổ chức các buổi livestream chia
+                                        sẻ, giao lưu về thiết kế trên Youtube, thảo luận trên Group facebook để mọi
+                                        người cùng nhau phát triển.</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-4">
+                                <div class="bg-sky-500/10 p-3 rounded-full text-sky-400"><svg
+                                        xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                    </svg></div>
+                                <div>
+                                    <h3 class="text-xl font-semibold mb-1">Tôn trọng & Hỗ trợ:</h3>
+                                    <p class="text-gray-400">Xây dựng môi trường thân thiện, tôn trọng ý kiến cá nhân,
+                                        sẵn sàng giúp đỡ lẫn nhau trong công việc và học tập. Giảm tối đa và loại bỏ
+                                        các cá nhân góp ý tiêu cực, có những lời lẽ thô tục, khiếm nhã nhắm đến các
+                                        thành viên khác.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="community" class="py-24 bg-gray-900 reveal">
+                <div class="mx-auto px-6 text-center" style="width: 85%;">
+                    <img src="https://i.imgur.com/Acg09Da.jpeg" alt="Cộng đồng Designer Việt Nam"
+                        class="w-full max-w-5xl mx-auto rounded-xl shadow-lg mb-12">
+                    <h2 class="text-4xl font-bold mb-4">Gia Nhập và Đồng Hành Cùng Oai Design</h2>
+                    <p class="text-gray-400 max-w-3xl mx-auto mb-10 leading-relaxed">
+                        Một cộng đồng không chỉ để học hỏi, mà còn là nơi để kết nối, chia sẻ đam mê và cùng nhau phát
+                        triển trên con đường thiết kế. Tại đây, bạn sẽ tìm thấy những người bạn đồng hành, những kiến
+                        thức thực chiến và nguồn cảm hứng vô tận.
+                    </p>
+                    <a href="https://www.facebook.com/groups/fbhocvalamdesigner" target="_blank"
+                        class="bg-sky-500 hover:bg-sky-600 text-white font-bold py-3 px-8 rounded-full text-lg transition-all duration-300 hover:shadow-lg hover:shadow-sky-500/50 transform hover:scale-105 inline-flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
+                            fill="currentColor">
+                            <path
+                                d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
+                            <path
+                                d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" />
+                        </svg>
+                        Tham Gia Ngay
+                    </a>
+                </div>
+            </section>
+
+        </div>
+
+        <!-- Page 2: Resources -->
+        <div id="page-resources" class="hidden min-h-screen relative">
+            <!-- === NÂNG CẤP: Lớp phủ bảo vệ === -->
+            <div id="auth-overlay" class="absolute inset-0 z-10 flex flex-col items-center justify-start pt-32 bg-gray-900/80 backdrop-blur-lg" style="display: none;">
+                <h2 class="text-3xl font-bold text-white mb-4">Truy cập Kho Tài nguyên</h2>
+                <p class="text-gray-300 mb-8">Vui lòng đăng nhập hoặc đăng ký để tiếp tục.</p>
+                <div class="flex gap-4">
+                    <button class="auth-button bg-sky-500 hover:bg-sky-600" onclick="showPage('auth', event)">Đăng Nhập</button>
+                    <button class="auth-button bg-green-500 hover:bg-green-600" onclick="showPage('auth', event); toggleAuthForms();">Đăng Ký</button>
+                </div>
+            </div>
+            <section class="py-24 bg-gray-900/50">
+                <div class="mx-auto px-6" style="width: 85%;">
+                    <div class="text-center mb-16">
+                        <h2 class="text-4xl font-bold text-white mb-4">Kho Tài Nguyên Thiết Kế | <span
+                                class="text-sky-400">Oai Design</span></h2>
+                        <p class="text-gray-400 max-w-2xl mx-auto">Khám phá bộ sưu tập hơn 150+ tài nguyên miễn phí,
+                            được chọn lọc và cập nhật liên tục và để thúc đẩy sự sáng tạo của bạn.</p>
+                    </div>
+
+                    <div class="flex flex-col md:flex-row gap-8">
+                        <!-- Sidebar Filters -->
+                        <aside class="md:w-1/4 lg:w-1/5">
+                            <h3 class="text-xl font-semibold mb-4 text-sky-400">Danh Mục</h3>
+                            <div id="resource-categories" class="space-y-2">
+                                <!-- Categories will be populated by JS -->
+                            </div>
+                        </aside>
+
+                        <!-- Resources Grid -->
+                        <main class="flex-1">
+                            <div id="resource-grid"
+                                class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                <!-- Resources will be populated by JS -->
+                            </div>
+                        </main>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Page 3: Software -->
+        <div id="page-software" class="hidden min-h-screen">
+            <section class="py-24 bg-gray-900/50">
+                <div class="mx-auto px-6" style="width: 85%;">
+                    <div class="text-center mb-16">
+                        <h2 class="text-4xl font-bold text-white mb-4">Phần Mềm Adobe Bản Quyền</h2>
+                        <p class="text-gray-400 max-w-4xl mx-auto">Tất cả công cụ bạn cần cho sự sáng tạo, được cung cấp
+                            với chi phí tốt nhất và hỗ trợ tận tình.</p>
+                    </div>
+                    <div class="max-w-7xl mx-auto flex flex-col items-center gap-8">
+                        <img src="https://i.imgur.com/PcpkUuH.png" alt="Bảng giá phần mềm Adobe"
+                            class="rounded-xl shadow-2xl w-full">
+                        <a href="https://zalo.me/0967938296" target="_blank"
+                            class="bg-sky-500 hover:bg-sky-600 text-white font-bold py-3 px-8 rounded-full text-lg transition-all duration-300 hover:shadow-lg hover:shadow-sky-500/50 transform hover:scale-105">
+                            Liên Hệ Zalo Để Được Tư Vấn
+                        </a>
+                    </div>
+                    <div class="max-w-3xl mx-auto mt-16 flex flex-col items-center gap-8">
+                        <img src="https://i.imgur.com/bk9r7VS.png" alt="Bảng giá 1 thiết bị"
+                            class="rounded-xl shadow-lg w-full">
+                        <img src="https://i.imgur.com/QBjSun4.png" alt="Bảng giá 2 thiết bị"
+                            class="rounded-xl shadow-lg w-full">
+                        <img src="https://i.imgur.com/ai3tSo1.png" alt="Bảng giá 5 thiết bị"
+                            class="rounded-xl shadow-lg w-full">
+                        <img src="https://i.imgur.com/5pXtBJ2.png" alt="Chính sách bảo hành"
+                            class="rounded-xl shadow-lg w-full">
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Page 4: Contact -->
+        <div id="page-contact" class="hidden min-h-screen">
+            <section class="py-24 bg-gray-900/50">
+                <div class="mx-auto px-6" style="width: 85%;">
+                    <!-- Donate Section -->
+                    <div class="text-center mb-20">
+                        <h2 class="text-4xl font-bold text-yellow-400 mb-4">Donate</h2>
+                        <p class="text-gray-400 max-w-2xl mx-auto">Sự đóng góp của bạn, dù nhỏ, là nguồn động viên lớn
+                            để tôi duy trì và phát triển kho tài nguyên miễn phí này.</p>
+                    </div>
+                    <div
+                        class="max-w-4xl mx-auto bg-gray-800/50 border border-gray-700 rounded-2xl p-8 flex flex-col md:flex-row items-center gap-8 mb-24">
+                        <div class="md:w-1/2 text-center md:text-left">
+                            <h3 class="text-2xl font-semibold text-sky-400 mb-4">Chung tay xây dựng</h3>
+                            <p class="text-gray-300 leading-relaxed">
+                                Toàn bộ kinh phí ủng hộ sẽ được sử dụng để duy trì website, mua thêm tài nguyên chất
+                                lượng cao và tổ chức các buổi chia sẻ kiến thức miễn phí cho cộng đồng.
+                                <br><br>
+                                Đây là hành động hoàn toàn tự nguyện, không bắt buộc. Sự có mặt và ủng hộ tinh thần của
+                                bạn đã là một món quà quý giá!
+                            </p>
+                        </div>
+                        <div class="md:w-1/2 flex flex-col items-center">
+                            <div class="bg-white p-2 rounded-lg shadow-lg">
+                                <img src="https://i.imgur.com/QH10FeC.jpeg" alt="Mã QR ủng hộ" class="w-48 h-48">
+                            </div>
+                            <img src="https://i.imgur.com/CzmSCtF.png" alt="Logo" class="h-12 mt-4">
+                        </div>
+                    </div>
+
+                    <div class="text-center">
+                        <h2 class="text-4xl font-bold text-white mb-4">Kết Nối Với Tôi</h2>
+                        <p class="text-gray-400 max-w-2xl mx-auto">Nếu bạn có bất kỳ câu hỏi nào về khóa học, phần mềm
+                            hay chỉ muốn chào hỏi, đừng ngần ngại gửi tin nhắn cho tôi.</p>
+                    </div>
+
+                    <div class="mt-16 flex flex-col md:flex-row gap-12 max-w-6xl mx-auto">
+                        <!-- Contact Info -->
+                        <div class="md:w-2/5">
+                            <h3 class="text-2xl font-semibold text-sky-400 mb-6">Thông Tin Liên Lạc</h3>
+                            <div class="space-y-6">
+                                <div class="flex items-start space-x-4">
+                                    <div class="bg-gray-800 p-3 rounded-full"><svg class="w-6 h-6 text-sky-400"
+                                            fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                            xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z">
+                                            </path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                        </svg></div>
+                                    <div>
+                                        <h4 class="font-semibold text-lg">Địa chỉ</h4>
+                                        <p class="text-gray-400">Hạ Long - Quảng Ninh, Việt Nam</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start space-x-4">
+                                    <div class="bg-gray-800 p-3 rounded-full"><svg class="w-6 h-6 text-sky-400"
+                                            fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                            xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z">
+                                            </path>
+                                        </svg></div>
+                                    <div>
+                                        <h4 class="font-semibold text-lg">Điện thoại</h4>
+                                        <p class="text-gray-400">(+84) 0967.938.296 - 088.977.8836</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start space-x-4">
+                                    <div class="bg-gray-800 p-3 rounded-full"><svg class="w-6 h-6 text-sky-400"
+                                            fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                            xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
+                                            </path>
+                                        </svg></div>
+                                    <div>
+                                        <h4 class="font-semibold text-lg">Email</h4>
+                                        <p class="text-gray-400">Quocoai9699@gmail.com</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Contact Form -->
+                        <div class="md:w-3/5 bg-gray-800/50 border border-gray-700 p-8 rounded-2xl">
+                            <form>
+                                <div class="mb-5">
+                                    <label for="name" class="block mb-2 text-sm font-medium text-gray-300">Họ và
+                                        tên</label>
+                                    <input type="text" id="name"
+                                        class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-sky-500 focus:border-sky-500 block w-full p-3"
+                                        placeholder="Nguyễn Văn A" required>
+                                </div>
+                                <div class="mb-5">
+                                    <label for="email"
+                                        class="block mb-2 text-sm font-medium text-gray-300">Email</label>
+                                    <input type="email" id="email"
+                                        class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-sky-500 focus:border-sky-500 block w-full p-3"
+                                        placeholder="name@email.com" required>
+                                </div>
+                                <div class="mb-5">
+                                    <label for="message"
+                                        class="block mb-2 text-sm font-medium text-gray-300">Nội dung</label>
+                                    <textarea id="message" rows="4"
+                                        class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-sky-500 focus:border-sky-500 block w-full p-3"
+                                        placeholder="Nội dung bạn muốn trao đổi..."></textarea>
+                                </div>
+                                <button type="submit"
+                                    class="text-white bg-sky-600 hover:bg-sky-700 focus:ring-4 focus:outline-none focus:ring-sky-800 font-medium rounded-lg text-base w-full sm:w-auto px-6 py-3 text-center transition-transform duration-200 hover:scale-105">Gửi
+                                    Tin Nhắn</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Page 5: O-AI Studio -->
+        <div id="page-oai-studio" class="hidden">
+            <div class="flex flex-col md:flex-row-reverse" style="height: calc(100vh - 72px);">
+                <!-- Right Panel: Settings -->
+                <aside class="w-full md:w-80 lg:w-96 bg-gray-900/50 p-6 border-l border-gray-800 overflow-y-auto">
+                    <h2 class="text-2xl font-bold text-white mb-6">Cài đặt</h2>
+
+                    <!-- Model Selection -->
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold text-sky-400 mb-3">Model</h3>
+                        <div class="space-y-3" id="model-selection">
+                            <div class="model-card active rounded-lg p-4" data-model-name="Stable Diffusion">
+                                <div class="flex justify-between items-center">
+                                    <div class="flex items-center gap-3">
+                                        <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                                        <div>
+                                            <h4 class="font-bold text-white">Stable Diffusion<span class="text-xs bg-blue-500 text-white px-1.5 py-0.5 rounded-full ml-1">Free Credits</span></h4>
+                                            <p class="text-xs text-gray-400">Popular & powerful model.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="model-card rounded-lg p-4" data-model-name="O-AI Nano">
+                                <div class="flex justify-between items-center">
+                                    <div class="flex items-center gap-3">
+                                        <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z">
+                                            </path>
+                                        </svg>
+                                        <div>
+                                            <h4 class="font-bold text-white">O-AI Nano <span
+                                                    class="text-xs bg-gray-500 text-white px-1.5 py-0.5 rounded-full ml-1">Billing Required</span>
+                                            </h4>
+                                            <p class="text-xs text-gray-400">State-of-the-art image generation.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="model-card rounded-lg p-4" data-model-name="O-AI Gen 4">
+                                <div class="flex justify-between items-center">
+                                    <div class="flex items-center gap-3">
+                                        <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c.252 0 .487.126.638.342l.364.596a2.25 2.25 0 003.542 0l.364-.596c.151-.216.386-.342.638-.342H14.25a2.25 2.25 0 012.25 2.25v5.714a2.25 2.25 0 01-.659 1.591L19 14.5M5 14.5c0 .355.186.683.477.868l3.42 2.028a2.25 2.25 0 002.106 0l3.42-2.028c.291-.185.477-.513.477-.868V9.75M5 14.5L5 9.75m14 4.75L19 9.75M5 9.75c0-1.243 1.007-2.25 2.25-2.25h1.5M19 9.75c0-1.243-1.007-2.25-2.25-2.25h-1.5m-3 0a2.25 2.25 0 00-2.25-2.25H9.75" />
+                                        </svg>
+                                        <div>
+                                            <h4 class="font-bold text-white">O-AI Gen 4 <span
+                                                    class="text-xs bg-gray-500 text-white px-1.5 py-0.5 rounded-full ml-1">Billing Required</span>
+                                            </h4>
+                                            <p class="text-xs text-gray-400">Better text rendering & quality.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="model-card rounded-lg p-4" data-model-name="O-AI Gen 4 Ultra">
+                                <div class="flex justify-between items-center">
+                                    <div class="flex items-center gap-3">
+                                        <svg class="w-6 h-6 text-pink-400" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0m3.75 2.311a7.5 7.5 0 00-7.5 0" />
+                                        </svg>
+                                        <div>
+                                            <h4 class="font-bold text-white">O-AI Gen 4 Ultra <span
+                                                    class="text-xs bg-gray-500 text-white px-1.5 py-0.5 rounded-full ml-1">Billing Required</span>
+                                            </h4>
+                                            <p class="text-xs text-gray-400">Our latest & greatest model.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Aspect Ratio -->
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold text-sky-400 mb-3">Tỷ lệ khung hình</h3>
+                        <div class="grid grid-cols-3 gap-2" id="aspect-ratio-selection">
+                            <button class="aspect-ratio-btn active rounded-lg p-2 text-center">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="5" y="5" width="14" height="14" rx="1"></rect>
+                                </svg>
+                                <span class="text-xs">1:1</span>
+                            </button>
+                            <button class="aspect-ratio-btn rounded-lg p-2 text-center">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="7.5" y="2" width="9" height="20" rx="1"></rect>
+                                </svg>
+                                <span class="text-xs">9:16</span>
+                            </button>
+                            <button class="aspect-ratio-btn rounded-lg p-2 text-center">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="2" y="7.5" width="20" height="9" rx="1"></rect>
+                                </svg>
+                                <span class="text-xs">16:9</span>
+                            </button>
+                            <button class="aspect-ratio-btn rounded-lg p-2 text-center">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="6" width="18" height="12" rx="1"></rect>
+                                </svg>
+                                <span class="text-xs">4:3</span>
+                            </button>
+                            <button class="aspect-ratio-btn rounded-lg p-2 text-center">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="6" y="3" width="12" height="18" rx="1"></rect>
+                                </svg>
+                                <span class="text-xs">3:4</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Number of Results -->
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold text-sky-400 mb-3">Số lượng ảnh</h3>
+                        <div class="flex items-center gap-4">
+                            <input type="range" min="1" max="8" value="1"
+                                class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+                            <span class="bg-gray-700 text-white text-sm font-medium px-3 py-1 rounded-md">1</span>
+                        </div>
+                    </div>
+
+                    <!-- Resolution -->
+                    <div>
+                        <h3 class="text-lg font-semibold text-sky-400 mb-3">Độ phân giải</h3>
+                        <select
+                            class="w-full bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-sky-500 focus:border-sky-500 block p-2.5">
+                            <option>1K</option>
+                            <option>2K</option>
+                            <option>4K</option>
+                        </select>
+                    </div>
+                </aside>
+
+                <!-- Main Panel: Content and Prompt -->
+                <main class="flex-1 flex flex-col p-6 relative">
+                    <!-- NÂNG CẤP: Thêm mục prompt có sẵn -->
+                    <div id="preset-prompts-container" class="absolute top-4 left-4 flex flex-col items-center gap-4 z-10">
+                        <!-- Item 1 -->
+                        <div class="preset-prompt-card" data-prompt="Cyberpunk city street at night, neon lights, rain, cinematic, hyperrealistic">
+                            <img src="https://placehold.co/128x128/1f2937/818cf8?text=City" alt="Cyberpunk City" class="preset-prompt-img">
+                            <div class="preset-prompt-overlay"></div>
+                            <span class="preset-prompt-text">Cyberpunk City</span>
+                        </div>
+                         <!-- Item 2 -->
+                         <div class="preset-prompt-card" data-prompt="Portrait of a warrior queen, intricate armor, fantasy, hyperrealistic, detailed face">
+                            <img src="https://placehold.co/128x128/1f2937/f472b6?text=Queen" alt="Warrior Queen" class="preset-prompt-img">
+                            <div class="preset-prompt-overlay"></div>
+                            <span class="preset-prompt-text">Warrior Queen</span>
+                        </div>
+                         <!-- Item 3 -->
+                         <div class="preset-prompt-card" data-prompt="A serene Japanese garden with a koi pond, cherry blossoms, watercolor style">
+                            <img src="https://placehold.co/128x128/1f2937/34d399?text=Garden" alt="Japanese Garden" class="preset-prompt-img">
+                            <div class="preset-prompt-overlay"></div>
+                            <span class="preset-prompt-text">Japanese Garden</span>
+                        </div>
+                         <!-- Item 4 -->
+                         <div class="preset-prompt-card" data-prompt="A cute, fluffy cat astronaut floating in space, cartoon style, vibrant colors">
+                            <img src="https://placehold.co/128x128/1f2937/fbbf24?text=Cat" alt="Cat Astronaut" class="preset-prompt-img">
+                            <div class="preset-prompt-overlay"></div>
+                            <span class="preset-prompt-text">Cat Astronaut</span>
+                        </div>
+                         <!-- Item 5 -->
+                         <div class="preset-prompt-card" data-prompt="Surreal landscape with floating islands and giant mushrooms, digital painting, fantasy art">
+                            <img src="https://placehold.co/128x128/1f2937/a78bfa?text=Surreal" alt="Surreal Landscape" class="preset-prompt-img">
+                            <div class="preset-prompt-overlay"></div>
+                            <span class="preset-prompt-text">Surreal Landscape</span>
+                        </div>
+                    </div>
+
+                    <!-- NÂNG CẤP: Khu vực hiển thị ảnh tập trung -->
+                    <div id="image-result-container" class="flex-grow flex flex-col items-center justify-center p-4">
+                        <div id="image-display-wrapper" class="relative w-full max-w-3xl aspect-square rounded-2xl p-6 flex items-center justify-center text-center">
+                            
+                            <!-- Placeholder -->
+                            <div id="ai-placeholder" class="text-gray-500">
+                                <svg class="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                <h3 class="text-2xl font-semibold">Kết quả sẽ xuất hiện ở đây</h3>
+                            </div>
+
+                            <!-- Loading Spinner -->
+                            <div id="ai-loading-spinner" class="hidden">
+                                 <svg class="animate-spin h-12 w-12 text-sky-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                            </div>
+
+                             <!-- Image Result -->
+                            <div id="image-display-area" class="w-full h-full"></div>
+                        </div>
+                        
+                        <!-- NÂNG CẤP MỚI: Nút tải xuống -->
+                        <div id="image-actions-container" class="mt-4">
+                            <button id="download-btn" class="hidden bg-sky-500 hover:bg-sky-600 text-white font-bold py-2 px-6 rounded-full transition-all duration-300 hover:shadow-lg hover:shadow-sky-500/50 transform hover:scale-105 inline-flex items-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                Tải Xuống
+                            </button>
+                        </div>
+                    </div>
+
+
+                    <!-- Prompt Input Bar -->
+                    <div class="absolute bottom-8 left-1/2 -translate-x-1/2 w-11/12 max-w-3xl">
+                        <div id="prompt-bar" class="relative">
+                            <input type="text" id="prompt-input" placeholder="Mô tả hình ảnh bạn muốn tạo..."
+                                class="w-full">
+                            <button id="prompt-send-btn">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        </div>
+
+        <!-- === NÂNG CẤP: Trang Đăng ký / Đăng nhập === -->
+        <div id="page-auth" class="hidden min-h-screen">
+             <section class="py-24 flex items-center justify-center">
+                <div class="auth-card w-full max-w-md p-8 space-y-6">
+                    <div id="auth-container">
+                        <!-- Form Đăng nhập (mặc định) -->
+                        <div id="login-form">
+                            <h2 class="text-3xl font-bold text-center text-white">Đăng Nhập</h2>
+                            <p class="text-center text-gray-400 mt-2">Chào mừng trở lại!</p>
+                             <div class="social-login-buttons">
+                                <button id="login-google-btn" class="social-btn google-btn">
+                                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+                                    <span>Tiếp tục với Google</span>
+                                </button>
+                                <!-- Nút Facebook đã bị xóa -->
+                            </div>
+                            <div class="divider">hoặc</div>
+                            <form class="space-y-4">
+                                <div>
+                                    <label for="login-email" class="auth-label">Email</label>
+                                    <input type="email" id="login-email" class="auth-input" placeholder="you@example.com" required>
+                                </div>
+                                <div>
+                                    <label for="login-password" class="auth-label">Mật khẩu</label>
+                                    <input type="password" id="login-password" class="auth-input" placeholder="••••••••" required>
+                                </div>
+                                <button type="submit" class="auth-submit-button">Đăng Nhập</button>
+                            </form>
+                            <p class="auth-toggle-link">Chưa có tài khoản? <a href="#" onclick="event.preventDefault(); toggleAuthForms();">Đăng ký ngay</a></p>
+                        </div>
+                        
+                        <!-- Form Đăng ký (ẩn) -->
+                        <div id="register-form" class="hidden">
+                            <h2 class="text-3xl font-bold text-center text-white">Tạo tài khoản</h2>
+                            <p class="text-center text-gray-400 mt-2">Tham gia cộng đồng và tải tài nguyên miễn phí.</p>
+                             <div class="social-login-buttons">
+                                <button id="register-google-btn" class="social-btn google-btn">
+                                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+                                    <span>Đăng ký bằng Google</span>
+                                </button>
+                                <!-- Nút Facebook đã bị xóa -->
+                            </div>
+                             <div class="divider">hoặc đăng ký nhanh</div>
+                             <form class="space-y-4">
+                                <div>
+                                    <label for="register-email" class="auth-label">Email</label>
+                                    <input type="email" id="register-email" class="auth-input" placeholder="you@example.com" required>
+                                </div>
+                                <div>
+                                    <label for="register-password" class="auth-label">Mật khẩu</label>
+                                    <input type="password" id="register-password" class="auth-input" placeholder="••••••••" required>
+                                </div>
+                                <button type="submit" class="auth-submit-button">Tạo Tài Khoản</button>
+                            </form>
+                            <p class="auth-toggle-link">Đã có tài khoản? <a href="#" onclick="event.preventDefault(); toggleAuthForms();">Đăng nhập</a></p>
+                        </div>
+                    </div>
+                </div>
+             </section>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 border-t border-gray-800">
+        <div class="mx-auto px-6 py-12" style="width: 85%;">
+            <div class="flex flex-col md:flex-row justify-between items-center text-center md:text-left gap-8">
+                <div>
+                    <div class="flex items-center justify-center md:justify-start gap-4">
+                        <img src="https://i.imgur.com/ECzyDDP.png" alt="Logo Hoc Va Lam Designer" class="h-16">
+                        <span class="text-4xl text-gray-600">&times;</span>
+                        <img src="https://i.imgur.com/1KyzkgN.png" alt="Logo Oai Tran" class="h-16">
+                    </div>
+                    <p class="text-gray-400 mt-4 max-w-sm">Cung cấp tài nguyên, kiến thức và công cụ cho cộng đồng
+                        designer.</p>
+                </div>
+                <div class="text-gray-400">
+                    <p>&copy; 2025 Oai Design. All Rights Reserved. Created by Hoàng Nam</p>
+                    <p class="text-sm mt-2">Địa chỉ: Hạ Long - Quảng Ninh, Việt Nam</p>
+                    <p class="text-sm">Điện thoại: (+84) 0967.938.296 - 088.977.8836</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Thanh thông báo (dưới cùng) -->
+    <div class="fixed bottom-4 left-1/2 -translate-x-1/2 w-auto z-40">
+        <div id="notification-bar-wrapper">
+            <div id="notification-bar"
+                class="text-white py-4 px-5 shadow-lg rounded-full flex items-center justify-between gap-4">
+                <div class="flex items-center gap-3 flex-1 min-w-0">
+                    <div class="flex">
+                        <img class="inline-block h-6 w-6 rounded-full ring-2 ring-gray-800"
+                            src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Adobe_Creative_Cloud_rainbow_icon.svg/240px-Adobe_Creative_Cloud_rainbow_icon.svg.png?20221002235840"
+                            alt="Adobe Creative Cloud">
+                    </div>
+                    <p id="notification-text" class="text-sm text-center sm:text-left flex-grow whitespace-nowrap">Adobe Creative Cloud chính hãng, Bảo Hành Trọn Gói</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <a href="#" onclick="event.preventDefault(); showPage('software', event);"
+                        class="text-sm font-semibold bg-sky-500 hover:bg-sky-600 px-4 py-1.5 rounded-full transition-colors whitespace-nowrap">Xem
+                        chi tiết</a>
+                    <button id="close-notification" class="text-gray-400 hover:text-white text-2xl leading-none">&times;</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NÂNG CẤP: Wrapper cho Social Bar và Zalo Helper -->
+    <div id="social-container">
+        <!-- Thanh Mạng Xã Hội -->
+        <div id="social-bar">
+            <a href="https://www.facebook.com/groups/fbhocvalamdesigner" target="_blank" title="Facebook">
+                <svg fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path fill-rule="evenodd"
+                        d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"
+                        clip-rule="evenodd"></path>
+                </svg>
+            </a>
+            <a href="https://zalo.me/0967938296" target="_blank" title="Zalo">
+                <svg fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path
+                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm3.23 13.88c-.14.41-.46.73-.87.87-.59.2-1.99.2-2.36.2s-1.77 0-2.36-.2c-.41-.14-.73-.46-.87-.87-.2-1.21-.2-2.55-.2-2.88s0-1.67.2-2.88c.14-.41.46-.73.87-.87.59-.2-1.99-.2-2.36-.2s1.77 0 2.36.2c.41.14.73.46.87.87.2 1.21.2 2.55.2 2.88s0 1.67-.2 2.88zM9.5 12c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5-.67 1.5-1.5 1.5-1.5-.67-1.5-1.5z">
+                    </path>
+                </svg>
+            </a>
+            <a href="https://www.youtube.com/@hocvalamdesigner" target="_blank" title="Youtube">
+                <svg fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path fill-rule="evenodd"
+                        d="M19.812 5.418c.861.23 1.538.907 1.768 1.768C21.998 8.78 22 12 22 12s0 3.22-.418 4.814a2.506 2.506 0 0 1-1.768 1.768c-1.594.418-7.814.418-7.814.418s-6.22 0-7.814-.418a2.506 2.506 0 0 1-1.768-1.768C2 15.22 2 12 2 12s0-3.22.418-4.814a2.506 2.506 0 0 1 1.768-1.768C5.78 5 12 5 12 5s6.22 0 7.814.418zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"
+                        clip-rule="evenodd"></path>
+                </svg>
+            </a>
+        </div>
+        <!-- Zalo Helper cho trang Phần Mềm -->
+        <a id="zalo-helper" href="https://zalo.me/0967938296" target="_blank"
+            class="w-16 h-16 hidden cursor-pointer">
+            <div id="zalo-speech-bubble"
+                class="bg-gray-900 text-white text-xs rounded-lg px-3 py-2 shadow-lg whitespace-nowrap">Ấn vào đây để
+                được tư vấn thêm</div>
+            <img src="https://i.imgur.com/rPJDDAT.jpeg" alt="Hỗ trợ Zalo"
+                class="w-full h-full transition-transform duration-300 rounded-full">
+        </a>
+    </div>
+
+    <!-- Back to Top Button -->
+    <button id="backToTopBtn" title="Lên đầu trang">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+        </svg>
+    </button>
+
+    <!-- Trợ lý ảo bằng hình ảnh tĩnh -->
+    <div id="assistant-container"
+        class="fixed bottom-4 left-4 z-40 w-32 h-32 md:w-40 md:h-40 md:block hidden sway-animation">
+        <div id="assistant-speech-bubble"
+            class="absolute bottom-full mb-2 left-0 bg-sky-500 text-white text-xs rounded-lg px-3 py-2 shadow-lg opacity-0 transition-opacity duration-300 w-48 text-center pointer-events-auto">
+            ...</div>
+        <img id="assistant-image" src="https://i.imgur.com/GxCXkT4.png" alt="Trợ lý ảo"
+            class="w-full h-full object-contain drop-shadow-lg transition-transform duration-300">
+    </div>
+
+    <!-- Chat Widget -->
+    <div id="chat-widget"
+        class="fixed bottom-24 left-4 z-50 w-80 h-96 bg-gray-800/80 backdrop-blur-md rounded-2xl shadow-2xl border border-gray-700 flex flex-col hidden">
+        <div class="flex-shrink-0 flex justify-between items-center p-3 border-b border-gray-700">
+            <h3 class="text-base font-semibold text-white">Trò chuyện với Trợ Lý Oai</h3>
+            <button id="close-chat" class="text-gray-400 hover:text-white">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        <div id="chat-messages" class="flex-grow p-4 overflow-y-auto flex flex-col space-y-3">
+            <div class="assistant-message text-white text-sm rounded-lg p-2 max-w-xs">
+                Xin chào! Tôi có thể giúp gì cho bạn?
+            </div>
+        </div>
+        <div id="typing-indicator" class="px-4 py-2 hidden">
+            <div class="assistant-message text-white text-sm rounded-lg p-2 max-w-min">
+                <div class="typing-indicator"><span></span><span></span><span></span></div>
+            </div>
+        </div>
+        <div class="flex-shrink-0 p-3 border-t border-gray-700">
+            <div class="flex items-center space-x-2">
+                <input type="text" id="chat-input"
+                    class="w-full bg-gray-700 text-white text-sm rounded-lg border-gray-600 focus:ring-sky-500 focus:border-sky-500 p-2"
+                    placeholder="Nhập tin nhắn...">
+                <button id="send-chat" class="bg-sky-500 text-white p-2 rounded-lg hover:bg-sky-600">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Modals -->
+    <!-- Course Registration Modal -->
+    <div id="course-modal"
+        class="modal fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-sm hidden"
+        onclick="closeModal('course-modal')">
+        <div class="modal-content bg-gray-800 w-11/12 md:max-w-md mx-auto rounded-lg shadow-lg p-8 border border-gray-700"
+            onclick="event.stopPropagation()">
+            <h3 class="text-2xl font-bold mb-4 text-sky-400">Đăng Ký Khóa Học Design</h3>
+            <form>
+                <div class="mb-4">
+                    <label for="course-name" class="block text-gray-300 text-sm font-bold mb-2">Họ Tên:</label>
+                    <input
+                        class="bg-gray-700 border border-gray-600 rounded w-full py-2 px-3 text-white leading-tight focus:outline-none focus:ring-2 focus:ring-sky-500"
+                        id="course-name" type="text" placeholder="Nguyễn Văn A">
+                </div>
+                <div class="mb-4">
+                    <label for="course-email" class="block text-gray-300 text-sm font-bold mb-2">Email:</label>
+                    <input
+                        class="bg-gray-700 border border-gray-600 rounded w-full py-2 px-3 text-white leading-tight focus:outline-none focus:ring-2 focus:ring-sky-500"
+                        id="course-email" type="email" placeholder="email@example.com">
+                </div>
+                <div class="mb-6">
+                    <label for="course-phone" class="block text-gray-300 text-sm font-bold mb-2">Số Điện Thoại:</label>
+                    <input
+                        class="bg-gray-700 border border-gray-600 rounded w-full py-2 px-3 text-white leading-tight focus:outline-none focus:ring-2 focus:ring-sky-500"
+                        id="course-phone" type="tel" placeholder="0987654321">
+                </div>
+                <div class="flex items-center justify-between">
+                    <button
+                        class="bg-sky-500 hover:bg-sky-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full transition-transform hover:scale-105"
+                        type="button">
+                        Gửi Đăng Ký
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Software Registration Modal -->
+    <div id="software-modal"
+        class="modal fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-sm hidden"
+        onclick="closeModal('software-modal')">
+        <div class="modal-content bg-gray-800 w-11/12 md:max-w-md mx-auto rounded-lg shadow-lg p-8 border border-gray-700"
+            onclick="event.stopPropagation()">
+            <h3 class="text-2xl font-bold mb-4 text-yellow-400">Đăng Ký Mua Phần Mềm</h3>
+            <form>
+                <div class="mb-4">
+                    <label for="software-name" class="block text-gray-300 text-sm font-bold mb-2">Họ Tên:</label>
+                    <input
+                        class="bg-gray-700 border border-gray-600 rounded w-full py-2 px-3 text-white leading-tight focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                        id="software-name" type="text" placeholder="Nguyễn Văn A">
+                </div>
+                <div class="mb-4">
+                    <label for="software-email" class="block text-gray-300 text-sm font-bold mb-2">Email:</label>
+                    <input
+                        class="bg-gray-700 border border-gray-600 rounded w-full py-2 px-3 text-white leading-tight focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                        id="software-email" type="email" placeholder="email@example.com">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-300 text-sm font-bold mb-2">Chọn Gói Phần Mềm:</label>
+                    <select
+                        class="bg-gray-700 border border-gray-600 rounded w-full py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                        <option>Adobe Photoshop (Vĩnh viễn)</option>
+                        <option>Adobe Photoshop (1 Năm)</option>
+                        <option>Full Bộ Adobe (1 Năm)</option>
+                    </select>
+                </div>
+                <div class="flex items-center justify-between">
+                    <button
+                        class="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full transition-transform hover:scale-105"
+                        type="button">
+                        Xác Nhận Mua
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Video Player Modal -->
+    <div id="video-modal"
+        class="modal fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-80 backdrop-blur-sm hidden"
+        onclick="closeModal('video-modal')">
+        <div id="video-modal-content" class="modal-content relative rounded-lg shadow-lg"
+            onclick="event.stopPropagation()">
+            <button class="absolute -top-10 -right-2 text-white text-4xl"
+                onclick="closeModal('video-modal')">&times;</button>
+            <div id="video-player-container" class="w-full h-full"></div>
+        </div>
+    </div>
+
+    <script src="script.js" defer></script>
+
+    <!-- === SUPABASE SDK === -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const supabaseUrl = 'https://eczovnahwntestpokikd.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVjem92bmFod250ZXN0cG9raWtkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwNDAyNDIsImV4cCI6MjA3NjYxNjI0Mn0._Y-SzUccct4DGaAjOP7grRSFUdfV2Quvo3N31lLUquQ';
+        // Make supabase client globally available to script.js
+        window.supabase = supabase.createClient(supabaseUrl, supabaseKey);
+    </script>
+</body>
+</html>
