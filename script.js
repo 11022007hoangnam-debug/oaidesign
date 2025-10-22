@@ -28,8 +28,10 @@ const authButtonContainer = document.getElementById('auth-button-container');
 
 // --- CÁC HÀM TIỆN ÍCH ---
 function toggleAuthForms() {
-    loginForm.classList.toggle('hidden');
-    registerForm.classList.toggle('hidden');
+    if (loginForm && registerForm) {
+        loginForm.classList.toggle('hidden');
+        registerForm.classList.toggle('hidden');
+    }
 }
 
 function showPage(pageId, event) {
@@ -40,16 +42,21 @@ function showPage(pageId, event) {
     });
     if (navLinks.logout) navLinks.logout.classList.remove('active');
     if(pageElements[pageId]) pageElements[pageId].classList.remove('hidden');
-    const activeLink = navLinks[pageId] || (pageId === 'logout' ? document.getElementById('nav-logout') : null);
-    if (activeLink) {
-        activeLink.classList.add('active');
-        moveGlass(activeLink);
+    
+    // Cần kiểm tra moveGlass tồn tại trước khi gọi
+    if (typeof moveGlass === 'function') {
+        const activeLink = navLinks[pageId] || (pageId === 'logout' ? document.getElementById('nav-logout') : null);
+        if (activeLink) {
+            activeLink.classList.add('active');
+            moveGlass(activeLink);
+        }
     }
+
     if (pageId === 'resources') {
         if (!currentUser) {
-            authOverlay.style.display = 'flex';
+            if (authOverlay) authOverlay.style.display = 'flex';
         } else {
-            authOverlay.style.display = 'none';
+            if (authOverlay) authOverlay.style.display = 'none';
         }
         if (!resourcesInitialized) {
             initializeResources();
@@ -57,14 +64,21 @@ function showPage(pageId, event) {
         }
     }
     window.scrollTo(0, 0);
-    document.getElementById('mobile-menu').classList.add('hidden');
+    const mobileMenu = document.getElementById('mobile-menu');
+    if (mobileMenu) mobileMenu.classList.add('hidden');
+    
     const zaloHelper = document.getElementById('zalo-helper');
-    if (pageId === 'software') {
-        zaloHelper.classList.remove('hidden');
-    } else {
-        zaloHelper.classList.add('hidden');
+    if (zaloHelper) {
+        if (pageId === 'software') {
+            zaloHelper.classList.remove('hidden');
+        } else {
+            zaloHelper.classList.add('hidden');
+        }
     }
-    observeSections();
+    
+    if (typeof observeSections === 'function') {
+        observeSections();
+    }
 }
 
 // --- LOGIC BẢO MẬT "NGƯỜI GIÁM SÁT" ---
@@ -117,7 +131,7 @@ function setupAuthStateObserver() {
         if (user) {
             updateUIForLoggedInUser(user);
             listenToProfileChanges(user.id);
-            if (pageElements.resources && !pageElements.resources.classList.contains('hidden')) {
+            if (authOverlay && pageElements.resources && !pageElements.resources.classList.contains('hidden')) {
                 authOverlay.style.display = 'none';
             }
             if (pageElements.auth && !pageElements.auth.classList.contains('hidden')) {
@@ -126,53 +140,50 @@ function setupAuthStateObserver() {
         } else {
             updateUIForLoggedOutUser();
             unsubscribeFromProfileChanges();
-            if (pageElements.resources && !pageElements.resources.classList.contains('hidden')) {
+            if (authOverlay && pageElements.resources && !pageElements.resources.classList.contains('hidden')) {
                 authOverlay.style.display = 'flex';
             }
         }
     });
 }
 
-// --- LOGIC TẢI FILE (ĐÃ NÂNG CẤP) ---
+// --- LOGIC TẢI FILE (ĐÃ HOÀN THIỆN) ---
 async function downloadResource(resourceId) {
-    // 1. Kiểm tra quyền truy cập (giữ nguyên)
     if (!currentUser) {
         alert("Vui lòng đăng nhập để tải tài nguyên!");
         showPage('auth', null);
         return;
     }
 
-    // 2. Kiểm tra ID hợp lệ (giữ nguyên)
     if (!resourceId || resourceId === 'undefined') {
-        console.error("Lỗi: resourceId không hợp lệ khi nhấn nút.");
-        alert("Đã xảy ra lỗi, không thể tìm thấy tài nguyên này. Vui lòng thử lại.");
+        console.error("Lỗi: resourceId không hợp lệ.");
+        alert("Đã xảy ra lỗi, không thể tìm thấy tài nguyên này.");
         return;
     }
 
-    // 3. Lấy link từ Supabase (PHẦN NÂNG CẤP)
     try {
         const { data, error } = await window.supabase
             .from('resources')
-            .select('downloadLink') // Tìm đúng cột 'downloadLink'
+            .select('downloadLink')
             .eq('id', resourceId)
             .single();
 
-        // Xử lý lỗi nếu không tìm thấy
         if (error) {
             if (error.code === 'PGRST116') {
+                 console.error('Không tìm thấy tài nguyên với ID:', resourceId);
                  alert('Không tìm thấy tài nguyên này trong cơ sở dữ liệu.');
             } else {
-                throw error; // Ném các lỗi khác
+                throw error;
             }
             return;
         }
 
-        // 4. Mở link tải (PHẦN NÂNG CẤP)
         if (data && data.downloadLink) {
-            // Mở link trong một tab mới
+            console.log('Tìm thấy link, đang mở:', data.downloadLink);
             window.open(data.downloadLink, '_blank');
         } else {
-            alert('Rất tiếc, link tải cho tài nguyên này chưa được cập nhật. Vui lòng quay lại sau.');
+            console.warn('Không tìm thấy link tải cho resource ID:', resourceId);
+            alert('Rất tiếc, link tải cho tài nguyên này chưa được cập nhật.');
         }
 
     } catch (error) {
@@ -270,6 +281,8 @@ async function signOutUser(event) {
 async function initializeResources() {
     const categoriesContainer = document.getElementById('resource-categories');
     const gridContainer = document.getElementById('resource-grid');
+    if (!categoriesContainer || !gridContainer) return;
+
     gridContainer.innerHTML = `<p class="text-gray-400 col-span-full text-center">Đang tải tài nguyên...</p>`;
     const { data: resourceData, error } = await window.supabase.from('resources').select('*');
     if (error) {
@@ -331,24 +344,38 @@ async function initializeResources() {
 
 document.addEventListener('DOMContentLoaded', () => {
     setupAuthStateObserver();
-    document.getElementById('login-google-btn').addEventListener('click', signInWithGoogle);
-    document.getElementById('register-google-btn').addEventListener('click', signInWithGoogle);
-    document.querySelector('#login-form form').addEventListener('submit', handleEmailLogin);
-    document.querySelector('#register-form form').addEventListener('submit', handleEmailRegister);
-    document.getElementById('resource-grid').addEventListener('click', (event) => {
-        if (event.target && event.target.classList.contains('download-btn')) {
-            const resourceId = event.target.dataset.id;
-            downloadResource(resourceId);
-        }
-    });
+    
+    const loginGoogleBtn = document.getElementById('login-google-btn');
+    if (loginGoogleBtn) loginGoogleBtn.addEventListener('click', signInWithGoogle);
+    
+    const registerGoogleBtn = document.getElementById('register-google-btn');
+    if (registerGoogleBtn) registerGoogleBtn.addEventListener('click', signInWithGoogle);
+    
+    const loginFormEl = document.querySelector('#login-form form');
+    if (loginFormEl) loginFormEl.addEventListener('submit', handleEmailLogin);
+
+    const registerFormEl = document.querySelector('#register-form form');
+    if (registerFormEl) registerFormEl.addEventListener('submit', handleEmailRegister);
+    
+    const resourceGrid = document.getElementById('resource-grid');
+    if(resourceGrid) {
+        resourceGrid.addEventListener('click', (event) => {
+            if (event.target && event.target.classList.contains('download-btn')) {
+                const resourceId = event.target.dataset.id;
+                downloadResource(resourceId);
+            }
+        });
+    }
+
     showPage('home');
-    initFlyingLogos();
-    renderVideoGallery();
-    typingAnimation();
-    initializeOAIStudio();
+    if (typeof initFlyingLogos === 'function') initFlyingLogos();
+    if (typeof renderVideoGallery === 'function') renderVideoGallery();
+    if (typeof typingAnimation === 'function') typingAnimation();
+    if (typeof initializeOAIStudio === 'function') initializeOAIStudio();
+
     const initialActive = document.querySelector('#desktop-nav .nav-link.active');
     setTimeout(() => {
-        if (initialActive) {
+        if (initialActive && typeof moveGlass === 'function') {
             moveGlass(initialActive);
         }
     }, 100);
@@ -357,30 +384,42 @@ document.addEventListener('DOMContentLoaded', () => {
 // --- CÁC HÀM GIAO DIỆN KHÁC (Không thay đổi) ---
 function openModal(modalId) {
     const modal = document.getElementById(modalId);
+    if (!modal) return;
     modal.classList.remove('hidden');
     setTimeout(() => modal.classList.add('open'), 10);
 }
 
 function closeModal(modalId) {
     const modal = document.getElementById(modalId);
+    if (!modal) return;
     modal.classList.remove('open');
     setTimeout(() => {
         modal.classList.add('hidden');
         if (modalId === 'video-modal') {
-            document.getElementById('video-player-container').innerHTML = '';
+            const videoContainer = document.getElementById('video-player-container');
+            if (videoContainer) videoContainer.innerHTML = '';
         }
     }, 300);
 }
 
-document.getElementById('mobile-menu-button').addEventListener('click', function () {
-    document.getElementById('mobile-menu').classList.toggle('hidden');
-});
+const mobileMenuButton = document.getElementById('mobile-menu-button');
+if (mobileMenuButton) {
+    mobileMenuButton.addEventListener('click', function () {
+        const mobileMenu = document.getElementById('mobile-menu');
+        if (mobileMenu) mobileMenu.classList.toggle('hidden');
+    });
+}
 
-document.getElementById('close-notification').addEventListener('click', () => {
-    const notifBar = document.querySelector('.fixed.bottom-4');
-    notifBar.style.transform = 'translate(-50%, 150%)';
-    setTimeout(() => notifBar.style.display = 'none', 300);
-});
+const closeNotificationBtn = document.getElementById('close-notification');
+if (closeNotificationBtn) {
+    closeNotificationBtn.addEventListener('click', () => {
+        const notifBar = document.querySelector('.fixed.bottom-4');
+        if (notifBar) {
+            notifBar.style.transform = 'translate(-50%, 150%)';
+            setTimeout(() => notifBar.style.display = 'none', 300);
+        }
+    });
+}
 
 const assistantContainer = document.getElementById('assistant-container');
 const chatWidget = document.getElementById('chat-widget');
@@ -405,7 +444,7 @@ const assistantMessages = {
 };
 
 function showAssistantMessage(sectionId) {
-    if (assistantMessages[sectionId]) {
+    if (assistantMessages[sectionId] && speechBubble) {
         clearTimeout(speechTimeout);
         speechBubble.textContent = assistantMessages[sectionId];
         speechBubble.classList.remove('opacity-0');
@@ -418,16 +457,17 @@ function showAssistantMessage(sectionId) {
 }
 
 function toggleChat() {
-    if (chatWidget.classList.contains('hidden')) {
+    if (chatWidget && chatWidget.classList.contains('hidden')) {
         chatWidget.classList.remove('hidden');
         setTimeout(() => chatWidget.classList.add('open'), 10);
-    } else {
+    } else if (chatWidget) {
         chatWidget.classList.remove('open');
         setTimeout(() => chatWidget.classList.add('hidden'), 400);
     }
 }
 
 async function sendMessage() {
+    if (!chatInput || !chatMessages || !typingIndicator) return;
     const userMessage = chatInput.value.trim();
     if (!userMessage) return;
     const userMessageDiv = document.createElement('div');
@@ -438,7 +478,7 @@ async function sendMessage() {
     chatMessages.scrollTop = chatMessages.scrollHeight;
     typingIndicator.classList.remove('hidden');
     try {
-        const apiKey = "";
+        const apiKey = ""; 
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
         const systemPrompt = "Bạn là một trợ lý ảo thân thiện và hữu ích tên là 'Oai Mini'. Bạn đang hỗ trợ trên trang web của một designer chuyên nghiệp. Hãy trả lời các câu hỏi của người dùng một cách ngắn gọn, vui vẻ và khuyến khích họ khám phá các dịch vụ. Luôn trả lời bằng tiếng Việt.";
         const payload = {
@@ -471,14 +511,15 @@ async function sendMessage() {
     }
 }
 
-assistantContainer.addEventListener('click', toggleChat);
-closeChatBtn.addEventListener('click', toggleChat);
-sendChatBtn.addEventListener('click', sendMessage);
-chatInput.addEventListener('keypress', (e) => {
+if (assistantContainer) assistantContainer.addEventListener('click', toggleChat);
+if (closeChatBtn) closeChatBtn.addEventListener('click', toggleChat);
+if (sendChatBtn) sendChatBtn.addEventListener('click', sendMessage);
+if (chatInput) chatInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') sendMessage();
 });
 
 const observeSections = () => {
+    if (typeof IntersectionObserver === 'undefined') return;
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
@@ -526,36 +567,43 @@ function renderVideoGallery() {
     });
 }
 
-document.getElementById('video-grid')?.addEventListener('click', function (e) {
-    const card = e.target.closest('.video-card');
-    if (card) {
-        const videoId = card.dataset.videoId;
-        const playerContainer = document.getElementById('video-player-container');
-        playerContainer.innerHTML = `
-            <iframe
-                class="w-full h-full"
-                src="https://www.youtube.com/embed/${videoId}?autoplay=1"
-                title="YouTube video player"
-                frameborder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                allowfullscreen>
-            </iframe>
-        `;
-        openModal('video-modal');
-    }
-});
+const videoGrid = document.getElementById('video-grid');
+if (videoGrid) {
+    videoGrid.addEventListener('click', function (e) {
+        const card = e.target.closest('.video-card');
+        if (card) {
+            const videoId = card.dataset.videoId;
+            const playerContainer = document.getElementById('video-player-container');
+            if (playerContainer) {
+                playerContainer.innerHTML = `
+                    <iframe
+                        class="w-full h-full"
+                        src="https://www.youtube.com/embed/${videoId}?autoplay=1"
+                        title="YouTube video player"
+                        frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowfullscreen>
+                    </iframe>
+                `;
+            }
+            openModal('video-modal');
+        }
+    });
+}
 
 const backToTopBtn = document.getElementById('backToTopBtn');
-window.addEventListener('scroll', () => {
-    if (window.scrollY > 300) {
-        backToTopBtn.classList.add('show');
-    } else {
-        backToTopBtn.classList.remove('show');
-    }
-});
-backToTopBtn.addEventListener('click', () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-});
+if (backToTopBtn) {
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 300) {
+            backToTopBtn.classList.add('show');
+        } else {
+            backToTopBtn.classList.remove('show');
+        }
+    });
+    backToTopBtn.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+}
 
 function initFlyingLogos() {
     const container = document.getElementById('logo-animation-container');
@@ -588,23 +636,25 @@ function initFlyingLogos() {
 }
 
 const navContainer = document.getElementById('desktop-nav');
-const glassBg = navContainer.querySelector('.nav-glass-bg');
-const navItems = navContainer.querySelectorAll('.nav-link');
+if (navContainer) {
+    const glassBg = navContainer.querySelector('.nav-glass-bg');
+    const navItems = navContainer.querySelectorAll('.nav-link');
 
-function moveGlass(element) {
-    if (!element || !glassBg) return;
-    glassBg.style.width = `${element.offsetWidth}px`;
-    glassBg.style.left = `${element.offsetLeft}px`;
+    function moveGlass(element) {
+        if (!element || !glassBg) return;
+        glassBg.style.width = `${element.offsetWidth}px`;
+        glassBg.style.left = `${element.offsetLeft}px`;
+    }
+
+    navItems.forEach(item => {
+        item.addEventListener('mouseenter', () => moveGlass(item));
+    });
+
+    navContainer.addEventListener('mouseleave', () => {
+        const activeItem = navContainer.querySelector('.nav-link.active');
+        moveGlass(activeItem);
+    });
 }
-
-navItems.forEach(item => {
-    item.addEventListener('mouseenter', () => moveGlass(item));
-});
-
-navContainer.addEventListener('mouseleave', () => {
-    const activeItem = navContainer.querySelector('.nav-link.active');
-    moveGlass(activeItem);
-});
 
 function typingAnimation() {
     const textElement = document.getElementById('typed-text');
@@ -659,23 +709,40 @@ function typingAnimation() {
     runAnimation();
 }
 
-function initializeOAIStudio() {
-    const modelSelection = document.getElementById('model-selection');
-    if (!modelSelection) return;
-    const models = modelSelection.querySelectorAll('.model-card');
+// === NÂNG CẤP O-AI STUDIO LOGIC ===
+function downloadImageFromButton(buttonElement) {
+    const resultBlock = buttonElement.closest('.ai-result-block');
+    if (!resultBlock) return;
+    const img = resultBlock.querySelector('img');
+    if (img && img.src) {
+        const link = document.createElement('a');
+        link.href = img.src;
+        link.download = 'oai-studio-image.png';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    } else {
+        alert("Không tìm thấy ảnh để tải về.");
+    }
+}
 
+function initializeOAIStudio() {
     const sendBtn = document.getElementById('prompt-send-btn');
     const promptInput = document.getElementById('prompt-input');
-    const imageDisplayArea = document.getElementById('image-display-area');
-    const loadingSpinner = document.getElementById('ai-loading-spinner');
+    const modelSelection = document.getElementById('model-selection');
+    const conversationArea = document.getElementById('oai-conversation-area');
     const placeholder = document.getElementById('ai-placeholder');
-    const downloadBtn = document.getElementById('download-btn');
-
-    let currentImageDataBase64 = null;
-
+    const presetPromptsContainer = document.getElementById('preset-prompts-container');
+    const aspectRatioSelection = document.getElementById('aspect-ratio-selection');
+    
+    if (!sendBtn || !promptInput || !modelSelection || !conversationArea || !placeholder) {
+        console.error("Một hoặc nhiều thành phần của O-AI Studio không được tìm thấy. Chức năng có thể bị ảnh hưởng.");
+        return;
+    }
+    
     const apiKeys = {
-        google: 'YOUR_GOOGLE_API_KEY', // Thay key của bạn vào đây
-        stability: 'sk-RGFIlda8CWSKT8zi6RwQwPBtvLWb1wKIzUvltiepzkzpzowr'
+        google: 'AIzaSyAJ9z9WHlWVKqFbGIjQiSQdrtNT1g_vFu0', 
+        stability: ''
     };
 
     const modelConfigs = {
@@ -701,9 +768,12 @@ function initializeOAIStudio() {
             headers: { 'Content-Type': 'application/json' },
             buildPayload: (prompt) => ({
                 contents: [{ parts: [{ text: prompt }] }],
-                generationConfig: { responseMimeType: "image/png" }
+                generationConfig: { responseModalities: ["IMAGE"] }
             }),
-            getResult: (data) => data.candidates[0].content.parts[0].inlineData.data
+            getResult: (data) => {
+                const imagePart = data?.candidates?.[0]?.content?.parts?.find(part => part.inlineData && part.inlineData.mimeType.startsWith('image/'));
+                return imagePart?.inlineData?.data;
+            }
         },
         'O-AI Gen 4': { endpoint: null },
         'O-AI Gen 4 Ultra': { endpoint: null }
@@ -712,7 +782,7 @@ function initializeOAIStudio() {
     const generateImage = async () => {
         const prompt = promptInput.value.trim();
         if (!prompt) {
-            alert("Vui lòng nhập prompt!");
+            alert("Vui lòng nhập mô tả cho hình ảnh!");
             return;
         }
 
@@ -721,15 +791,38 @@ function initializeOAIStudio() {
         const config = modelConfigs[modelName];
 
         if (!config || !config.endpoint) {
-            alert(`Model "${modelName}" chưa được cấu hình hoặc không hợp lệ.`);
+            alert(`Model "${modelName}" hiện chưa khả dụng hoặc chưa được cấu hình.`);
+            return;
+        }
+        
+        if ((modelName === 'Stable Diffusion' && !apiKeys.stability) || (modelName === 'O-AI Nano' && !apiKeys.google)) {
+            alert(`API Key cho model ${modelName} chưa được cung cấp. Vui lòng thêm API Key vào file script.js để tiếp tục.`);
             return;
         }
 
         placeholder.classList.add('hidden');
-        imageDisplayArea.innerHTML = '';
-        downloadBtn.classList.add('hidden');
-        loadingSpinner.classList.remove('hidden');
-        currentImageDataBase64 = null;
+
+        const newBlock = document.createElement('div');
+        newBlock.className = 'conversation-block';
+        newBlock.innerHTML = `
+            <div class="user-prompt-block">
+                <p>${prompt.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>
+            </div>
+            <div class="ai-result-block">
+                <div class="loading-spinner flex flex-col justify-center items-center h-32">
+                    <svg class="animate-spin h-8 w-8 text-sky-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <p class="text-gray-400 mt-2 text-sm">AI đang vẽ, vui lòng đợi trong giây lát...</p>
+                </div>
+            </div>
+        `;
+        conversationArea.appendChild(newBlock);
+        promptInput.value = '';
+        conversationArea.scrollTop = conversationArea.scrollHeight;
+
+        const resultBlock = newBlock.querySelector('.ai-result-block');
 
         try {
             const payload = config.buildPayload(prompt);
@@ -740,78 +833,82 @@ function initializeOAIStudio() {
             });
 
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Có lỗi xảy ra từ API');
+                const errorText = await response.text();
+                let errorData;
+                try {
+                    errorData = JSON.parse(errorText);
+                } catch(e) { throw new Error(errorText || 'Lỗi không xác định từ API'); }
+                throw new Error(errorData.error?.message || errorData.message || 'Lỗi không xác định từ API');
             }
 
             const data = await response.json();
             const base64Data = config.getResult(data);
 
             if (base64Data) {
-                currentImageDataBase64 = base64Data;
-                const img = document.createElement('img');
-                img.src = `data:image/png;base64,${base64Data}`;
-                imageDisplayArea.appendChild(img);
-                downloadBtn.classList.remove('hidden');
+                const imageUrl = `data:image/png;base64,${base64Data}`;
+                resultBlock.innerHTML = `
+                    <img src="${imageUrl}" alt="AI generated image for: ${prompt.replace(/"/g, "'")}" class="w-full rounded-lg">
+                    <div id="image-actions-container" class="mt-3 flex gap-2 visible">
+                         <button class="ai-action-btn" onclick="downloadImageFromButton(this)">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                            <span>Tải xuống</span>
+                        </button>
+                    </div>
+                `;
             } else {
-                throw new Error("Không nhận được dữ liệu hình ảnh.");
+                console.error("Không nhận được dữ liệu base64 từ API response:", data);
+                throw new Error("Không nhận được dữ liệu hình ảnh hợp lệ.");
             }
-
         } catch (error) {
             console.error("Lỗi khi tạo ảnh:", error);
-            imageDisplayArea.innerHTML = `<p class="text-red-400">Đã xảy ra lỗi: ${error.message}</p>`;
-        } finally {
-            loadingSpinner.classList.add('hidden');
+            resultBlock.innerHTML = `<p class="text-red-400 p-4 bg-red-900/20 rounded-lg"><b>Đã xảy ra lỗi:</b> ${error.message}</p>`;
         }
     };
-
-    const downloadImage = () => {
-        if (!currentImageDataBase64) {
-            alert("Không có ảnh để tải.");
-            return;
-        }
-
-        const link = document.createElement('a');
-        link.href = `data:image/png;base64,${currentImageDataBase64}`;
-        link.download = 'oai-studio-image.png';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    };
-
-    downloadBtn.addEventListener('click', downloadImage);
-
-    models.forEach(model => {
-        model.addEventListener('click', () => {
-            models.forEach(m => m.classList.remove('active'));
-            model.classList.add('active');
+    
+    // Event Listeners
+    if (modelSelection) {
+        const models = modelSelection.querySelectorAll('.model-card');
+        models.forEach(model => {
+            model.addEventListener('click', () => {
+                if (model.innerHTML.includes('Coming Soon')) return;
+                models.forEach(m => m.classList.remove('active'));
+                model.classList.add('active');
+            });
         });
-    });
+    }
 
-    const aspectRatioSelection = document.getElementById('aspect-ratio-selection');
-    const aspectRatios = aspectRatioSelection.querySelectorAll('.aspect-ratio-btn');
-
-    aspectRatios.forEach(btn => {
-        btn.addEventListener('click', () => {
-            aspectRatios.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
+    if (aspectRatioSelection) {
+        const aspectRatios = aspectRatioSelection.querySelectorAll('.aspect-ratio-btn');
+        aspectRatios.forEach(btn => {
+            btn.addEventListener('click', () => {
+                aspectRatios.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
         });
-    });
+    }
 
-    const presetPromptsContainer = document.getElementById('preset-prompts-container');
-    presetPromptsContainer.addEventListener('click', (e) => {
-        const promptItem = e.target.closest('.preset-prompt-card');
-        if (promptItem) {
-            promptInput.value = promptItem.dataset.prompt;
-            promptInput.focus();
-        }
-    });
+    if (presetPromptsContainer) {
+        presetPromptsContainer.addEventListener('click', (e) => {
+            const promptItem = e.target.closest('.preset-prompt-card');
+            if (promptItem && promptInput) {
+                promptInput.value = promptItem.dataset.prompt;
+                promptInput.focus();
+                const event = new Event('input', { bubbles: true });
+                promptInput.dispatchEvent(event);
+            }
+        });
+    }
 
     sendBtn.addEventListener('click', generateImage);
     promptInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
+        if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             generateImage();
         }
+    });
+
+    promptInput.addEventListener('input', () => {
+        promptInput.style.height = 'auto';
+        promptInput.style.height = (promptInput.scrollHeight) + 'px';
     });
 }

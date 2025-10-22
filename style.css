@@ -688,17 +688,97 @@ body {
     /* To respect the \n characters */
 }
 
-/* --- O-AI Studio Styles --- */
+/* =================================================================== */
+/* === BẮT ĐẦU NÂNG CẤP GIAO DIỆN O-AI STUDIO === */
+/* =================================================================== */
+
+/* Container chính cho toàn bộ trang O-AI Studio */
+.oai-studio-container {
+    display: flex;
+    height: calc(138vh - 85px); /* SỬA LỖI: Cố định chiều cao, không cho co dãn */
+    width: 100%;
+    position: relative;
+    overflow: hidden; /* SỬA LỖI: Ngăn cuộn ngoài ý muốn */
+}
+
+/* Cột 1: Prompt gợi ý (bên trái) */
+#preset-prompts-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    overflow-y: auto;
+    z-index: 10;
+}
+
+/* Cột 2: Khu vực làm việc chính (ở giữa) */
+#page-oai-studio main {
+    width: 100%;
+    margin-left: 160px; /* NÂNG CẤP: Giảm lề trái để tăng chiều rộng */
+    margin-right: 320px; /* NÂNG CẤP: Giảm lề phải để tăng chiều rộng */
+    /* padding-bottom: 8rem;  <-- XÓA BỎ DÒNG NÀY */
+    /* === NÂNG CẤP BỐ CỤC === */
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    position: relative; /* Cần thiết để định vị thanh prompt */
+}
+
+/* Cột 3: Thanh cài đặt (bên phải) */
+#page-oai-studio aside {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    overflow-y: auto; /* Thêm thanh cuộn khi cần */
+}
+
+
+#oai-conversation-area {
+    width: 100%;
+    max-width: 1000px; /* Giới hạn chiều rộng của cuộc hội thoại */
+    margin: 0 auto;
+    /* === NÂNG CẤP VÙNG CUỘN === */
+    flex-grow: 1; /* Cho phép khu vực này lấp đầy không gian trống */
+    overflow-y: auto; /* Tự động thêm thanh cuộn khi cần */
+    padding: 1.5rem 1.5rem 8rem; /* NÂNG CẤP: Tăng khoảng đệm dưới */
+}
+
+/* === NÂNG CẤP: Thêm style cho thanh cuộn đẹp hơn === */
+#oai-conversation-area::-webkit-scrollbar {
+    width: 8px;
+}
+#oai-conversation-area::-webkit-scrollbar-track {
+    background: transparent;
+}
+#oai-conversation-area::-webkit-scrollbar-thumb {
+    background-color: #4b5563;
+    border-radius: 4px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+}
+#oai-conversation-area::-webkit-scrollbar-thumb:hover {
+    background-color: #6b7280;
+}
+
 #prompt-bar {
+    position: absolute;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    z-index: 20;
     background-color: rgba(29, 29, 31, 0.9);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 9999px;
-    /* rounded-full */
-    padding: 4px;
+    border-radius: 1.5rem; /* rounded-3xl */
+    padding: 8px;
     display: flex;
-    align-items: center;
-    position: relative;
+    align-items: flex-end; /* Căn nút và textarea theo đáy */
 }
 
 #prompt-bar::before {
@@ -706,7 +786,7 @@ body {
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    padding: 2px;
+    padding: 1px;
     background: linear-gradient(70deg, #4a72e0, #8d4ae0, #d94ab3);
     -webkit-mask:
         linear-gradient(#fff 0 0) content-box,
@@ -723,27 +803,38 @@ body {
     outline: none;
     color: white;
     flex-grow: 1;
-    padding: 8px 16px;
+    padding: 12px 16px;
+    font-size: 1rem;
+    line-height: 1.5;
+    max-height: 300px; /* Giới hạn chiều cao tối đa */
+    overflow-y: auto;
+}
+
+/* Tinh chỉnh thanh cuộn cho textarea */
+#prompt-input::-webkit-scrollbar {
+    width: 6px;
+}
+#prompt-input::-webkit-scrollbar-thumb {
+    background: #4b5563;
+    border-radius: 3px;
 }
 
 #prompt-send-btn {
     background-color: #6366f1;
-    /* indigo-500 */
     border-radius: 50%;
-    padding: 8px;
-    margin-right: 4px;
+    padding: 12px;
     transition: background-color 0.2s;
+    flex-shrink: 0; /* Ngăn nút bị co lại */
+    margin-bottom: 4px; /* Căn chỉnh với textarea */
 }
 
 #prompt-send-btn:hover {
     background-color: #4f46e5;
-    /* indigo-600 */
 }
 
 .model-card,
 .aspect-ratio-btn {
     background-color: #374151;
-    /* gray-700 */
     border: 2px solid transparent;
     transition: all 0.2s ease-in-out;
     cursor: pointer;
@@ -752,14 +843,11 @@ body {
 .model-card:hover,
 .aspect-ratio-btn:hover {
     background-color: #4b5563;
-    /* gray-600 */
 }
 
 .model-card.active {
     background-color: #1f2937;
-    /* gray-800 */
     border-color: #38bdf8;
-    /* sky-400 */
 }
 
 .aspect-ratio-btn svg {
@@ -768,14 +856,6 @@ body {
     margin: 0 auto 4px auto;
 }
 
-/* SỬA LỖI: Thêm quy tắc cho container của các thẻ prompt */
-#preset-prompts-container {
-    height: calc(100% - 3rem); /* Giới hạn chiều cao để không bị tràn */
-    overflow-y: auto; /* Thêm thanh cuộn khi cần */
-    padding-right: 8px; /* Thêm khoảng trống cho thanh cuộn */
-}
-
-/* Tinh chỉnh thanh cuộn cho đẹp hơn */
 #preset-prompts-container::-webkit-scrollbar {
     width: 6px;
 }
@@ -788,7 +868,6 @@ body {
 }
 
 
-/* NÂNG CẤP: Styles cho prompt có sẵn phiên bản mới */
 .preset-prompt-card {
     position: relative;
     cursor: pointer;
@@ -844,32 +923,35 @@ body {
     opacity: 1;
 }
 
-
-#image-display-wrapper {
-    background-color: rgba(29, 29, 31, 0.75);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    position: relative;
+/* Các khối hội thoại */
+.conversation-block {
+    margin-bottom: 2rem;
 }
-
-#image-display-wrapper::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    padding: 2px;
-    background: linear-gradient(70deg, #4a72e0, #8d4ae0, #d94ab3);
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    pointer-events: none;
-    opacity: 0.7;
+.user-prompt-block {
+    font-weight: 600;
+    color: #e5e7eb;
+    margin-bottom: 1rem;
 }
-
-#image-display-area img {
+.ai-result-block {
+    border: 1px solid #374151;
     border-radius: 0.75rem;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    padding: 1rem;
+    background-color: #1f2937;
+    max-width: 768px; /* NÂNG CẤP: Tăng kích thước tối đa */
+    margin-left: auto;   /* NÂNG CẤP: Căn giữa theo chiều ngang */
+    margin-right: auto;  /* NÂNG CẤP: Căn giữa theo chiều ngang */
 }
+.ai-result-block img {
+    width: 100%;
+    border-radius: 0.5rem;
+}
+.ai-result-block .loading-spinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 128px;
+}
+
 
 #image-actions-container {
     opacity: 0;
@@ -881,6 +963,11 @@ body {
     opacity: 1;
     transform: translateY(0);
 }
+
+/* =================================================================== */
+/* === KẾT THÚC NÂNG CẤP GIAO DIỆN O-AI STUDIO === */
+/* =================================================================== */
+
 
 /* === NÂNG CẤP: CSS cho các thành phần xác thực === */
 
