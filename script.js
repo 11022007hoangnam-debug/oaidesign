@@ -96,7 +96,8 @@ function listenToProfileChanges(userId) {
                 const isBanned = payload.new.is_banned;
                 if (isBanned) {
                     alert('Tài khoản của bạn đã bị khóa và sẽ được đăng xuất.');
-                    window.supabase.auth.signOut();
+                    // Gọi trực tiếp signOut của supabase để kích hoạt onAuthStateChange
+                    window.supabase.auth.signOut(); 
                 }
             }
         )
@@ -130,7 +131,7 @@ function setupAuthStateObserver() {
         currentUser = user;
         if (user) {
             updateUIForLoggedInUser(user);
-            listenToProfileChanges(user.id);
+            listenToProfileChanges(user.id); // Bật giám sát khi đăng nhập
             if (authOverlay && pageElements.resources && !pageElements.resources.classList.contains('hidden')) {
                 authOverlay.style.display = 'none';
             }
@@ -139,7 +140,7 @@ function setupAuthStateObserver() {
             }
         } else {
             updateUIForLoggedOutUser();
-            unsubscribeFromProfileChanges();
+            unsubscribeFromProfileChanges(); // Tắt giám sát khi đăng xuất
             if (authOverlay && pageElements.resources && !pageElements.resources.classList.contains('hidden')) {
                 authOverlay.style.display = 'flex';
             }
@@ -269,7 +270,7 @@ async function handleEmailLogin(event) {
 
 async function signOutUser(event) {
     if (event) event.preventDefault();
-    await unsubscribeFromProfileChanges();
+    await unsubscribeFromProfileChanges(); // Tắt giám sát trước khi đăng xuất
     const { error } = await window.supabase.auth.signOut();
     if (error) {
         alert("Đăng xuất thất bại: " + error.message);
