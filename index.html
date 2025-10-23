@@ -4,7 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Oai Design Pro - Chia sẻ tài nguyên & Khoá học Chuyên nghiệp</title>
+    <!-- NÂNG CẤP: Thay đổi tiêu đề trang -->
+    <title>Oai Design - Người bạn đồng hành cùng Designer</title>
+    <!-- NÂNG CẤP: Thêm Favicon (sử dụng logo làm placeholder) -->
+    <link rel="icon" href="https://i.imgur.com/9Rul623.png" type="image/png">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Thay đổi font chữ sang Open Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -101,6 +105,31 @@
             </a>
         </div>
     </header>
+
+    <!-- NÂNG CẤP: Di dời thanh thông báo lên đây và thay đổi nội dung -->
+    <div id="notification-bar-wrapper" class="z-40"> <!-- Lớp CSS sẽ được định nghĩa trong style.css -->
+        <!-- NÂNG CẤP 1: Thay đổi cấu trúc flex -->
+        <div id="notification-bar"
+            class="text-white py-2 px-5 flex items-center justify-center gap-4 relative">
+            <!-- Nhóm icon, text, và button lại -->
+            <div class="flex items-center justify-center gap-3 flex-wrap"> <!-- Thêm flex-wrap cho màn hình nhỏ -->
+                <span class="text-2xl hidden sm:inline-block">👑</span>
+                <!-- NÂNG CẤP 1: Tăng kích thước chữ -->
+                <p id="notification-text" class="text-base text-center font-medium"> <!-- Đổi từ text-sm sang text-base -->
+                    Trở thành Member VIP Tải file thiết kế "thả ga" tại Pikiob với chi phí 2 ly trà sữa
+                </p>
+                <!-- NÂNG CẤP 1: Đổi text nút và link -->
+                <a href="#" onclick="showPage('software', event);"
+                    class="text-sm font-bold bg-white text-purple-700 px-4 py-1.5 rounded-full transition-all hover:scale-105 whitespace-nowrap"
+                    style="background: linear-gradient(to bottom, #fff, #f0e6ff); box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+                    Liên Hệ Ngay <!-- Đổi text -->
+                </a>
+            </div>
+            <!-- Nút đóng X vẫn giữ nguyên vị trí -->
+            <button id="close-notification" class="text-gray-200 hover:text-white text-3xl leading-none absolute right-4 top-1/2 -translate-y-1/2">&times;</button>
+        </div>
+    </div>
+
 
     <!-- Main Content -->
     <main>
@@ -536,8 +565,8 @@
                         <div class="md:w-1/2 text-center md:text-left">
                             <h3 class="text-2xl font-semibold text-sky-400 mb-4">Chung tay xây dựng</h3>
                             <p class="text-gray-300 leading-relaxed">
-                                Toàn bộ kinh phí ủng hộ sẽ được sử dụng để duy trì website và tổ chức các buổi
-                                giao lưu thiết kế miễn phí cho cộng đồng. Hoặc đơn giản chỉ là muốn ủng hộ Oai Design.
+                                Toàn bộ kinh phí ủng hộ sẽ được sử dụng để duy trì website, mua thêm tài nguyên chất
+                                lượng cao và tổ chức các buổi chia sẻ kiến thức miễn phí cho cộng đồng.
                                 <br><br>
                                 Đây là hành động hoàn toàn tự nguyện, không bắt buộc. Sự có mặt và ủng hộ tinh thần của
                                 bạn đã là một món quà quý giá!
@@ -643,7 +672,17 @@
         <!-- =================================================================== -->
         <!-- === BẮT ĐẦU NÂNG CẤP GIAO DIỆN O-AI STUDIO === -->
         <!-- =================================================================== -->
-        <div id="page-oai-studio" class="hidden">
+        <div id="page-oai-studio" class="hidden relative"> <!-- NÂNG CẤP: Thêm relative -->
+            
+            <!-- === NÂNG CẤP: Lớp phủ bảo vệ cho O-AI Studio === -->
+            <!-- FIX 2: Thay đổi nội dung, z-index và style display -->
+            <div id="auth-overlay-oai" class="absolute inset-0 flex flex-col items-center justify-start pt-32 bg-gray-900/80 backdrop-blur-lg" style="display: flex; z-index: 30;">
+                <h2 class="text-3xl font-bold text-white mb-4">O-AI Studio</h2>
+                <p class="text-gray-300 mb-8 text-xl">Tính năng này đang được phát triển. Vui lòng quay lại sau!</p>
+                <h3 class="text-6xl">🚀</h3>
+                <h3 class="text-2xl font-semibold text-yellow-400 mt-4">Coming Soon!</h3>
+            </div>
+
             <!-- SỬA LỖI: Bọc toàn bộ trang trong một container duy nhất -->
             <div class="oai-studio-container">
                 <!-- CỘT 1: PROMPT GỢI Ý (KHÔI PHỤC) -->
@@ -677,15 +716,13 @@
                 
                 <!-- CỘT 2: KHU VỰC LÀM VIỆC CHÍNH -->
                 <main class="flex-1 flex flex-col relative">
-                    <!-- SỬA LỖI: Thêm khu vực hiển thị hội thoại -->
                     <div id="oai-conversation-area" class="flex-grow p-6 overflow-y-auto">
-                        <!-- Placeholder ban đầu -->
                         <div id="ai-placeholder" class="text-gray-500 text-center h-full flex flex-col justify-center items-center">
                             <img src="https://i.imgur.com/9Rul623.png" alt="Logo" class="h-20 w-auto mb-4 opacity-50">
                             <h3 class="text-2xl font-semibold text-gray-400">O-AI Studio</h3>
                             <p class="text-gray-500">Bắt đầu tạo ảnh bằng cách nhập mô tả của bạn vào ô bên dưới.</p>
                         </div>
-                        <!-- Khu vực này sẽ chứa các khối hội thoại được JS thêm vào -->
+                        <!-- Khối hội thoại sẽ được JS chèn vào đây -->
                     </div>
 
                     <div class="p-4">
@@ -715,7 +752,7 @@
                                     <div class="flex items-center gap-3">
                                         <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
                                         <div>
-                                            <h4 class="font-bold text-white">Stable Diffusion<span class="text-xs bg-blue-500 text-white px-1.5 py-0.5 rounded-full ml-1">Coming Soon</span></h4>
+                                            <h4 class="font-bold text-white">Stable Diffusion<span class="text-xs bg-blue-500 text-white px-1.5 py-0.5 rounded-full ml-1">Free Credits</span></h4>
                                             <p class="text-xs text-gray-400">Popular & powerful model.</p>
                                         </div>
                                     </div>
@@ -779,31 +816,31 @@
                     <div class="mb-6">
                         <h3 class="text-lg font-semibold text-sky-400 mb-3">Tỷ lệ khung hình</h3>
                         <div class="grid grid-cols-3 gap-2" id="aspect-ratio-selection">
-                            <button class="aspect-ratio-btn active rounded-lg p-2 text-center">
+                            <button class="aspect-ratio-btn active rounded-lg p-2 text-center" data-aspect="1:1"> <!-- Nâng cấp: data-aspect -->
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <rect x="5" y="5" width="14" height="14" rx="1"></rect>
                                 </svg>
                                 <span class="text-xs">1:1</span>
                             </button>
-                            <button class="aspect-ratio-btn rounded-lg p-2 text-center">
+                            <button class="aspect-ratio-btn rounded-lg p-2 text-center" data-aspect="9:16"> <!-- Nâng cấp: data-aspect -->
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <rect x="7.5" y="2" width="9" height="20" rx="1"></rect>
                                 </svg>
                                 <span class="text-xs">9:16</span>
                             </button>
-                            <button class="aspect-ratio-btn rounded-lg p-2 text-center">
+                            <button class="aspect-ratio-btn rounded-lg p-2 text-center" data-aspect="16:9"> <!-- Nâng cấp: data-aspect -->
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <rect x="2" y="7.5" width="20" height="9" rx="1"></rect>
                                 </svg>
                                 <span class="text-xs">16:9</span>
                             </button>
-                            <button class="aspect-ratio-btn rounded-lg p-2 text-center">
+                            <button class="aspect-ratio-btn rounded-lg p-2 text-center" data-aspect="4:3"> <!-- Nâng cấp: data-aspect -->
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <rect x="3" y="6" width="18" height="12" rx="1"></rect>
                                 </svg>
                                 <span class="text-xs">4:3</span>
                             </button>
-                            <button class="aspect-ratio-btn rounded-lg p-2 text-center">
+                            <button class="aspect-ratio-btn rounded-lg p-2 text-center" data-aspect="3:4"> <!-- Nâng cấp: data-aspect -->
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <rect x="6" y="3" width="12" height="18" rx="1"></rect>
                                 </svg>
@@ -816,18 +853,19 @@
                         <h3 class="text-lg font-semibold text-sky-400 mb-3">Số lượng ảnh</h3>
                         <div class="flex items-center gap-4">
                             <input type="range" min="1" max="8" value="1"
-                                class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+                                class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer" disabled> <!-- Tạm thời vô hiệu hóa -->
                             <span class="bg-gray-700 text-white text-sm font-medium px-3 py-1 rounded-md">1</span>
                         </div>
                     </div>
 
                     <div>
                         <h3 class="text-lg font-semibold text-sky-400 mb-3">Độ phân giải</h3>
-                        <select
+                        <select id="resolution-selection"
                             class="w-full bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-sky-500 focus:border-sky-500 block p-2.5">
-                            <option>1K</option>
-                            <option>2K</option>
-                            <option>4K</option>
+                            <option value="1K">1K (1024x1024)</option>
+                            <!-- NÂNG CẤP 4: Kích hoạt tùy chọn 2K -->
+                            <option value="2K">2K (Gần 2048px)</option>
+                            <option value="4K" disabled>4K (Sắp ra mắt)</option>
                         </select>
                     </div>
                 </aside>
@@ -910,8 +948,8 @@
                         <span class="text-4xl text-gray-600">&times;</span>
                         <img src="https://i.imgur.com/1KyzkgN.png" alt="Logo Oai Tran" class="h-16">
                     </div>
-                    <p class="text-gray-400 mt-4 max-w-sm">Davarium cộng sự chuyên nghiệp và đồng hành cùng với cộng đồng
-                        học và làm designer.</p>
+                    <p class="text-gray-400 mt-4 max-w-sm">Cung cấp tài nguyên, kiến thức và công cụ cho cộng đồng
+                        designer.</p>
                 </div>
                 <div class="text-gray-400">
                     <p>&copy; 2025 Oai Design. All Rights Reserved. Created by Hoàng Nam</p>
@@ -922,28 +960,7 @@
         </div>
     </footer>
 
-    <!-- Thanh thông báo (dưới cùng) -->
-    <div class="fixed bottom-4 left-1/2 -translate-x-1/2 w-auto z-40">
-        <div id="notification-bar-wrapper">
-            <div id="notification-bar"
-                class="text-white py-4 px-5 shadow-lg rounded-full flex items-center justify-between gap-4">
-                <div class="flex items-center gap-3 flex-1 min-w-0">
-                    <div class="flex">
-                        <img class="inline-block h-6 w-6 rounded-full ring-2 ring-gray-800"
-                            src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Adobe_Creative_Cloud_rainbow_icon.svg/240px-Adobe_Creative_Cloud_rainbow_icon.svg.png?20221002235840"
-                            alt="Adobe Creative Cloud">
-                    </div>
-                    <p id="notification-text" class="text-sm text-center sm:text-left flex-grow whitespace-nowrap">Adobe Creative Cloud Chính Hãng, Bảo Hành Trọn Gói</p>
-                </div>
-                <div class="flex items-center gap-3">
-                    <a href="#" onclick="event.preventDefault(); showPage('software', event);"
-                        class="text-sm font-semibold bg-sky-500 hover:bg-sky-600 px-4 py-1.5 rounded-full transition-colors whitespace-nowrap">Xem
-                        chi tiết</a>
-                    <button id="close-notification" class="text-gray-400 hover:text-white text-2xl leading-none">&times;</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- NÂNG CẤP: Thanh thông báo cũ đã bị di dời lên trên -->
 
     <!-- NÂNG CẤP: Wrapper cho Social Bar và Zalo Helper -->
     <div id="social-container">

@@ -89,7 +89,6 @@ body {
     position: relative;
     border-radius: 0.8rem;
     overflow: hidden;
-    /* SỬA ĐỔI: Thay đổi padding từ 2px thành 0 để viền chạy sát hơn */
     padding: 0;
     z-index: 1;
     background-color: transparent;
@@ -100,6 +99,7 @@ body {
     transform: translateY(-12px) scale(1.02);
 }
 
+/* NÂNG CẤP 2: Hiệu ứng viền chạy liên tục */
 .service-card-wrapper::before {
     content: '';
     position: absolute;
@@ -107,73 +107,57 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background-image: linear-gradient(120deg, var(--glow-color-1), var(--glow-color-2), var(--glow-color-1));
-    /* SỬA ĐỔI: Tăng background-size để hiệu ứng chạy mượt hơn */
-    background-size: 400% 400%;
-    /* SỬA ĐỔI: Giảm thời gian animation để màu chạy nhanh hơn */
-    animation: glow-border 3s linear infinite;
+    /* NÂNG CẤP 2: Gradient nhiều màu hơn */
+    background-image: linear-gradient(120deg, #a855f7, #ec4899, #facc15, #0ea5e9, #a855f7);
+    /* NÂNG CẤP 2: Tăng background-size */
+    background-size: 500% 500%;
+    /* NÂNG CẤP 2: Tăng thời gian animation */
+    animation: glow-border 8s linear infinite; /* Đổi tên animation */
     z-index: -1;
     border-radius: inherit;
-    opacity: 0; /* Ẩn đi mặc định */
+    /* NÂNG CẤP 2: Luôn hiển thị viền */
+    opacity: 1;
     transition: opacity 0.4s ease-out;
-    padding: 2px; /* Di chuyển padding vào đây để tạo hiệu ứng viền */
-    -webkit-mask: /* Kỹ thuật mask để chỉ hiện viền */
+    padding: 2px;
+    -webkit-mask:
         linear-gradient(#fff 0 0) content-box,
         linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
             mask-composite: exclude;
 }
 
-/* NÂNG CẤP: Chỉ hiển thị viền màu khi hover */
-.service-card-wrapper:hover::before {
+/* NÂNG CẤP 2: Xóa hiệu ứng opacity khi hover (vì giờ nó luôn hiện) */
+/* .service-card-wrapper:hover::before {
     opacity: 1;
-}
+} */
 
-
+/* NÂNG CẤP 2: Đổi tên keyframes */
 @keyframes glow-border {
     0% {
         background-position: 0% 50%;
     }
-
     50% {
         background-position: 100% 50%;
     }
-
     100% {
         background-position: 0% 50%;
     }
 }
 
-.glow-gray {
-    --glow-color-1: #9ca3af;
-    --glow-color-2: #e5e7eb;
-}
-
+/* Các lớp glow-color chỉ còn dùng cho box-shadow khi hover */
 .glow-gray:hover {
     box-shadow: 0 25px 50px -12px rgba(156, 163, 175, 0.2);
 }
-
-.glow-yellow {
-    --glow-color-1: #facc15;
-    --glow-color-2: #fde047;
-}
-
 .glow-yellow:hover {
     box-shadow: 0 25px 50px -12px rgba(234, 179, 8, 0.25);
 }
-
-.glow-purple {
-    --glow-color-1: #a855f7;
-    --glow-color-2: #d8b4fe;
-}
-
 .glow-purple:hover {
     box-shadow: 0 25px 50px -12px rgba(168, 85, 247, 0.15);
 }
 
 .service-card-wrapper .service-card {
     background: linear-gradient(145deg, #1f2937, #111827);
-    border: 1px solid #374151; /* Thêm viền mặc định */
+    border: 1px solid #374151;
     z-index: 2;
     position: relative;
     width: 100%;
@@ -182,9 +166,11 @@ body {
     transition: border-color 0.3s ease;
 }
 
-.service-card-wrapper:hover .service-card {
-    border-color: transparent; /* Ẩn viền mặc định khi viền màu xuất hiện */
+/* NÂNG CẤP 2: Ẩn viền mặc định vì viền màu luôn hiện */
+.service-card-wrapper .service-card {
+    border-color: transparent;
 }
+
 
 .software-card {
     transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.4s ease;
@@ -532,7 +518,7 @@ body {
 
 #backToTopBtn {
     position: fixed;
-    bottom: 110px;
+    bottom: 30px; /* Điều chỉnh vị trí nút Back to Top */
     right: 25px;
     z-index: 45;
     background-color: #0ea5e9;
@@ -563,36 +549,55 @@ body {
     transform: scale(1.1);
 }
 
-@keyframes border-glow {
-    0% {
-        background-position: 0% 50%;
-    }
-
-    50% {
-        background-position: 100% 50%;
-    }
-
-    100% {
-        background-position: 0% 50%;
-    }
-}
-
+/* NÂNG CẤP 1: Thanh thông báo mới */
 #notification-bar-wrapper {
-    position: relative;
-    padding: 2px;
-    border-radius: 9999px;
-    background-image: linear-gradient(90deg, #0ea5e9, #6366f1, #ec4899, #0ea5e9);
-    background-size: 200% 200%;
-    animation: border-glow 4s linear infinite;
+    position: sticky;
+    top: 72px; /* Dính ngay dưới header (chiều cao header là 72px) */
+    width: 100%;
+    z-index: 40; /* Đảm bảo nằm dưới header (z-50) */
+    /* NÂNG CẤP 1: Bỏ background-image tĩnh */
+    /* background-image: linear-gradient(90deg, #6d28d9, #a855f7, #ec4899); */
+    /* NÂNG CẤP 1: Thêm background động */
+    background: linear-gradient(90deg, #6d28d9, #a855f7, #ec4899, #f472b6, #a855f7, #6d28d9);
+    background-size: 300% 100%;
+    animation: scroll-gradient 10s linear infinite;
 }
+
+/* NÂNG CẤP 1: Keyframes cho nền động */
+@keyframes scroll-gradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
 
 #notification-bar {
-    background-color: #1f2937;
+    background-color: transparent; /* Bỏ màu nền cũ */
+    padding-top: 0.5rem; /* py-2 */
+    padding-bottom: 0.5rem; /* py-2 */
+    padding-left: 1.25rem; /* px-5 */
+    padding-right: 1.25rem; /* px-5 */
 }
 
 #notification-text {
-    white-space: normal;
+    white-space: normal; /* Cho phép xuống dòng nếu cần */
+    color: #f3e8ff; /* Màu chữ sáng hơn trên nền tím */
 }
+
+/* Tùy chỉnh nút Đăng kí ngay */
+#notification-bar a {
+     /* Style đã được đặt inline trong HTML */
+}
+
+/* Tùy chỉnh nút đóng X */
+#notification-bar #close-notification {
+    color: rgba(255, 255, 255, 0.7);
+    transition: color 0.2s;
+}
+#notification-bar #close-notification:hover {
+    color: white;
+}
+
 
 @keyframes scroll {
     from {
@@ -695,7 +700,7 @@ body {
 /* Container chính cho toàn bộ trang O-AI Studio */
 .oai-studio-container {
     display: flex;
-    height: calc(138vh - 85px); /* SỬA LỖI: Cố định chiều cao, không cho co dãn */
+    height: calc(100vh - 72px - 40px); /* NÂNG CẤP: Chiều cao trừ cả header và thanh thông báo */
     width: 100%;
     position: relative;
     overflow: hidden; /* SỬA LỖI: Ngăn cuộn ngoài ý muốn */
@@ -720,7 +725,7 @@ body {
     width: 100%;
     margin-left: 160px; /* NÂNG CẤP: Giảm lề trái để tăng chiều rộng */
     margin-right: 320px; /* NÂNG CẤP: Giảm lề phải để tăng chiều rộng */
-    /* padding-bottom: 8rem;  <-- XÓA BỎ DÒNG NÀY */
+    /* padding-bottom: 8rem;  <-- ĐÃ XÓA */
     /* === NÂNG CẤP BỐ CỤC === */
     display: flex;
     flex-direction: column;
@@ -740,7 +745,7 @@ body {
 
 #oai-conversation-area {
     width: 100%;
-    max-width: 1000px; /* Giới hạn chiều rộng của cuộc hội thoại */
+    max-width: 900px; /* Giới hạn chiều rộng của cuộc hội thoại */
     margin: 0 auto;
     /* === NÂNG CẤP VÙNG CUỘN === */
     flex-grow: 1; /* Cho phép khu vực này lấp đầy không gian trống */
@@ -771,7 +776,7 @@ body {
     left: 50%;
     transform: translateX(-50%);
     width: 100%;
-    z-index: 20;
+    z-index: 5; /* FIX 2: Giảm z-index để lớp phủ che */
     background-color: rgba(29, 29, 31, 0.9);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -806,7 +811,7 @@ body {
     padding: 12px 16px;
     font-size: 1rem;
     line-height: 1.5;
-    max-height: 300px; /* Giới hạn chiều cao tối đa */
+    max-height: 200px; /* Giới hạn chiều cao tối đa */
     overflow-y: auto;
 }
 
@@ -932,24 +937,68 @@ body {
     color: #e5e7eb;
     margin-bottom: 1rem;
 }
+
+/* NÂNG CẤP 5: Style khối kết quả AI giống Assistant */
 .ai-result-block {
-    border: 1px solid #374151;
+    border: 1px solid #374151; /* Giữ lại viền */
     border-radius: 0.75rem;
     padding: 1rem;
-    background-color: #1f2937;
-    max-width: 768px; /* NÂNG CẤP: Tăng kích thước tối đa */
-    margin-left: auto;   /* NÂNG CẤP: Căn giữa theo chiều ngang */
-    margin-right: auto;  /* NÂNG CẤP: Căn giữa theo chiều ngang */
+    background-color: #374151; /* Đổi màu nền giống assistant */
+    max-width: 768px; /* Giữ lại max-width */
+    /* Bỏ căn giữa */
+    /* margin-left: auto; */
+    /* margin-right: auto; */
+    width: max-content; /* Co lại theo nội dung */
+    margin-left: 0; /* Căn trái */
+    margin-right: auto; /* Căn trái */
 }
-.ai-result-block img {
-    width: 100%;
+
+
+/* NÂNG CẤP 5: Đảm bảo tương phản cho khung ảnh */
+.ai-image-wrapper {
+    height: 512px;
+    background-color: #1f2937; /* Đổi nền để tương phản với .ai-result-block */
     border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    margin-bottom: 0.75rem;
 }
+
+.ai-image-wrapper img {
+    max-height: 100%;
+    width: auto;
+    max-width: 100%;
+    object-fit: contain;
+    border-radius: 0;
+}
+
+
 .ai-result-block .loading-spinner {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 128px;
+    height: 512px;
+}
+
+/* NÂNG CẤP: Style cho nút tải xuống */
+.ai-action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: #4b5563; /* Đổi màu nền nút cho tương phản */
+    color: #d1d5db;
+    font-size: 0.875rem;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    transition: background-color 0.2s;
+    cursor: pointer;
+}
+.ai-action-btn:hover {
+    background-color: #6b7280; /* Đổi màu hover */
+    color: #f9fafb;
 }
 
 
@@ -971,9 +1020,11 @@ body {
 
 /* === NÂNG CẤP: CSS cho các thành phần xác thực === */
 
-/* Lớp phủ bảo vệ trang tài nguyên */
-#auth-overlay {
+/* Lớp phủ bảo vệ trang tài nguyên & O-AI Studio */
+#auth-overlay, #auth-overlay-oai {
     /* Đã chuyển style="display: none;" vào HTML để mặc định ẩn */
+    /* FIX 2: Thêm z-index ở đây để đảm bảo nó cao nhất */
+    z-index: 30;
 }
 
 .auth-button {
