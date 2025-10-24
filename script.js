@@ -6,7 +6,7 @@ const navLinks = {
     software: document.getElementById('nav-software'),
     'oai-studio': document.getElementById('nav-oai-studio'),
     contact: document.getElementById('nav-contact'),
-    auth: document.getElementById('nav-login') // Sẽ bị ghi đè
+    auth: document.getElementById('nav-login')
 };
 const pageElements = {
     home: document.getElementById('page-home'),
@@ -27,7 +27,7 @@ const authOverlayOai = document.getElementById('auth-overlay-oai'); // NÂNG C�
 const loginForm = document.getElementById('login-form');
 const registerForm = document.getElementById('register-form');
 const authButtonContainer = document.getElementById('auth-button-container');
-const userDropdown = document.getElementById('user-dropdown'); // NÂNG CẤP 6: Thêm biến dropdown
+const userDropdown = document.getElementById('user-dropdown'); // Thêm mới: Biến cho dropdown người dùng
 
 // --- CÁC HÀM TIỆN ÍCH ---
 function toggleAuthForms() {
@@ -46,23 +46,22 @@ function getCurrentDateString() {
     return `${year}-${month}-${day}`;
 }
 
-// NÂNG CẤP 6: Hàm bật/tắt dropdown người dùng
-function toggleUserDropdown(event) {
-    event.preventDefault();
-    event.stopPropagation(); // Ngăn sự kiện click lan ra window và đóng dropdown ngay lập tức
-    if (userDropdown) {
-        userDropdown.classList.toggle('show');
-    }
-}
-
 // Task 1 & 10 & 3 & FIX: Hàm _displayPage (lõi logic hiển thị)
 function _displayPage(pageId) { // pageId ở đây là trang gốc được yêu cầu
-    console.log(`_displayPage called with pageId: ${pageId}`); // Thêm log
     // Luôn ẩn cả hai overlay khi bắt đầu
     if (authOverlay) authOverlay.style.display = 'none';
     // if (authOverlayOai) authOverlayOai.style.display = 'none'; // FIX 2: KHÔNG ẩn overlay OAI (đã được đặt thành "Coming Soon")
 
-    // Xác định trang hợp lệ để hiển thị
+    // FIX 1: Gỡ bỏ kiểm tra authStateReady. Logic overlay bên dưới sẽ xử lý việc này.
+    /*
+    // Task 10: Chỉ chạy khi auth đã sẵn sàng
+    if (!authStateReady) {
+        console.log("Auth state not ready, delaying page display.");
+        return;
+    }
+    */
+
+    // Xác định trang hợp lệ để hiển thị (không chuyển hướng nếu chưa đăng nhập)
     let finalPageId = pageId;
     if (!pages.includes(finalPageId)) {
         console.warn(`Invalid pageId '${finalPageId}', defaulting to 'home'.`);
@@ -70,7 +69,6 @@ function _displayPage(pageId) { // pageId ở đây là trang gốc được yê
     }
     // Không cho xem trang đăng nhập khi đã đăng nhập
     if (finalPageId === 'auth' && currentUser) {
-        console.log(`User logged in, redirecting from /auth to /home`); // Thêm log
         finalPageId = 'home';
     }
 
@@ -79,64 +77,66 @@ function _displayPage(pageId) { // pageId ở đây là trang gốc được yê
         if(pageElements[page]) pageElements[page].classList.add('hidden');
         if (navLinks[page]) navLinks[page].classList.remove('active');
     });
-    // NÂNG CẤP 6: Đảm bảo nút user menu (nếu có) cũng bị bỏ active
+    // Cập nhật: Thay vì navLinks.logout, chúng ta tìm button (nếu có)
     const userMenuButton = document.getElementById('user-menu-button');
     if (userMenuButton) userMenuButton.classList.remove('active');
+    // const logoutLink = document.getElementById('nav-logout'); // Dòng này không còn dùng
+    // if (logoutLink) logoutLink.classList.remove('active'); // Dòng này không còn dùng
 
     // Hiển thị trang đích
     if(pageElements[finalPageId]) {
-         console.log(`Showing page element: #page-${finalPageId}`); // Thêm log
          pageElements[finalPageId].classList.remove('hidden');
     } else {
-         console.error(`Page element for '#page-${finalPageId}' not found! Falling back to home.`); // Sửa log
+         console.error(`Page element for '${finalPageId}' not found!`);
          pageElements.home.classList.remove('hidden'); // Fallback về home
     }
 
     // FIX Auth Overlay: Hiển thị overlay NẾU CẦN *sau khi* đã hiển thị trang
+    // FIX 2: Xóa logic hiển thị authOverlayOai vì nó luôn bật (Coming Soon)
     if ((finalPageId === 'resources') && !currentUser) { // Đã xóa '|| finalPageId === 'oai-studio'
-        console.log(`Showing auth overlay for page: ${finalPageId}`); // Thêm log
         if (finalPageId === 'resources' && authOverlay) {
             authOverlay.style.display = 'flex';
         }
+        /* Bỏ logic cho OAI vì nó luôn hiển thị
+        else if (finalPageId === 'oai-studio' && authOverlayOai) {
+            authOverlayOai.style.display = 'flex';
+        }
+        */
     }
 
-    // Task 11 & NÂNG CẤP 6: Sửa lỗi hiệu ứng Kính Menu
+    // Task 11 & Cập nhật Dropdown: Sửa lỗi hiệu ứng Kính Menu
     if (typeof moveGlass === 'function') {
         let targetElementForGlass = navLinks[finalPageId];
 
         if (currentUser) {
-            // NÂNG CẤP 6: Khi đăng nhập, target luôn là user menu button
-             targetElementForGlass = userMenuButton || document.getElementById('user-menu-button');
-             console.log(`Moving glass (logged in), target:`, targetElementForGlass); // Thêm log
-        } else {
-             if (!targetElementForGlass && finalPageId !== 'auth') { // Nếu chưa đăng nhập và không phải trang auth
-                targetElementForGlass = navLinks.auth; // Mặc định là nút đăng nhập
-            } else if (finalPageId === 'auth'){ // Nếu là trang auth thì luôn trỏ về login
-                 targetElementForGlass = navLinks.auth;
+            // Nếu đã đăng nhập, mục tiêu là nút user menu
+            const userButton = document.getElementById('user-menu-button');
+            if (userButton) {
+                 userButton.classList.add('active'); // Thêm active cho nút user
+                 targetElementForGlass = userButton;
             }
-             console.log(`Moving glass (logged out), target:`, targetElementForGlass); // Thêm log
-        }
-
-
-        if (targetElementForGlass) {
-            targetElementForGlass.classList.add('active');
-            moveGlass(targetElementForGlass);
         } else {
-            console.warn("No target element found for moving glass."); // Thêm log
+             // Nếu chưa đăng nhập
+             if (navLinks[finalPageId]) {
+                 navLinks[finalPageId].classList.add('active'); // Active link trang
+                 targetElementForGlass = navLinks[finalPageId];
+             } else {
+                 navLinks.auth.classList.add('active'); // Mặc định là nút login
+                 targetElementForGlass = navLinks.auth;
+             }
         }
-    } else {
-         console.warn("moveGlass function not found."); // Thêm log
+        
+        // Di chuyển kính đến mục tiêu
+        moveGlass(targetElementForGlass);
     }
 
     // Logic cũ từ showPage (init resources, zalo, observe)
     if (finalPageId === 'resources' && currentUser) { // Chỉ init nếu đã đăng nhập
-        console.log("Initializing resources..."); // Thêm log
         if (!resourcesInitialized) {
             initializeResources();
             resourcesInitialized = true;
         }
     } else if (finalPageId === 'oai-studio' && currentUser) {
-        console.log("Checking OAI Studio init..."); // Thêm log
         // Có thể thêm logic init cho OAI nếu cần
     }
 
@@ -156,19 +156,11 @@ function _displayPage(pageId) { // pageId ở đây là trang gốc được yê
     if (typeof observeSections === 'function') {
         observeSections();
     }
-     console.log(`_displayPage finished for pageId: ${pageId}`); // Thêm log
 }
 
-// Task 1 & FIX Auth Overlay & NÂNG CẤP 6: Hàm showPage (Xử lý sự kiện click và History API)
+// Task 1 & FIX Auth Overlay: Hàm showPage (Xử lý sự kiện click và History API)
 function showPage(pageId, event) {
     if (event) event.preventDefault();
-     console.log(`showPage called for pageId: ${pageId}`); // Thêm log
-
-    // NÂNG CẤP 6: Đóng dropdown khi chuyển trang
-    if (userDropdown && userDropdown.classList.contains('show')) {
-         console.log("Closing user dropdown."); // Thêm log
-        userDropdown.classList.remove('show');
-    }
 
     // Xác định trang hợp lệ (ví dụ: nếu gõ sai tên)
     let targetPageId = pageId;
@@ -182,31 +174,26 @@ function showPage(pageId, event) {
 
 
     const currentPath = window.location.pathname.substring(1) || 'home';
-    const currentDisplayedPage = currentPath === '' ? 'home' : currentPath; // Handle root path
 
-    // Chỉ push state nếu trang thực sự thay đổi SO VỚI TRANG ĐANG HIỂN THỊ
-     console.log(`Comparing targetPageId (${targetPageId}) with currentDisplayedPage (${currentDisplayedPage})`); // Thêm log
-    if (targetPageId !== currentDisplayedPage) {
+    // Chỉ push state nếu trang thực sự thay đổi
+    if (targetPageId !== currentPath) {
          const newPath = (targetPageId === 'home') ? '/' : `/${targetPageId}`;
-         console.log(`Pushing state: ${newPath}`); // Thêm log
          // Cập nhật URL với trang ĐƯỢC YÊU CẦU
          history.pushState({ pageId: targetPageId }, '', newPath);
-         // Gọi hàm cập nhật DOM với trang ĐƯỢC YÊU CẦU
-         _displayPage(targetPageId);
-    } else {
-        console.log("Target page is the same as current page, not pushing state or calling _displayPage."); // Thêm log
     }
+
+    // Gọi hàm cập nhật DOM với trang ĐƯỢC YÊU CẦU
+    // _displayPage sẽ tự xử lý việc hiển thị trang VÀ overlay nếu cần
+    _displayPage(targetPageId);
 }
 
 
 // Task 1: Hàm xử lý nút Back/Forward của trình duyệt
 function handlePopState(event) {
     let pageId = event.state?.pageId;
-    console.log("handlePopState triggered, event.state:", event.state); // Thêm log
     if (!pageId) {
-        // Xử lý khi tải trang trực tiếp bằng URL hoặc state rỗng
+        // Xử lý khi tải trang trực tiếp bằng URL
         pageId = window.location.pathname.substring(1) || 'home';
-         console.log(`No pageId in state, using pathname: ${pageId}`); // Thêm log
     }
     if (!pages.includes(pageId)) {
         pageId = 'home'; // Fallback cho URL không hợp lệ
@@ -218,10 +205,9 @@ window.addEventListener('popstate', handlePopState);
 
 
 // --- LOGIC BẢO MẬT "NGƯỜI GIÁM SÁT" ---
+// (Không đổi)
 function listenToProfileChanges(userId) {
-     console.log(`Listening to profile changes for user: ${userId}`); // Thêm log
     if (profileSubscription) {
-         console.log("Removing previous profile subscription."); // Thêm log
         window.supabase.removeChannel(profileSubscription);
         profileSubscription = null;
     }
@@ -231,7 +217,6 @@ function listenToProfileChanges(userId) {
             'postgres_changes',
             { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `id=eq.${userId}` },
             (payload) => {
-                 console.log("Profile change detected:", payload); // Thêm log
                 const isBanned = payload.new.is_banned;
                 if (isBanned) {
                     alert('Tài khoản của bạn đã bị khóa và sẽ được đăng xuất.');
@@ -239,149 +224,78 @@ function listenToProfileChanges(userId) {
                 }
             }
         )
-        .subscribe((status) => {
-             console.log(`Profile subscription status for ${userId}: ${status}`); // Thêm log status
-        });
+        .subscribe();
     profileSubscription = channel;
 }
 
 async function unsubscribeFromProfileChanges() {
     if (profileSubscription) {
-         console.log("Unsubscribing from profile changes."); // Thêm log
         await window.supabase.removeChannel(profileSubscription);
         profileSubscription = null;
     }
 }
 
 // --- LOGIC XÁC THỰC VỚI SUPABASE ---
-
-// === PHIÊN BẢN FIX LỖI 401 v4 - Final Attempt ===
+// Task 10: Cập nhật setupAuthStateObserver
 function setupAuthStateObserver() {
-    console.log("Setting up AuthStateObserver (v4 - Final Attempt)...");
+    window.supabase.auth.onAuthStateChange(async (event, session) => {
+        // Xác thực ban đầu và kiểm tra ban
+        if ((event === 'INITIAL_SESSION' || event === 'SIGNED_IN') && session) {
+            const { data, error } = await window.supabase
+                .from('profiles')
+                .select('is_banned')
+                .eq('id', session.user.id)
+                .single();
 
-    window.supabase.auth.onAuthStateChange(async (_event, session_from_event) => {
-        console.log(">>> AuthStateChange event:", _event); // Log sự kiện
+            if (error && error.code !== 'PGRST116') { // Bỏ qua lỗi không tìm thấy profile
+                console.error("Lỗi kiểm tra trạng thái ban:", error);
+            }
 
-        // --- BƯỚC 1: KIỂM TRA SESSION HIỆN TẠI MỘT CÁCH CHỦ ĐỘNG ---
-        console.log("Actively getting current session...");
-        const { data: { session: current_session }, error: session_error } = await window.supabase.auth.getSession();
-
-        if (session_error) {
-            console.error("Error getting session:", session_error);
-            // Có thể xem xét việc đăng xuất người dùng ở đây nếu cần
-        }
-        console.log("Current session data from getSession():", current_session);
-
-        // --- BƯỚC 2: DỌN DẸP URL HASH (NẾU CÓ VÀ ĐÚNG LÚC) ---
-        // Chỉ dọn dẹp nếu *getSession()* trả về session VÀ hash vẫn còn đó
-        if (current_session && window.location.hash.includes('access_token')) {
-            console.log("OAuth callback hash detected AND session confirmed by getSession(). Cleaning URL...");
-            history.replaceState(null, document.title, window.location.pathname);
-            console.log("URL hash cleaned.");
-        }
-
-        // --- BƯỚC 3: KIỂM TRA BAN (Dùng session từ getSession()) ---
-        let isBannedUser = false;
-        if (current_session) { // Luôn dùng session mới nhất từ getSession()
-            console.log("Checking ban status for user:", current_session.user.id);
-            try {
-                const { data, error } = await window.supabase
-                    .from('profiles')
-                    .select('is_banned')
-                    .eq('id', current_session.user.id)
-                    .single();
-
-                if (error && error.code !== 'PGRST116') { // Ignore not found error
-                    console.error("Error checking ban status:", error);
-                } else if (data && data.is_banned) {
-                    console.warn("User is banned:", current_session.user.id);
-                    isBannedUser = true;
-                    alert("Tài khoản của bạn đã bị khóa.");
-                    // Đăng xuất và dừng ngay lập tức
-                    await window.supabase.auth.signOut();
-                    // Cập nhật UI ngay sau khi signout được gọi (không chờ event)
-                    currentUser = null;
-                    updateUIForLoggedOutUser();
-                    unsubscribeFromProfileChanges();
-                    if (!authStateReady) authStateReady = true; // Mark ready after forced logout
-                    _displayPage('home'); // Hiển thị trang home sau khi bị ban
-                    return;
-                } else {
-                    console.log("User is not banned.");
-                }
-            } catch (banCheckError) {
-                console.error("Exception during ban check:", banCheckError);
+            if (data && data.is_banned) {
+                alert("Tài khoản của bạn đã bị khóa.");
+                await window.supabase.auth.signOut(); // Đăng xuất ngay nếu bị ban
+                // Không cần return, để luồng chạy tiếp xử lý UI đăng xuất
+                session = null; // Coi như session không hợp lệ
             }
         }
-        // Không return nếu không bị ban, để code chạy tiếp
 
-        // --- BƯỚC 4: CẬP NHẬT TRẠNG THÁI USER VÀ UI ---
-        const user = current_session?.user || null;
-        const wasLoggedIn = !!currentUser;
-        const authStatusChanged = (!!user !== wasLoggedIn); // Kiểm tra thay đổi trạng thái
+        const user = session?.user || null;
+        const wasLoggedIn = !!currentUser; // Lưu trạng thái trước khi cập nhật
+        currentUser = user; // Cập nhật trạng thái người dùng hiện tại
 
-        // Chỉ cập nhật currentUser và UI nếu có sự thay đổi
-        if (authStatusChanged) {
-            currentUser = user;
-            console.log("Auth status changed. currentUser updated:", currentUser ? currentUser.email : 'null');
-            if (user) {
-                console.log("Updating UI for logged IN user...");
-                updateUIForLoggedInUser(user);
-                listenToProfileChanges(user.id);
-            } else {
-                console.log("Updating UI for logged OUT user...");
-                updateUIForLoggedOutUser();
-                unsubscribeFromProfileChanges();
-            }
+        // Cập nhật giao diện và listener
+        if (user) {
+            updateUIForLoggedInUser(user);
+            listenToProfileChanges(user.id);
         } else {
-             console.log("Auth status unchanged. No UI update needed based on auth state.");
+            updateUIForLoggedOutUser();
+            unsubscribeFromProfileChanges();
         }
 
-
-        // --- BƯỚC 5: XỬ LÝ HIỂN THỊ TRANG ---
-        const isInitialLoad = !authStateReady;
-
-        // Đánh dấu authStateReady sau lần kiểm tra đầu tiên
-        if (isInitialLoad) {
-             console.log("authStateReady is now TRUE.");
+        // Đánh dấu auth đã sẵn sàng sau lần kiểm tra đầu tiên hoặc khi có thay đổi trạng thái
+        const authNowReady = !authStateReady || (user && !wasLoggedIn) || (!user && wasLoggedIn);
+        if(!authStateReady && (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'SIGNED_OUT')) {
              authStateReady = true;
+        } else if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+             authStateReady = true; // Đảm bảo luôn sẵn sàng sau khi login/logout
         }
 
-        // Chỉ render lại trang khi:
-        // 1. Tải lần đầu (isInitialLoad = true)
-        // 2. Trạng thái đăng nhập thay đổi (authStatusChanged = true)
-        if (isInitialLoad || authStatusChanged) {
-             // Đảm bảo dùng pageId từ URL hiện tại (đã được dọn hash nếu cần)
-            let pageIdFromUrl = window.location.pathname.substring(1) || 'home';
-             console.log(`Need to render page. Initial load: ${isInitialLoad}, Auth changed: ${authStatusChanged}, Page from URL: ${pageIdFromUrl}`);
-
-            // Xử lý chuyển hướng nếu vừa đăng nhập và đang ở trang /auth
-            if (user && pageIdFromUrl === 'auth') {
-                 console.log("User logged in on /auth page, redirecting to home.");
-                 pageIdFromUrl = 'home';
-                 if (window.location.pathname !== '/') {
-                    history.replaceState({ pageId: 'home' }, '', '/'); // Cập nhật URL về gốc
-                 }
-            }
-
-             // Gọi _displayPage với pageId cuối cùng
-             console.log("Calling _displayPage with:", pageIdFromUrl);
-             // Dùng setTimeout để đảm bảo các cập nhật UI khác hoàn tất
-             setTimeout(() => {
-                 _displayPage(pageIdFromUrl);
-             }, 0);
-        } else {
-             console.log("No page rendering needed based on conditions.");
+        // Chỉ cập nhật trang nếu trạng thái auth đã sẵn sàng VÀ có sự thay đổi trạng thái đăng nhập
+        // Hoặc đây là lần đầu tiên auth sẵn sàng (tải trang)
+        if (authStateReady && authNowReady) {
+             let pageIdFromUrl = window.location.pathname.substring(1) || 'home';
+             _displayPage(pageIdFromUrl); // Gọi _displayPage để render đúng trang và overlay (nếu cần)
         }
     });
 }
-// === KẾT THÚC PHẦN FIX 401 v4 ===
 
 
 // --- LOGIC TẢI FILE (ĐÃ HOÀN THIỆN) ---
+// Task 3: Viết lại hàm downloadResource
 async function downloadResource(resourceId) {
     if (!currentUser) {
         alert("Vui lòng đăng nhập để tải tài nguyên!");
+        // Không gọi showPage('auth') nữa vì overlay sẽ hiện
         return;
     }
 
@@ -444,57 +358,64 @@ async function downloadResource(resourceId) {
 
 // --- CÁC HÀM CẬP NHẬT GIAO DIỆN VÀ XỬ LÝ SỰ KIỆN ---
 
-// NÂNG CẤP 6: Cập nhật UI khi đã đăng nhập (tạo nút mở dropdown)
+// Cập nhật: Thay thế logic <a> bằng <button> và dropdown
 function updateUIForLoggedInUser(user) {
     if (authButtonContainer) {
         const userMetadata = user.user_metadata;
         const displayName = userMetadata?.full_name || userMetadata?.name || user.email.split('@')[0];
-        const avatarUrl = userMetadata?.avatar_url || 'https://i.imgur.com/3Z4Yp4J.png'; // Avatar mặc định
+        const avatarUrl = userMetadata?.avatar_url || 'https://i.imgur.com/3Z4Yp4J.png';
+        
+        // Cập nhật: Sử dụng <button> để kích hoạt dropdown
         authButtonContainer.innerHTML = `
-            <button id="user-menu-button" class="nav-link flex items-center gap-2" onclick="toggleUserDropdown(event)">
+            <button id="user-menu-button" onclick="toggleUserDropdown(event)" class="nav-link flex items-center gap-2" aria-label="Mở menu người dùng" type="button">
                 <img src="${avatarUrl}" alt="Avatar" class="h-6 w-6 rounded-full object-cover">
                 <span class="font-semibold">${displayName || 'Tài Khoản'}</span>
-                 <svg class="w-4 h-4 text-gray-400 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
             </button>
         `;
-        navLinks.auth = null; // Xóa tham chiếu cũ
+        navLinks.auth = null; // Cập nhật logic: null khi đăng nhập
+        navLinks.logout = null; // Loại bỏ navLinks.logout cũ
 
-        // Cập nhật kính sau khi DOM thay đổi - QUAN TRỌNG: Phải chờ _displayPage đặt class 'active'
-        // setTimeout(() => {
-        //     if (typeof moveGlass === 'function') {
-        //         const userMenuButton = document.getElementById('user-menu-button');
-        //         if (userMenuButton && userMenuButton.classList.contains('active')) {
-        //              console.log("Moving glass to active user button after UI update.");
-        //              moveGlass(userMenuButton);
-        //         }
-        //     }
-        // }, 50); // Delay nhỏ có thể không đủ, _displayPage sẽ gọi moveGlass
+        // Cập nhật kính sau khi DOM thay đổi
+        setTimeout(() => {
+            if (typeof moveGlass === 'function') {
+                const activeLink = document.querySelector('#desktop-nav .nav-link.active');
+                // Cập nhật: Trỏ về nút user-menu-button mới
+                const userButton = document.getElementById('user-menu-button');
+                moveGlass(activeLink || userButton);
+            }
+        }, 50); // Delay nhỏ để DOM kịp cập nhật
     }
 }
 
-// NÂNG CẤP 5: Cập nhật UI khi chưa đăng nhập (thay icon)
+// Cập nhật: Sử dụng SVG icon và đảm bảo dropdown bị ẩn
 function updateUIForLoggedOutUser() {
     if (authButtonContainer) {
+        // Cập nhật: Sử dụng SVG icon
         authButtonContainer.innerHTML = `
-            <a href="#" id="nav-login" class="nav-link" onclick="showPage('auth', event)">
-                <img src="https://i.imgur.com/hhc1Ect.png" alt="Login Icon" style="height: 20px;"> <!-- Icon mới -->
+            <a href="#" id="nav-login" class="nav-link flex items-center gap-2" onclick="showPage('auth', event)">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h5a3 3 0 013 3v1"></path></svg>
                 <span>Đăng Nhập</span>
             </a>
         `;
-        navLinks.auth = document.getElementById('nav-login'); // Thêm lại tham chiếu
+        
+        // Thêm mới: Đảm bảo dropdown bị ẩn khi đăng xuất
+        if (userDropdown) {
+            userDropdown.classList.add('hidden');
+        }
+        
+        navLinks.logout = null; // Xóa tham chiếu cũ
+        // Thêm tham chiếu mới vào navLinks
+        navLinks.auth = document.getElementById('nav-login');
 
-         // Cập nhật kính sau khi DOM thay đổi - QUAN TRỌNG: Phải chờ _displayPage đặt class 'active'
-        // setTimeout(() => {
-        //     if (typeof moveGlass === 'function') {
-        //         const activeLink = document.querySelector('#desktop-nav .nav-link.active');
-        //          console.log("Moving glass after logout UI update.");
-        //         moveGlass(activeLink || navLinks.auth); // Ưu tiên active link, nếu không thì trỏ về nút login
-        //     }
-        // }, 50); // Delay nhỏ có thể không đủ, _displayPage sẽ gọi moveGlass
-    }
-    // NÂNG CẤP 6: Đảm bảo dropdown bị ẩn khi đăng xuất
-    if (userDropdown) {
-        userDropdown.classList.remove('show');
+         // Cập nhật kính sau khi DOM thay đổi
+        setTimeout(() => {
+            if (typeof moveGlass === 'function') {
+                const activeLink = document.querySelector('#desktop-nav .nav-link.active');
+                 // Ưu tiên active link, nếu không có thì trỏ về nút login
+                moveGlass(activeLink || navLinks.auth);
+            }
+        }, 50); // Delay nhỏ để DOM kịp cập nhật
     }
 }
 
@@ -502,17 +423,14 @@ function updateUIForLoggedOutUser() {
 // (Các hàm signInWithGoogle, handleEmailRegister, handleEmailLogin không đổi)
 async function signInWithGoogle(event) {
     event.preventDefault();
-     console.log("Initiating Google sign-in..."); // Thêm log
     const { error } = await window.supabase.auth.signInWithOAuth({ provider: 'google' });
     if (error) {
-         console.error("Google sign-in error:", error); // Thêm log
         alert("Đăng nhập Google thất bại: " + error.message);
     }
 }
 
 async function handleEmailRegister(event) {
     event.preventDefault();
-     console.log("Handling email registration..."); // Thêm log
     const email = document.getElementById('register-email').value;
     const password = document.getElementById('register-password').value;
     if (!email || !password) {
@@ -525,10 +443,8 @@ async function handleEmailRegister(event) {
     }
     const { error } = await window.supabase.auth.signUp({ email, password });
     if (error) {
-         console.error("Email registration error:", error); // Thêm log
         alert("Đăng ký thất bại: " + error.message);
     } else {
-         console.log("Email registration successful. Verification email sent."); // Thêm log
         alert("Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản.");
         toggleAuthForms();
     }
@@ -536,7 +452,6 @@ async function handleEmailRegister(event) {
 
 async function handleEmailLogin(event) {
     event.preventDefault();
-     console.log("Handling email login..."); // Thêm log
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
     if (!email || !password) {
@@ -545,31 +460,21 @@ async function handleEmailLogin(event) {
     }
     const { error } = await window.supabase.auth.signInWithPassword({ email, password });
     if (error) {
-         console.error("Email login error:", error); // Thêm log
         alert("Đăng nhập thất bại: " + error.message);
-    } else {
-         console.log("Email login successful."); // Thêm log
-         // onAuthStateChange sẽ xử lý phần còn lại
     }
+    // Không cần alert thành công, onAuthStateChange sẽ xử lý
 }
 
-// Hàm signOutUser (không đổi logic, chỉ đảm bảo nó tồn tại để dropdown gọi)
+// (Hàm signOutUser không đổi - Sẽ được gọi từ dropdown trong HTML)
 async function signOutUser(event) {
     if (event) event.preventDefault();
-     console.log("Signing out user..."); // Thêm log
     await unsubscribeFromProfileChanges();
     const { error } = await window.supabase.auth.signOut();
     if (error) {
-         console.error("Sign out error:", error); // Thêm log
         alert("Đăng xuất thất bại: " + error.message);
-    } else {
-         console.log("Sign out successful."); // Thêm log
     }
-    // NÂNG CẤP 6: Đóng dropdown sau khi đăng xuất
-    if (userDropdown) {
-        userDropdown.classList.remove('show');
-    }
-    // onAuthStateChange sẽ được gọi và xử lý cập nhật UI + _displayPage
+    // onAuthStateChange sẽ tự động cập nhật UI và hiển thị trang home
+    // Không cần gọi showPage hay _displayPage ở đây nữa
 }
 
 
@@ -638,18 +543,23 @@ async function initializeResources() {
     renderResources();
 }
 
-// Cập nhật DOMContentLoaded
+// Task 10 & Cập nhật Dropdown: Cập nhật DOMContentLoaded
 document.addEventListener('DOMContentLoaded', () => {
-     console.log("DOM fully loaded and parsed."); // Thêm log
+    // Không gọi _displayPage('home') ở đây nữa,
+    // setupAuthStateObserver sẽ gọi nó sau khi auth sẵn sàng.
+    setupAuthStateObserver();
 
-     // Kiểm tra xem Supabase client có tồn tại không
-     if (window.supabase) {
-        console.log("Supabase client found.");
-        setupAuthStateObserver(); // Gọi hàm chính sau khi chắc chắn client tồn tại
-     } else {
-         console.error("Supabase client (window.supabase) not found! Auth will not work.");
-     }
-
+    // Thêm mới: Listener để đóng dropdown khi click ra ngoài
+    window.addEventListener('click', (event) => {
+        const userMenuButton = document.getElementById('user-menu-button'); 
+        if (userDropdown && !userDropdown.classList.contains('hidden')) {
+            const isClickInsideDropdown = userDropdown.contains(event.target);
+            const isClickOnButton = userMenuButton && userMenuButton.contains(event.target);
+            if (!isClickInsideDropdown && !isClickOnButton) {
+                userDropdown.classList.add('hidden');
+            }
+        }
+    });
 
     const loginGoogleBtn = document.getElementById('login-google-btn');
     if (loginGoogleBtn) loginGoogleBtn.addEventListener('click', signInWithGoogle);
@@ -666,27 +576,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const resourceGrid = document.getElementById('resource-grid');
     if(resourceGrid) {
         resourceGrid.addEventListener('click', (event) => {
-            if (event.target && event.target.classList.contains('download-btn')) { // Đơn giản hóa kiểm tra
-                if (currentUser) {
-                    const resourceId = event.target.dataset.id;
-                    downloadResource(resourceId);
-                } else {
-                     alert("Vui lòng đăng nhập để tải tài nguyên!");
-                }
+            // Chỉ thêm listener nếu người dùng đã đăng nhập
+            if (currentUser && event.target && event.target.classList.contains('download-btn')) {
+                const resourceId = event.target.dataset.id;
+                downloadResource(resourceId);
+            } else if (!currentUser && event.target && event.target.classList.contains('download-btn')) {
+                 // Có thể thêm thông báo yêu cầu đăng nhập nếu muốn, nhưng overlay đã xử lý việc chặn
             }
         });
     }
-
-    // NÂNG CẤP 6: Thêm event listener để đóng dropdown khi click ra ngoài
-    window.addEventListener('click', (event) => {
-        const userMenuButton = document.getElementById('user-menu-button');
-        if (userDropdown && userDropdown.classList.contains('show')) {
-            if (!userMenuButton?.contains(event.target) && !userDropdown.contains(event.target)) {
-                userDropdown.classList.remove('show');
-            }
-        }
-    });
-
 
     // Khởi tạo các thành phần khác
     if (typeof initFlyingLogos === 'function') initFlyingLogos();
@@ -694,10 +592,20 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof typingAnimation === 'function') typingAnimation();
     if (typeof initializeOAIStudio === 'function') initializeOAIStudio();
 
+    // Không cần setTimeout cho moveGlass nữa vì onAuthStateChange sẽ xử lý
 });
 
 
 // --- CÁC HÀM GIAO DIỆN KHÁC ---
+
+// Thêm mới: Hàm bật/tắt dropdown người dùng
+function toggleUserDropdown(event) {
+    event.stopPropagation(); // Ngăn sự kiện click lan ra window
+    if (userDropdown) {
+        userDropdown.classList.toggle('hidden');
+    }
+}
+
 // (openModal, closeModal, mobile menu, close notification, assistant, chat, observeSections, video gallery, backToTop, flyingLogos, moveGlass, typingAnimation không đổi)
 function openModal(modalId) {
     const modal = document.getElementById(modalId);
@@ -802,7 +710,7 @@ async function sendMessage() {
     try {
         const apiKey = "";
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-        const systemPrompt = "Bạn là 'Oai Mini', trợ lý AI trên website 'Oai Design'. NhiệmBẠN LÀ 'Oai Mini', trợ lý AI trên website 'Oai Design'. Nhiệm vụ của bạn là CHỈ trả lời các câu hỏi liên quan đến nội dung, dịch vụ, tài nguyên, hoặc các chủ đề về thiết kế (design) có trên website này. Nếu người dùng hỏi về chủ đề không liên quan (ví dụ: thời tiết, chính trị, nấu ăn, các chủ đề chung chung...), bạn PHẢI lịch sự từ chối và hướng họ quay lại chủ đề của website. Luôn trả lời bằng tiếng Việt, ngắn gọn, thân thiện.";
+        const systemPrompt = "Bạn là 'Oai Mini', trợ lý AI trên website 'Oai Design'. Nhiệm vụ của bạn là CHỈ trả lời các câu hỏi liên quan đến nội dung, dịch vụ, tài nguyên, hoặc các chủ đề về thiết kế (design) có trên website này. Nếu người dùng hỏi về chủ đề không liên quan (ví dụ: thời tiết, chính trị, nấu ăn, các chủ đề chung chung...), bạn PHẢI lịch sự từ chối và hướng họ quay lại chủ đề của website. Luôn trả lời bằng tiếng Việt, ngắn gọn, thân thiện.";
         const payload = {
             contents: [{ parts: [{ text: userMessage }] }],
             systemInstruction: { parts: [{ text: systemPrompt }] },
@@ -877,8 +785,14 @@ function renderVideoGallery() {
         const card = document.createElement('div');
         card.className = 'video-card group';
         card.dataset.videoId = video.id;
+
+        // Thêm mới: Thuộc tính accessibility
+        card.setAttribute('role', 'button');
+        card.setAttribute('tabindex', '0');
+        card.setAttribute('aria-label', `Xem video: ${video.title}`);
+
         card.innerHTML = `
-            <img src="https://img.youtube.com/vi/${video.id}/hqdefault.jpg" alt="${video.title}" class="w-full h-full object-cover">
+            <img src="https://img.youtube.com/vi/${video.id}/hqdefault.jpg" alt="${video.title}" class="w-full h-full object-cover" loading="lazy">
             <div class="absolute inset-0 bg-black bg-opacity-20 group-hover:bg-opacity-40 transition-all duration-300"></div>
             <div class="play-icon">
                 <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>
@@ -886,7 +800,33 @@ function renderVideoGallery() {
             <p class="absolute bottom-0 left-0 p-3 text-white font-semibold text-sm drop-shadow-lg">${video.title}</p>
         `;
         grid.appendChild(card);
+
+        // Thêm mới: Xử lý sự kiện nhấn phím Enter/Space cho accessibility
+        card.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                openVideoModal(video.id); // Gọi hàm mới
+            }
+        });
     });
+}
+
+// Thêm mới: Tách logic mở video modal ra hàm riêng
+function openVideoModal(videoId) {
+    const playerContainer = document.getElementById('video-player-container');
+    if (playerContainer) {
+        playerContainer.innerHTML = `
+            <iframe
+                class="w-full h-full"
+                src="https://www.youtube.com/embed/${videoId}?autoplay=1"
+                title="YouTube video player"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowfullscreen>
+            </iframe>
+        `;
+    }
+    openModal('video-modal');
 }
 
 const videoGrid = document.getElementById('video-grid');
@@ -895,20 +835,7 @@ if (videoGrid) {
         const card = e.target.closest('.video-card');
         if (card) {
             const videoId = card.dataset.videoId;
-            const playerContainer = document.getElementById('video-player-container');
-            if (playerContainer) {
-                playerContainer.innerHTML = `
-                    <iframe
-                        class="w-full h-full"
-                        src="https://www.youtube.com/embed/${videoId}?autoplay=1"
-                        title="YouTube video player"
-                        frameborder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                        allowfullscreen>
-                    </iframe>
-                `;
-            }
-            openModal('video-modal');
+            openVideoModal(videoId); // Cập nhật: Gọi hàm mới
         }
     });
 }
@@ -957,17 +884,20 @@ function initFlyingLogos() {
     }
 }
 
+// Cập nhật: Tối ưu logic, ẩn kính khi không có target
 function moveGlass(element) {
     const navContainer = document.getElementById('desktop-nav');
     if (!navContainer) return;
     const glassBg = navContainer.querySelector('.nav-glass-bg');
-    if (!element || !glassBg) return;
-    // Thêm kiểm tra element có thực sự nằm trong navContainer không
-    if (navContainer.contains(element)) {
+    // Cập nhật: Thêm kiểm tra glassBg và logic ẩn kính
+    if (!glassBg) return; 
+
+    if (element && navContainer.contains(element)) {
+        // Nếu có element hợp lệ, di chuyển kính
         glassBg.style.width = `${element.offsetWidth}px`;
         glassBg.style.left = `${element.offsetLeft}px`;
     } else {
-        // Nếu element không có trong nav (ví dụ: logout đang bị ẩn), ẩn kính đi
+        // Nếu không có element (null) hoặc element không thuộc nav, ẩn kính
         glassBg.style.width = `0px`;
     }
 }
@@ -976,17 +906,15 @@ function moveGlass(element) {
 const navContainer = document.getElementById('desktop-nav');
 if (navContainer) {
     const glassBg = navContainer.querySelector('.nav-glass-bg');
-    // NÂNG CẤP 6: Phải query liên tục vì nút login/logout bị thay thế
-    navContainer.addEventListener('mouseover', (e) => {
-        const targetLink = e.target.closest('.nav-link, #user-menu-button');
-        if (targetLink) {
-            moveGlass(targetLink);
-        }
+    const navItems = navContainer.querySelectorAll('.nav-link');
+
+    navItems.forEach(item => {
+        item.addEventListener('mouseenter', () => moveGlass(item));
     });
 
     navContainer.addEventListener('mouseleave', () => {
-        // NÂNG CẤP 6: Tìm nút active, có thể là link thường hoặc nút user
-        const activeItem = navContainer.querySelector('.nav-link.active, #user-menu-button.active');
+        // Cập nhật: Tìm .active, có thể là .nav-link hoặc #user-menu-button
+        const activeItem = navContainer.querySelector('.nav-link.active') || navContainer.querySelector('#user-menu-button.active');
         moveGlass(activeItem); // activeItem có thể là null nếu không có link nào active
     });
 }
@@ -997,6 +925,7 @@ function typingAnimation() {
     const signatureElement = document.getElementById('hero-signature');
     const cursorElement = document.querySelector('.cursor');
     const textContentWrapper = document.getElementById('hero-text-content');
+    // Kiểm tra logic này đã tồn tại và chính xác
     if (!textElement || !signatureElement || !cursorElement || !textContentWrapper) {
         console.warn('Typing animation elements not found.');
         return;
@@ -1019,24 +948,32 @@ function typingAnimation() {
         cursorElement.style.opacity = '1';
 
         function type() {
-            if (i < fullText.length) {
+            // Thêm kiểm tra element tồn tại bên trong hàm đệ quy (an toàn hơn)
+            if (i < fullText.length && textElement) { 
                 textElement.innerHTML = `“${fullText.substring(0, i + 1)}”`;
                 i++;
                 setTimeout(type, 25);
             } else {
-                signatureElement.style.transition = 'opacity 1s ease-in-out';
-                signatureElement.style.opacity = '1';
-                cursorElement.style.animation = 'none';
-                cursorElement.style.opacity = '0';
+                if(signatureElement) { // Kiểm tra trước khi dùng
+                    signatureElement.style.transition = 'opacity 1s ease-in-out';
+                    signatureElement.style.opacity = '1';
+                }
+                if(cursorElement) { // Kiểm tra trước khi dùng
+                    cursorElement.style.animation = 'none';
+                    cursorElement.style.opacity = '0';
+                }
 
                 setTimeout(() => {
-                    textContentWrapper.style.transition = 'opacity 0.8s ease-out, filter 0.8s ease-out';
-                    signatureElement.style.transition = 'opacity 0.8s ease-out, filter 0.8s ease-out';
-textContentWrapper.style.opacity = '0';
-                    textContentWrapper.style.filter = 'blur(5px)';
-                    signatureElement.style.opacity = '0';
-                    signatureElement.style.filter = 'blur(5px)';
-                    setTimeout(runAnimation, 1000);
+                    // Kiểm tra element trước khi dùng
+                    if (textContentWrapper && signatureElement) { 
+                        textContentWrapper.style.transition = 'opacity 0.8s ease-out, filter 0.8s ease-out';
+                        signatureElement.style.transition = 'opacity 0.8s ease-out, filter 0.8s ease-out';
+                        textContentWrapper.style.opacity = '0';
+                        textContentWrapper.style.filter = 'blur(5px)';
+                        signatureElement.style.opacity = '0';
+                        signatureElement.style.filter = 'blur(5px)';
+                        setTimeout(runAnimation, 1000);
+                    }
                 }, 10000);
             }
         }
@@ -1096,12 +1033,12 @@ function getDimensions(aspectRatio, resolution) {
 
 
 
-// Task 5, 6, 7: Cập nhật initializeOAIStudio
+// Task 5, 6, 7 & Cập nhật: Cập nhật initializeOAIStudio
 function initializeOAIStudio() {
-    // FIX 2: Không chạy logic nếu trang OAI bị khóa "Coming Soon"
-    if (authOverlayOai && authOverlayOai.style.display !== 'none') {
-        console.log("OAI Studio initialization skipped (Coming Soon).");
-        return;
+    // Thêm mới: Kiểm tra overlay "Coming Soon" bằng getComputedStyle
+    if (authOverlayOai && getComputedStyle(authOverlayOai).display !== 'none') {
+        console.log("O-AI Studio overlay is active, skipping initialization.");
+        return; // Không chạy gì cả nếu overlay đang hiển thị
     }
 
     const sendBtn = document.getElementById('prompt-send-btn');
