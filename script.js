@@ -20,7 +20,7 @@ const pageElements = {
 let resourcesInitialized = false;
 let currentUser = null;
 let profileSubscription = null; // Biến lưu "camera an ninh"
-let authStateReady = false; // Cờ kiểm tra trạng thái xác thực
+let authStateReady = false; // Task 10: Cờ kiểm tra trạng thái xác thực
 
 const authOverlay = document.getElementById('auth-overlay');
 const authOverlayOai = document.getElementById('auth-overlay-oai'); // NÂNG CẤP 3: Thêm biến cho O-AI overlay
@@ -168,16 +168,19 @@ function showPage(pageId, event) {
 
 
     const currentPath = window.location.pathname.substring(1) || 'home';
+    const currentHash = window.location.hash.substring(1); // Lấy phần hash (nếu có)
 
-    // Chỉ push state nếu trang thực sự thay đổi
-    if (targetPageId !== currentPath) {
+    // Chỉ push state nếu path thực sự thay đổi VÀ không có hash (tránh ghi đè hash của Supabase)
+    if (targetPageId !== currentPath && !currentHash.includes('access_token')) {
          const newPath = (targetPageId === 'home') ? '/' : `/${targetPageId}`;
          // Cập nhật URL với trang ĐƯỢC YÊU CẦU
          history.pushState({ pageId: targetPageId }, '', newPath);
+    } else if (currentHash.includes('access_token')) {
+        // Nếu có hash access_token, không pushState để tránh xung đột
+        console.log("Access token hash detected, skipping pushState.");
     }
 
     // Gọi hàm cập nhật DOM với trang ĐƯỢC YÊU CẦU
-    // _displayPage sẽ tự xử lý việc hiển thị trang VÀ overlay nếu cần
     _displayPage(targetPageId);
 }
 
@@ -186,8 +189,13 @@ function showPage(pageId, event) {
 function handlePopState(event) {
     let pageId = event.state?.pageId;
     if (!pageId) {
-        // Xử lý khi tải trang trực tiếp bằng URL
-        pageId = window.location.pathname.substring(1) || 'home';
+        // Xử lý khi tải trang trực tiếp bằng URL hoặc khi có hash
+        if (window.location.hash.includes('access_token')) {
+            // Nếu là URL callback từ Supabase, thường sẽ muốn về trang chủ
+            pageId = 'home';
+        } else {
+             pageId = window.location.pathname.substring(1) || 'home';
+        }
     }
     if (!pages.includes(pageId)) {
         pageId = 'home'; // Fallback cho URL không hợp lệ
@@ -231,22 +239,11 @@ async function unsubscribeFromProfileChanges() {
 
 // --- LOGIC XÁC THỰC VỚI SUPABASE ---
 
-// Task 10 & FIX 1: Cập nhật setupAuthStateObserver (Giải pháp A - Path Routing)
+// === KHÔI PHỤC PHIÊN BẢN CŨ CỦA setupAuthStateObserver ===
+// Phiên bản này chấp nhận URL hash (#) và không cố gắng xóa nó.
 function setupAuthStateObserver() {
     window.supabase.auth.onAuthStateChange(async (event, session) => {
-        
-        // --- BƯỚC 1: DỌN DẸP URL HASH (FIX LỖI VÒNG LẶP) ---
-        // Xử lý dọn dẹp URL *ngay lập tức* nếu đây là lần đăng nhập OAuth (từ Google)
-        // Chỉ dọn dẹp nếu có session VÀ hash chứa 'access_token'
-        if (session && window.location.hash.includes('access_token')) {
-            console.log("OAuth login detected, cleaning URL hash...");
-            // Dùng replaceState để xóa hash mà không tải lại trang.
-            // URL sẽ trở về path gốc (ví dụ: /auth -> /auth, / -> /)
-            history.replaceState(null, document.title, window.location.pathname);
-        }
-        
-        // --- BƯỚC 2: KIỂM TRA BAN (LOGIC CŨ) ---
-        // Vẫn kiểm tra ban cho người dùng đăng nhập
+        // Xác thực ban đầu và kiểm tra ban
         if ((event === 'INITIAL_SESSION' || event === 'SIGNED_IN') && session) {
             const { data, error } = await window.supabase
                 .from('profiles')
@@ -261,16 +258,15 @@ function setupAuthStateObserver() {
             if (data && data.is_banned) {
                 alert("Tài khoản của bạn đã bị khóa.");
                 await window.supabase.auth.signOut(); // Đăng xuất ngay nếu bị ban
-                session = null; // Coi như session không hợp lệ, sẽ đi vào luồng đăng xuất
+                session = null; // Coi như session không hợp lệ
             }
         }
 
-        // --- BƯỚC 3: CẬP NHẬT TRẠNG THÁI VÀ GIAO DIỆN ---
         const user = session?.user || null;
         const wasLoggedIn = !!currentUser; // Lưu trạng thái trước khi cập nhật
-        currentUser = user; // Cập nhật trạng thái người dùng toàn cục
+        currentUser = user; // Cập nhật trạng thái người dùng hiện tại
 
-        // Cập nhật giao diện và listener dựa trên trạng thái user mới
+        // Cập nhật giao diện và listener
         if (user) {
             updateUIForLoggedInUser(user);
             listenToProfileChanges(user.id);
@@ -279,40 +275,35 @@ function setupAuthStateObserver() {
             unsubscribeFromProfileChanges();
         }
 
-        // --- BƯỚC 4: HIỂN THỊ TRANG (LOGIC ĐÃ CẢI TIẾN) ---
-        
-        // Kiểm tra xem trạng thái đăng nhập có thực sự thay đổi không
-        // (ví dụ: từ null -> user, hoặc user -> null)
-        const authStatusChanged = (user && !wasLoggedIn) || (!user && wasLoggedIn);
-        
-        // Chúng ta chỉ gọi hàm _displayPage (vẽ lại trang) trong 2 trường hợp:
-        // 1. Đây là lần tải trang đầu tiên (!authStateReady) -> để hiển thị trang ban đầu.
-        // 2. Trạng thái đăng nhập vừa thay đổi (authStatusChanged) -> để cập nhật UI
-        if (!authStateReady || authStatusChanged) {
-             
-             // Đánh dấu là đã sẵn sàng sau lần chạy đầu tiên
-             if (!authStateReady) {
-                authStateReady = true;
-             }
+        // Đánh dấu auth đã sẵn sàng sau lần kiểm tra đầu tiên hoặc khi có thay đổi trạng thái
+        const authNowReady = !authStateReady || (user && !wasLoggedIn) || (!user && wasLoggedIn);
+        if(!authStateReady && (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'SIGNED_OUT')) {
+             authStateReady = true;
+        } else if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+             authStateReady = true; // Đảm bảo luôn sẵn sàng sau khi login/logout
+        }
 
-             // Lấy pageId từ URL path (lúc này đã được dọn dẹp)
+        // Chỉ cập nhật trang nếu trạng thái auth đã sẵn sàng VÀ có sự thay đổi trạng thái đăng nhập
+        // Hoặc đây là lần đầu tiên auth sẵn sàng (tải trang)
+        if (authStateReady && authNowReady) {
              let pageIdFromUrl = window.location.pathname.substring(1) || 'home';
-
-             // Nếu đăng nhập thành công và đang ở trang /auth, tự động chuyển về /home
+             
+             // Nếu người dùng vừa đăng nhập thành công và URL vẫn là trang auth, chuyển về home
              if (user && pageIdFromUrl === 'auth') {
                  pageIdFromUrl = 'home';
-                 // Cập nhật URL về /home mà không reload
-                 history.replaceState({ pageId: 'home' }, '', '/');
+                 // Quan trọng: Thay đổi URL về '/' nhưng không dùng pushState để tránh xung đột với hash
+                 // Chỉ gọi _displayPage('home') là đủ
              }
              
-             // FIX: Thêm setTimeout để đảm bảo currentUser được cập nhật
-             // và DOM (nút user) kịp render trước khi _displayPage chạy
+             // FIX 1 (Cũ): Thêm setTimeout để đảm bảo currentUser được cập nhật
+             // Cần thiết để UI hiển thị đúng ngay sau khi đăng nhập/đăng xuất
              setTimeout(() => {
                 _displayPage(pageIdFromUrl); 
-             }, 0); // Đẩy việc render trang xuống cuối event loop
+             }, 0); 
         }
     });
 }
+// === KẾT THÚC PHẦN KHÔI PHỤC ===
 
 
 // --- LOGIC TẢI FILE (ĐÃ HOÀN THIỆN) ---
@@ -396,23 +387,24 @@ function updateUIForLoggedInUser(user) {
                  <svg class="w-4 h-4 text-gray-400 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
             </button>
         `;
-        // Không cần cập nhật navLinks.auth nữa, vì nút này không dùng để điều hướng
         navLinks.auth = null; // Xóa tham chiếu cũ
 
         // Cập nhật kính sau khi DOM thay đổi
         setTimeout(() => {
             if (typeof moveGlass === 'function') {
                 const userMenuButton = document.getElementById('user-menu-button');
-                // Luôn trỏ kính về nút user menu khi đã đăng nhập
-                if (userMenuButton) { // Thêm kiểm tra
-                    // Kiểm tra xem nút user có đang active không, nếu không thì tự add
+                if (userMenuButton) {
                     if (!userMenuButton.classList.contains('active')) {
+                        // Tìm link đang active trước đó (nếu có) và bỏ active
+                        const currentActive = document.querySelector('#desktop-nav .nav-link.active');
+                        if(currentActive) currentActive.classList.remove('active');
+                        // Add active vào nút user
                         userMenuButton.classList.add('active');
                     }
                     moveGlass(userMenuButton);
                 }
             }
-        }, 50); // Delay nhỏ để DOM kịp cập nhật
+        }, 50); 
     }
 }
 
@@ -425,20 +417,28 @@ function updateUIForLoggedOutUser() {
                 <span>Đăng Nhập</span>
             </a>
         `;
-        // NÂNG CẤP 6: Xóa tham chiếu cũ (nếu có) và thêm tham chiếu mới vào navLinks
         const oldUserMenuButton = document.getElementById('user-menu-button');
         if (oldUserMenuButton) {
-             // Không cần xóa khỏi navLinks vì nó không được thêm vào
+            oldUserMenuButton.classList.remove('active'); // Bỏ active nếu có
         }
         navLinks.auth = document.getElementById('nav-login'); // Thêm lại tham chiếu
 
          // Cập nhật kính sau khi DOM thay đổi
         setTimeout(() => {
             if (typeof moveGlass === 'function') {
-                const activeLink = document.querySelector('#desktop-nav .nav-link.active');
-                moveGlass(activeLink || navLinks.auth); // Ưu tiên active link, nếu không thì trỏ về nút login
+                // Ưu tiên active link đang hiển thị, nếu không thì về login
+                const pageId = window.location.pathname.substring(1) || 'home';
+                const activeLink = navLinks[pageId] || navLinks.auth;
+                // Bỏ active tất cả các link khác trước khi đặt active mới
+                document.querySelectorAll('#desktop-nav .nav-link.active').forEach(link => link.classList.remove('active'));
+                 if(activeLink){
+                     activeLink.classList.add('active');
+                     moveGlass(activeLink);
+                 } else {
+                     moveGlass(navLinks.auth); // Fallback về login nếu không tìm thấy link nào
+                 }
             }
-        }, 50); // Delay nhỏ để DOM kịp cập nhật
+        }, 50);
     }
     // NÂNG CẤP 6: Đảm bảo dropdown bị ẩn khi đăng xuất
     if (userDropdown) {
@@ -505,7 +505,6 @@ async function signOutUser(event) {
         userDropdown.classList.remove('show');
     }
     // onAuthStateChange sẽ tự động cập nhật UI và hiển thị trang home
-    // Không cần gọi showPage hay _displayPage ở đây nữa
 }
 
 
@@ -576,10 +575,10 @@ async function initializeResources() {
 
 // Task 10 & FIX Auth Overlay & NÂNG CẤP 6: Cập nhật DOMContentLoaded
 document.addEventListener('DOMContentLoaded', () => {
-    // Không gọi _displayPage('home') ở đây nữa,
-    // setupAuthStateObserver sẽ gọi nó sau khi auth sẵn sàng.
+    // Gọi setupAuthStateObserver để bắt đầu theo dõi trạng thái đăng nhập
     setupAuthStateObserver();
 
+    // Các event listener khác
     const loginGoogleBtn = document.getElementById('login-google-btn');
     if (loginGoogleBtn) loginGoogleBtn.addEventListener('click', signInWithGoogle);
 
@@ -595,35 +594,31 @@ document.addEventListener('DOMContentLoaded', () => {
     const resourceGrid = document.getElementById('resource-grid');
     if(resourceGrid) {
         resourceGrid.addEventListener('click', (event) => {
-            // Chỉ thêm listener nếu người dùng đã đăng nhập
             if (currentUser && event.target && event.target.classList.contains('download-btn')) {
                 const resourceId = event.target.dataset.id;
                 downloadResource(resourceId);
             } else if (!currentUser && event.target && event.target.classList.contains('download-btn')) {
-                 // Có thể thêm thông báo yêu cầu đăng nhập nếu muốn, nhưng overlay đã xử lý việc chặn
+                 // Không làm gì hoặc thông báo nếu cần
             }
         });
     }
 
-    // NÂNG CẤP 6: Thêm event listener để đóng dropdown khi click ra ngoài
+    // Listener đóng dropdown
     window.addEventListener('click', (event) => {
         const userMenuButton = document.getElementById('user-menu-button');
         if (userDropdown && userDropdown.classList.contains('show')) {
-            // Kiểm tra xem có click vào nút menu hoặc bên trong dropdown không
             if (!userMenuButton?.contains(event.target) && !userDropdown.contains(event.target)) {
                 userDropdown.classList.remove('show');
             }
         }
     });
 
-
-    // Khởi tạo các thành phần khác
+    // Khởi tạo giao diện khác
     if (typeof initFlyingLogos === 'function') initFlyingLogos();
     if (typeof renderVideoGallery === 'function') renderVideoGallery();
     if (typeof typingAnimation === 'function') typingAnimation();
     if (typeof initializeOAIStudio === 'function') initializeOAIStudio();
 
-    // Không cần setTimeout cho moveGlass nữa vì onAuthStateChange sẽ xử lý
 });
 
 
@@ -1263,3 +1258,4 @@ function initializeOAIStudio() {
         promptInput.style.height = (promptInput.scrollHeight) + 'px';
     });
 }
+
