@@ -47,7 +47,6 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
-    cursor: pointer; /* Thêm con trỏ */
 }
 
 .nav-link img {
@@ -100,7 +99,7 @@ body {
     transform: translateY(-12px) scale(1.02);
 }
 
-/* NÂNG CẤP 4: Hiệu ứng viền chạy liên tục */
+/* NÂNG CẤP 2 & FIX 2: Hiệu ứng viền chạy liên tục */
 .service-card-wrapper::before {
     content: '';
     position: absolute;
@@ -108,15 +107,13 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    /* NÂNG CẤP 2: Gradient nhiều màu hơn */
     background-image: linear-gradient(120deg, #a855f7, #ec4899, #facc15, #0ea5e9, #a855f7);
-    /* NÂNG CẤP 2: Tăng background-size */
-    background-size: 500% 500%;
-    /* NÂNG CẤP 2: Tăng thời gian animation */
-    animation: glow-border 8s linear infinite; /* Đổi tên animation */
+    /* FIX 2: Tăng background-size để chạy mượt hơn */
+    background-size: 400% 400%;
+    animation: glow-border 8s linear infinite; /* Giữ tên animation */
     z-index: -1;
     border-radius: inherit;
-    /* NÂNG CẤP 4: Luôn hiển thị viền (thay đổi opacity từ 0 -> 1) */
+    /* Luôn hiển thị viền */
     opacity: 1;
     transition: opacity 0.4s ease-out;
     padding: 2px;
@@ -127,12 +124,8 @@ body {
             mask-composite: exclude;
 }
 
-/* NÂNG CẤP 4: Xóa hiệu ứng opacity khi hover (vì giờ nó luôn hiện) */
-/* .service-card-wrapper:hover::before {
-    opacity: 1;
-} */
 
-/* NÂNG CẤP 2: Đổi tên keyframes */
+/* FIX 2: Cập nhật keyframes để chạy mượt mà */
 @keyframes glow-border {
     0% {
         background-position: 0% 50%;
@@ -158,9 +151,7 @@ body {
 
 .service-card-wrapper .service-card {
     background: linear-gradient(145deg, #1f2937, #111827);
-    /* NÂNG CẤP 4: Bỏ border cũ vì viền màu luôn hiện */
-    /* border: 1px solid #374151; */
-    border: none;
+    /* border: 1px solid #374151; <-- Đã bị ẩn ở dưới */
     z-index: 2;
     position: relative;
     width: 100%;
@@ -170,9 +161,9 @@ body {
 }
 
 /* NÂNG CẤP 2: Ẩn viền mặc định vì viền màu luôn hiện */
-/* .service-card-wrapper .service-card {
+.service-card-wrapper .service-card {
     border-color: transparent;
-} */
+}
 
 
 .software-card {
@@ -552,19 +543,19 @@ body {
     transform: scale(1.1);
 }
 
-/* NÂNG CẤP 1: Thanh thông báo mới */
+/* NÂNG CẤP 1 & YÊU CẦU 2: Thanh thông báo mới */
 #notification-bar-wrapper {
     position: sticky;
     top: 72px; /* Dính ngay dưới header (chiều cao header là 72px) */
     width: 100%;
     z-index: 40; /* Đảm bảo nằm dưới header (z-50) */
-    /* NÂNG CẤP 2: Thay đổi màu gradient */
-    background: linear-gradient(90deg, #45f400, #f6ff03, #45f400); /* Xanh lá - Vàng - Xanh lá */
+    /* YÊU CẦU 2: Thay màu gradient */
+    background: linear-gradient(90deg, #45f400, #f6ff03, #45f400); /* Xanh lá -> Vàng -> Xanh lá */
     background-size: 300% 100%;
     animation: scroll-gradient 10s linear infinite;
 }
 
-/* NÂNG CẤP 2: Keyframes cho nền động (chỉ cập nhật màu) */
+/* NÂNG CẤP 1: Keyframes cho nền động */
 @keyframes scroll-gradient {
     0% { background-position: 0% 50%; }
     50% { background-position: 100% 50%; }
@@ -582,25 +573,31 @@ body {
 
 #notification-text {
     white-space: normal; /* Cho phép xuống dòng nếu cần */
-    color: #1a2e05; /* NÂNG CẤP 2: Đổi màu chữ sang tối hơn để dễ đọc trên nền sáng */
-    font-weight: 600; /* Làm chữ đậm hơn chút */
-    text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.3); /* Thêm bóng đổ nhẹ */
+    /* YÊU CẦU 2: Đổi màu chữ cho phù hợp nền mới (tạm dùng màu tối) */
+    color: #1f2937; /* gray-800 */
 }
 
 /* Tùy chỉnh nút Đăng kí ngay */
 #notification-bar a {
      /* Style đã được đặt inline trong HTML */
-     /* NÂNG CẤP 2: Thay đổi màu chữ nút cho phù hợp nền mới */
-     color: #1a2e05 !important; /* Đảm bảo ghi đè inline style */
+     /* YÊU CẦU 2: Cập nhật màu nút nếu cần */
+     background: linear-gradient(to bottom, #fff, #f0e6ff);
+     color: #4c1d95; /* Màu tím đậm hơn */
+     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
+#notification-bar a:hover {
+     filter: brightness(1.1);
+}
+
 
 /* Tùy chỉnh nút đóng X */
 #notification-bar #close-notification {
-    color: rgba(26, 46, 5, 0.7); /* NÂNG CẤP 2: Đổi màu nút X */
+    /* YÊU CẦU 2: Đổi màu nút X */
+    color: rgba(31, 41, 55, 0.7); /* gray-800 với độ mờ */
     transition: color 0.2s;
 }
 #notification-bar #close-notification:hover {
-    color: #1a2e05;
+    color: #111827; /* gray-900 */
 }
 
 
@@ -775,14 +772,14 @@ body {
     background-color: #6b7280;
 }
 
-/* FIX 2: Giảm z-index của prompt bar */
 #prompt-bar {
     position: absolute;
     bottom: 1.5rem;
     left: 50%;
     transform: translateX(-50%);
     width: 100%;
-    z-index: 5; /* Giảm từ 20 xuống 5 */
+    /* FIX 2: Giảm z-index để lớp phủ che được */
+    z-index: 5;
     background-color: rgba(29, 29, 31, 0.9);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -790,6 +787,7 @@ body {
     padding: 8px;
     display: flex;
     align-items: flex-end; /* Căn nút và textarea theo đáy */
+    max-width: 900px; /* Giới hạn chiều rộng giống conversation area */
 }
 
 #prompt-bar::before {
@@ -1026,13 +1024,19 @@ body {
 
 /* === NÂNG CẤP: CSS cho các thành phần xác thực === */
 
-/* Lớp phủ bảo vệ trang tài nguyên & O-AI Studio */
+/* Lớp phủ bảo vệ trang tài nguyên */
 #auth-overlay {
     /* Đã chuyển style="display: none;" vào HTML để mặc định ẩn */
 }
-/* FIX 2: Tăng z-index để lớp phủ OAI che phủ mọi thứ */
+
+/* FIX 2: Lớp phủ OAI Studio (Coming Soon) */
 #auth-overlay-oai {
-    z-index: 30; /* Tăng từ 10 lên 30 */
+    /* Style đã được đặt inline trong HTML để luôn hiển thị */
+    /* FIX 2: Tăng z-index để che phủ cả thanh prompt */
+    z-index: 30 !important; /* Đảm bảo đè lên mọi thứ */
+    display: flex; /* Đảm bảo flex luôn hoạt động */
+    align-items: center; /* Căn giữa nội dung */
+    justify-content: center; /* Căn giữa nội dung */
 }
 
 .auth-button {
@@ -1092,13 +1096,7 @@ body {
     background-color: #f3f4f6;
 }
 
-.facebook-btn {
-    background-color: #1877F2;
-    color: #ffffff;
-}
-.facebook-btn:hover {
-    background-color: #166fe5;
-}
+/* Nút Facebook đã bị xóa */
 
 
 /* Dải phân cách "hoặc" */
@@ -1172,15 +1170,55 @@ body {
     text-decoration: underline;
 }
 
-/* NÂNG CẤP 6: CSS cho dropdown người dùng */
+/* NÂNG CẤP 6: Style cho Dropdown người dùng */
 #user-dropdown {
-    /* Các lớp Tailwind đã định nghĩa hầu hết style */
-    /* Thêm thuộc tính để JS có thể kiểm soát */
-    visibility: hidden; /* Dùng visibility thay vì display:none để transition hoạt động */
+    position: absolute;
+    right: 0;
+    top: calc(100% + 10px); /* Ngay dưới nút user */
+    background-color: rgba(29, 29, 31, 0.9); /* Giống nền auth card */
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.75rem; /* rounded-lg */
+    padding: 0.5rem; /* p-2 */
+    min-width: 180px;
+    z-index: 55; /* Phải cao hơn header (z-50) */
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s ease;
 }
 
 #user-dropdown.show {
-    visibility: visible;
     opacity: 1;
-    transform: scale(1);
+    visibility: visible;
+    transform: translateY(0);
+}
+
+#user-dropdown a {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem; /* space-x-3 */
+    padding: 0.5rem 1rem; /* px-4 py-2 */
+    color: #d1d5db; /* gray-300 */
+    font-size: 0.875rem; /* text-sm */
+    font-weight: 500; /* font-medium */
+    border-radius: 0.375rem; /* rounded-md */
+    transition: background-color 0.2s, color 0.2s;
+    text-decoration: none;
+}
+
+#user-dropdown a:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #ffffff; /* white */
+}
+
+#user-dropdown a svg {
+    width: 1rem; /* w-4 */
+    height: 1rem; /* h-4 */
+    color: #9ca3af; /* gray-400 */
+}
+
+#user-dropdown a:hover svg {
+    color: #e5e7eb; /* gray-200 */
 }

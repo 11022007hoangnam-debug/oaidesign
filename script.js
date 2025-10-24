@@ -239,7 +239,7 @@ async function unsubscribeFromProfileChanges() {
 }
 
 // --- LOGIC XÁC THỰC VỚI SUPABASE ---
-// Task 10: Cập nhật setupAuthStateObserver
+// Task 10 & FIX 1: Cập nhật setupAuthStateObserver
 function setupAuthStateObserver() {
     window.supabase.auth.onAuthStateChange(async (event, session) => {
         // Xác thực ban đầu và kiểm tra ban
@@ -287,7 +287,11 @@ function setupAuthStateObserver() {
         // Hoặc đây là lần đầu tiên auth sẵn sàng (tải trang)
         if (authStateReady && authNowReady) {
              let pageIdFromUrl = window.location.pathname.substring(1) || 'home';
-             _displayPage(pageIdFromUrl); // Gọi _displayPage để render đúng trang và overlay (nếu cần)
+             
+             // FIX 1: Thêm setTimeout để đảm bảo currentUser được cập nhật trước khi render
+             setTimeout(() => {
+                _displayPage(pageIdFromUrl); 
+             }, 0); // Đẩy việc render trang xuống cuối event loop
         }
     });
 }
@@ -706,7 +710,7 @@ async function sendMessage() {
     try {
         const apiKey = "";
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-        const systemPrompt = "Bạn là 'Oai Mini', trợ lý AI trên website 'Oai Design'. Nhiệm vụ của bạn là CHỈ trả lời các câu hỏi liên quan đến nội dung, dịch vụ, tài nguyên, hoặc các chủ đề về thiết kế (design) có trên website này. Nếu người dùng hỏi về chủ đề không liên quan (ví dụ: thời tiết, chính trị, nấu ăn, các chủ đề chung chung...), bạn PHẢI lịch sự từ chối và hướng họ quay lại chủ đề của website. Luôn trả lời bằng tiếng Việt, ngắn gọn, thân thiện.";
+        const systemPrompt = "Bạn là 'Oai Mini', trợ lý AI trên website 'Oai Design'. NhiệmBẠN LÀ 'Oai Mini', trợ lý AI trên website 'Oai Design'. Nhiệm vụ của bạn là CHỈ trả lời các câu hỏi liên quan đến nội dung, dịch vụ, tài nguyên, hoặc các chủ đề về thiết kế (design) có trên website này. Nếu người dùng hỏi về chủ đề không liên quan (ví dụ: thời tiết, chính trị, nấu ăn, các chủ đề chung chung...), bạn PHẢI lịch sự từ chối và hướng họ quay lại chủ đề của website. Luôn trả lời bằng tiếng Việt, ngắn gọn, thân thiện.";
         const payload = {
             contents: [{ parts: [{ text: userMessage }] }],
             systemInstruction: { parts: [{ text: systemPrompt }] },
@@ -1237,4 +1241,3 @@ function initializeOAIStudio() {
         promptInput.style.height = (promptInput.scrollHeight) + 'px';
     });
 }
-
