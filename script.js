@@ -6,7 +6,7 @@ const navLinks = {
     software: document.getElementById('nav-software'),
     'oai-studio': document.getElementById('nav-oai-studio'),
     contact: document.getElementById('nav-contact'),
-    auth: document.getElementById('nav-login')
+    auth: document.getElementById('nav-login') // Sẽ bị ghi đè
 };
 const pageElements = {
     home: document.getElementById('page-home'),
@@ -27,6 +27,7 @@ const authOverlayOai = document.getElementById('auth-overlay-oai'); // NÂNG C�
 const loginForm = document.getElementById('login-form');
 const registerForm = document.getElementById('register-form');
 const authButtonContainer = document.getElementById('auth-button-container');
+const userDropdown = document.getElementById('user-dropdown'); // NÂNG CẤP 6: Thêm biến dropdown
 
 // --- CÁC HÀM TIỆN ÍCH ---
 function toggleAuthForms() {
@@ -43,6 +44,15 @@ function getCurrentDateString() {
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
     const day = date.getDate().toString().padStart(2, '0');
     return `${year}-${month}-${day}`;
+}
+
+// NÂNG CẤP 6: Hàm bật/tắt dropdown người dùng
+function toggleUserDropdown(event) {
+    event.preventDefault();
+    event.stopPropagation(); // Ngăn sự kiện click lan ra window và đóng dropdown ngay lập tức
+    if (userDropdown) {
+        userDropdown.classList.toggle('show');
+    }
 }
 
 // Task 1 & 10 & 3 & FIX: Hàm _displayPage (lõi logic hiển thị)
@@ -76,8 +86,9 @@ function _displayPage(pageId) { // pageId ở đây là trang gốc được yê
         if(pageElements[page]) pageElements[page].classList.add('hidden');
         if (navLinks[page]) navLinks[page].classList.remove('active');
     });
-    const logoutLink = document.getElementById('nav-logout');
-    if (logoutLink) logoutLink.classList.remove('active');
+    // NÂNG CẤP 6: Đảm bảo nút user menu (nếu có) cũng bị bỏ active
+    const userMenuButton = document.getElementById('user-menu-button');
+    if (userMenuButton) userMenuButton.classList.remove('active');
 
     // Hiển thị trang đích
     if(pageElements[finalPageId]) {
@@ -93,21 +104,15 @@ function _displayPage(pageId) { // pageId ở đây là trang gốc được yê
         if (finalPageId === 'resources' && authOverlay) {
             authOverlay.style.display = 'flex';
         }
-        /* Bỏ logic cho OAI vì nó luôn hiển thị
-        else if (finalPageId === 'oai-studio' && authOverlayOai) {
-            authOverlayOai.style.display = 'flex';
-        }
-        */
     }
 
-    // Task 11: Sửa lỗi hiệu ứng Kính Menu
+    // Task 11 & NÂNG CẤP 6: Sửa lỗi hiệu ứng Kính Menu
     if (typeof moveGlass === 'function') {
         let targetElementForGlass = navLinks[finalPageId];
 
         if (currentUser) {
-            if (!targetElementForGlass) {
-                targetElementForGlass = logoutLink; // Mặc định là nút tài khoản nếu trang không có nav link
-            }
+            // NÂNG CẤP 6: Khi đăng nhập, target luôn là user menu button
+             targetElementForGlass = userMenuButton || document.getElementById('user-menu-button');
         } else {
              if (!targetElementForGlass && finalPageId !== 'auth') { // Nếu chưa đăng nhập và không phải trang auth
                 targetElementForGlass = navLinks.auth; // Mặc định là nút đăng nhập
@@ -151,9 +156,14 @@ function _displayPage(pageId) { // pageId ở đây là trang gốc được yê
     }
 }
 
-// Task 1 & FIX Auth Overlay: Hàm showPage (Xử lý sự kiện click và History API)
+// Task 1 & FIX Auth Overlay & NÂNG CẤP 6: Hàm showPage (Xử lý sự kiện click và History API)
 function showPage(pageId, event) {
     if (event) event.preventDefault();
+
+    // NÂNG CẤP 6: Đóng dropdown khi chuyển trang
+    if (userDropdown && userDropdown.classList.contains('show')) {
+        userDropdown.classList.remove('show');
+    }
 
     // Xác định trang hợp lệ (ví dụ: nếu gõ sai tên)
     let targetPageId = pageId;
@@ -350,53 +360,63 @@ async function downloadResource(resourceId) {
 
 
 // --- CÁC HÀM CẬP NHẬT GIAO DIỆN VÀ XỬ LÝ SỰ KIỆN ---
-// (Hàm updateUIForLoggedInUser và updateUIForLoggedOutUser không đổi)
+
+// NÂNG CẤP 6: Cập nhật UI khi đã đăng nhập (tạo nút mở dropdown)
 function updateUIForLoggedInUser(user) {
     if (authButtonContainer) {
         const userMetadata = user.user_metadata;
         const displayName = userMetadata?.full_name || userMetadata?.name || user.email.split('@')[0];
-        const avatarUrl = userMetadata?.avatar_url || 'https://i.imgur.com/3Z4Yp4J.png';
+        const avatarUrl = userMetadata?.avatar_url || 'https://i.imgur.com/3Z4Yp4J.png'; // Avatar mặc định
         authButtonContainer.innerHTML = `
-            <a href="#" id="nav-logout" class="nav-link flex items-center gap-2" onclick="signOutUser(event)">
+            <button id="user-menu-button" class="nav-link flex items-center gap-2" onclick="toggleUserDropdown(event)">
                 <img src="${avatarUrl}" alt="Avatar" class="h-6 w-6 rounded-full object-cover">
                 <span class="font-semibold">${displayName || 'Tài Khoản'}</span>
-            </a>
+                 <svg class="w-4 h-4 text-gray-400 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </button>
         `;
+        // Không cần cập nhật navLinks.auth nữa, vì nút này không dùng để điều hướng
         navLinks.auth = null; // Xóa tham chiếu cũ
-        // Thêm tham chiếu mới vào navLinks
-        navLinks.logout = document.getElementById('nav-logout');
 
         // Cập nhật kính sau khi DOM thay đổi
         setTimeout(() => {
             if (typeof moveGlass === 'function') {
-                const activeLink = document.querySelector('#desktop-nav .nav-link.active');
-                // Ưu tiên active link, nếu không có thì trỏ về nút logout
-                moveGlass(activeLink || navLinks.logout);
+                const userMenuButton = document.getElementById('user-menu-button');
+                // Luôn trỏ kính về nút user menu khi đã đăng nhập
+                if (userMenuButton) { // Thêm kiểm tra
+                    moveGlass(userMenuButton);
+                }
             }
         }, 50); // Delay nhỏ để DOM kịp cập nhật
     }
 }
 
+// NÂNG CẤP 5: Cập nhật UI khi chưa đăng nhập (thay icon)
 function updateUIForLoggedOutUser() {
     if (authButtonContainer) {
         authButtonContainer.innerHTML = `
             <a href="#" id="nav-login" class="nav-link" onclick="showPage('auth', event)">
-                <img src="https://i.imgur.com/3Z4Yp4J.png" alt="Login Icon" style="height: 20px;">
+                <img src="https://i.imgur.com/hhc1Ect.png" alt="Login Icon" style="height: 20px;"> <!-- Icon mới -->
                 <span>Đăng Nhập</span>
             </a>
         `;
-        navLinks.logout = null; // Xóa tham chiếu cũ
-        // Thêm tham chiếu mới vào navLinks
-        navLinks.auth = document.getElementById('nav-login');
+        // NÂNG CẤP 6: Xóa tham chiếu cũ (nếu có) và thêm tham chiếu mới vào navLinks
+        const oldUserMenuButton = document.getElementById('user-menu-button');
+        if (oldUserMenuButton) {
+             // Không cần xóa khỏi navLinks vì nó không được thêm vào
+        }
+        navLinks.auth = document.getElementById('nav-login'); // Thêm lại tham chiếu
 
          // Cập nhật kính sau khi DOM thay đổi
         setTimeout(() => {
             if (typeof moveGlass === 'function') {
                 const activeLink = document.querySelector('#desktop-nav .nav-link.active');
-                 // Ưu tiên active link, nếu không có thì trỏ về nút login
-                moveGlass(activeLink || navLinks.auth);
+                moveGlass(activeLink || navLinks.auth); // Ưu tiên active link, nếu không thì trỏ về nút login
             }
         }, 50); // Delay nhỏ để DOM kịp cập nhật
+    }
+    // NÂNG CẤP 6: Đảm bảo dropdown bị ẩn khi đăng xuất
+    if (userDropdown) {
+        userDropdown.classList.remove('show');
     }
 }
 
@@ -446,13 +466,17 @@ async function handleEmailLogin(event) {
     // Không cần alert thành công, onAuthStateChange sẽ xử lý
 }
 
-// (Hàm signOutUser không đổi)
+// Hàm signOutUser (không đổi logic, chỉ đảm bảo nó tồn tại để dropdown gọi)
 async function signOutUser(event) {
     if (event) event.preventDefault();
     await unsubscribeFromProfileChanges();
     const { error } = await window.supabase.auth.signOut();
     if (error) {
         alert("Đăng xuất thất bại: " + error.message);
+    }
+    // NÂNG CẤP 6: Đóng dropdown sau khi đăng xuất
+    if (userDropdown) {
+        userDropdown.classList.remove('show');
     }
     // onAuthStateChange sẽ tự động cập nhật UI và hiển thị trang home
     // Không cần gọi showPage hay _displayPage ở đây nữa
@@ -524,7 +548,7 @@ async function initializeResources() {
     renderResources();
 }
 
-// Task 10 & FIX Auth Overlay: Cập nhật DOMContentLoaded
+// Task 10 & FIX Auth Overlay & NÂNG CẤP 6: Cập nhật DOMContentLoaded
 document.addEventListener('DOMContentLoaded', () => {
     // Không gọi _displayPage('home') ở đây nữa,
     // setupAuthStateObserver sẽ gọi nó sau khi auth sẵn sàng.
@@ -554,6 +578,18 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    // NÂNG CẤP 6: Thêm event listener để đóng dropdown khi click ra ngoài
+    window.addEventListener('click', (event) => {
+        const userMenuButton = document.getElementById('user-menu-button');
+        if (userDropdown && userDropdown.classList.contains('show')) {
+            // Kiểm tra xem có click vào nút menu hoặc bên trong dropdown không
+            if (!userMenuButton?.contains(event.target) && !userDropdown.contains(event.target)) {
+                userDropdown.classList.remove('show');
+            }
+        }
+    });
+
 
     // Khởi tạo các thành phần khác
     if (typeof initFlyingLogos === 'function') initFlyingLogos();
@@ -844,14 +880,17 @@ function moveGlass(element) {
 const navContainer = document.getElementById('desktop-nav');
 if (navContainer) {
     const glassBg = navContainer.querySelector('.nav-glass-bg');
-    const navItems = navContainer.querySelectorAll('.nav-link');
-
-    navItems.forEach(item => {
-        item.addEventListener('mouseenter', () => moveGlass(item));
+    // NÂNG CẤP 6: Phải query liên tục vì nút login/logout bị thay thế
+    navContainer.addEventListener('mouseover', (e) => {
+        const targetLink = e.target.closest('.nav-link, #user-menu-button');
+        if (targetLink) {
+            moveGlass(targetLink);
+        }
     });
 
     navContainer.addEventListener('mouseleave', () => {
-        const activeItem = navContainer.querySelector('.nav-link.active');
+        // NÂNG CẤP 6: Tìm nút active, có thể là link thường hoặc nút user
+        const activeItem = navContainer.querySelector('.nav-link.active, #user-menu-button.active');
         moveGlass(activeItem); // activeItem có thể là null nếu không có link nào active
     });
 }
@@ -963,6 +1002,12 @@ function getDimensions(aspectRatio, resolution) {
 
 // Task 5, 6, 7: Cập nhật initializeOAIStudio
 function initializeOAIStudio() {
+    // FIX 2: Không chạy logic nếu trang OAI bị khóa "Coming Soon"
+    if (authOverlayOai && authOverlayOai.style.display !== 'none') {
+        console.log("OAI Studio initialization skipped (Coming Soon).");
+        return;
+    }
+
     const sendBtn = document.getElementById('prompt-send-btn');
     const promptInput = document.getElementById('prompt-input');
     const modelSelection = document.getElementById('model-selection');
@@ -1192,3 +1237,4 @@ function initializeOAIStudio() {
         promptInput.style.height = (promptInput.scrollHeight) + 'px';
     });
 }
+

@@ -47,6 +47,7 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
+    cursor: pointer; /* Thêm con trỏ */
 }
 
 .nav-link img {
@@ -99,7 +100,7 @@ body {
     transform: translateY(-12px) scale(1.02);
 }
 
-/* NÂNG CẤP 2: Hiệu ứng viền chạy liên tục */
+/* NÂNG CẤP 4: Hiệu ứng viền chạy liên tục */
 .service-card-wrapper::before {
     content: '';
     position: absolute;
@@ -115,7 +116,7 @@ body {
     animation: glow-border 8s linear infinite; /* Đổi tên animation */
     z-index: -1;
     border-radius: inherit;
-    /* NÂNG CẤP 2: Luôn hiển thị viền */
+    /* NÂNG CẤP 4: Luôn hiển thị viền (thay đổi opacity từ 0 -> 1) */
     opacity: 1;
     transition: opacity 0.4s ease-out;
     padding: 2px;
@@ -126,7 +127,7 @@ body {
             mask-composite: exclude;
 }
 
-/* NÂNG CẤP 2: Xóa hiệu ứng opacity khi hover (vì giờ nó luôn hiện) */
+/* NÂNG CẤP 4: Xóa hiệu ứng opacity khi hover (vì giờ nó luôn hiện) */
 /* .service-card-wrapper:hover::before {
     opacity: 1;
 } */
@@ -157,7 +158,9 @@ body {
 
 .service-card-wrapper .service-card {
     background: linear-gradient(145deg, #1f2937, #111827);
-    border: 1px solid #374151;
+    /* NÂNG CẤP 4: Bỏ border cũ vì viền màu luôn hiện */
+    /* border: 1px solid #374151; */
+    border: none;
     z-index: 2;
     position: relative;
     width: 100%;
@@ -167,9 +170,9 @@ body {
 }
 
 /* NÂNG CẤP 2: Ẩn viền mặc định vì viền màu luôn hiện */
-.service-card-wrapper .service-card {
+/* .service-card-wrapper .service-card {
     border-color: transparent;
-}
+} */
 
 
 .software-card {
@@ -555,15 +558,13 @@ body {
     top: 72px; /* Dính ngay dưới header (chiều cao header là 72px) */
     width: 100%;
     z-index: 40; /* Đảm bảo nằm dưới header (z-50) */
-    /* NÂNG CẤP 1: Bỏ background-image tĩnh */
-    /* background-image: linear-gradient(90deg, #6d28d9, #a855f7, #ec4899); */
-    /* NÂNG CẤP 1: Thêm background động */
-    background: linear-gradient(90deg, #6d28d9, #a855f7, #ec4899, #f472b6, #a855f7, #6d28d9);
+    /* NÂNG CẤP 2: Thay đổi màu gradient */
+    background: linear-gradient(90deg, #45f400, #f6ff03, #45f400); /* Xanh lá - Vàng - Xanh lá */
     background-size: 300% 100%;
     animation: scroll-gradient 10s linear infinite;
 }
 
-/* NÂNG CẤP 1: Keyframes cho nền động */
+/* NÂNG CẤP 2: Keyframes cho nền động (chỉ cập nhật màu) */
 @keyframes scroll-gradient {
     0% { background-position: 0% 50%; }
     50% { background-position: 100% 50%; }
@@ -581,21 +582,25 @@ body {
 
 #notification-text {
     white-space: normal; /* Cho phép xuống dòng nếu cần */
-    color: #f3e8ff; /* Màu chữ sáng hơn trên nền tím */
+    color: #1a2e05; /* NÂNG CẤP 2: Đổi màu chữ sang tối hơn để dễ đọc trên nền sáng */
+    font-weight: 600; /* Làm chữ đậm hơn chút */
+    text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.3); /* Thêm bóng đổ nhẹ */
 }
 
 /* Tùy chỉnh nút Đăng kí ngay */
 #notification-bar a {
      /* Style đã được đặt inline trong HTML */
+     /* NÂNG CẤP 2: Thay đổi màu chữ nút cho phù hợp nền mới */
+     color: #1a2e05 !important; /* Đảm bảo ghi đè inline style */
 }
 
 /* Tùy chỉnh nút đóng X */
 #notification-bar #close-notification {
-    color: rgba(255, 255, 255, 0.7);
+    color: rgba(26, 46, 5, 0.7); /* NÂNG CẤP 2: Đổi màu nút X */
     transition: color 0.2s;
 }
 #notification-bar #close-notification:hover {
-    color: white;
+    color: #1a2e05;
 }
 
 
@@ -770,13 +775,14 @@ body {
     background-color: #6b7280;
 }
 
+/* FIX 2: Giảm z-index của prompt bar */
 #prompt-bar {
     position: absolute;
     bottom: 1.5rem;
     left: 50%;
     transform: translateX(-50%);
     width: 100%;
-    z-index: 5; /* FIX 2: Giảm z-index để lớp phủ che */
+    z-index: 5; /* Giảm từ 20 xuống 5 */
     background-color: rgba(29, 29, 31, 0.9);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -1021,10 +1027,12 @@ body {
 /* === NÂNG CẤP: CSS cho các thành phần xác thực === */
 
 /* Lớp phủ bảo vệ trang tài nguyên & O-AI Studio */
-#auth-overlay, #auth-overlay-oai {
+#auth-overlay {
     /* Đã chuyển style="display: none;" vào HTML để mặc định ẩn */
-    /* FIX 2: Thêm z-index ở đây để đảm bảo nó cao nhất */
-    z-index: 30;
+}
+/* FIX 2: Tăng z-index để lớp phủ OAI che phủ mọi thứ */
+#auth-overlay-oai {
+    z-index: 30; /* Tăng từ 10 lên 30 */
 }
 
 .auth-button {
@@ -1162,4 +1170,17 @@ body {
 }
 .auth-toggle-link a:hover {
     text-decoration: underline;
+}
+
+/* NÂNG CẤP 6: CSS cho dropdown người dùng */
+#user-dropdown {
+    /* Các lớp Tailwind đã định nghĩa hầu hết style */
+    /* Thêm thuộc tính để JS có thể kiểm soát */
+    visibility: hidden; /* Dùng visibility thay vì display:none để transition hoạt động */
+}
+
+#user-dropdown.show {
+    visibility: visible;
+    opacity: 1;
+    transform: scale(1);
 }
