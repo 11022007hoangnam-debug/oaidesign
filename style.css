@@ -99,7 +99,7 @@ body {
     transform: translateY(-12px) scale(1.02);
 }
 
-/* NÂNG CẤP 2 & FIX 2: Hiệu ứng viền chạy liên tục */
+/* NÂNG CẤP 2 & FIX 2: Hiệu ứng viền chạy liên tục (FIX LỖI 2) */
 .service-card-wrapper::before {
     content: '';
     position: absolute;
@@ -125,7 +125,7 @@ body {
 }
 
 
-/* FIX 2: Cập nhật keyframes để chạy mượt mà */
+/* FIX 2: Cập nhật keyframes để chạy mượt mà (FIX LỖI 2) */
 @keyframes glow-border {
     0% {
         background-position: 0% 50%;
@@ -160,7 +160,7 @@ body {
     transition: border-color 0.3s ease;
 }
 
-/* NÂNG CẤP 2: Ẩn viền mặc định vì viền màu luôn hiện */
+/* NÂNG CẤP 2: Ẩn viền mặc định vì viền màu luôn hiện (FIX LỖI 2) */
 .service-card-wrapper .service-card {
     border-color: transparent;
 }

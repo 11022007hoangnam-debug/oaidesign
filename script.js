@@ -20,7 +20,7 @@ const pageElements = {
 let resourcesInitialized = false;
 let currentUser = null;
 let profileSubscription = null; // Biến lưu "camera an ninh"
-let authStateReady = false; // Task 10: Cờ kiểm tra trạng thái xác thực
+let authStateReady = false; // Cờ kiểm tra trạng thái xác thực
 
 const authOverlay = document.getElementById('auth-overlay');
 const authOverlayOai = document.getElementById('auth-overlay-oai'); // NÂNG CẤP 3: Thêm biến cho O-AI overlay
@@ -60,15 +60,6 @@ function _displayPage(pageId) { // pageId ở đây là trang gốc được yê
     // Luôn ẩn cả hai overlay khi bắt đầu
     if (authOverlay) authOverlay.style.display = 'none';
     // if (authOverlayOai) authOverlayOai.style.display = 'none'; // FIX 2: KHÔNG ẩn overlay OAI (đã được đặt thành "Coming Soon")
-
-    // FIX 1: Gỡ bỏ kiểm tra authStateReady. Logic overlay bên dưới sẽ xử lý việc này.
-    /*
-    // Task 10: Chỉ chạy khi auth đã sẵn sàng
-    if (!authStateReady) {
-        console.log("Auth state not ready, delaying page display.");
-        return;
-    }
-    */
 
     // Xác định trang hợp lệ để hiển thị (không chuyển hướng nếu chưa đăng nhập)
     let finalPageId = pageId;
@@ -239,10 +230,23 @@ async function unsubscribeFromProfileChanges() {
 }
 
 // --- LOGIC XÁC THỰC VỚI SUPABASE ---
-// Task 10 & FIX 1: Cập nhật setupAuthStateObserver
+
+// Task 10 & FIX 1: Cập nhật setupAuthStateObserver (Giải pháp A - Path Routing)
 function setupAuthStateObserver() {
     window.supabase.auth.onAuthStateChange(async (event, session) => {
-        // Xác thực ban đầu và kiểm tra ban
+        
+        // --- BƯỚC 1: DỌN DẸP URL HASH (FIX LỖI VÒNG LẶP) ---
+        // Xử lý dọn dẹp URL *ngay lập tức* nếu đây là lần đăng nhập OAuth (từ Google)
+        // Chỉ dọn dẹp nếu có session VÀ hash chứa 'access_token'
+        if (session && window.location.hash.includes('access_token')) {
+            console.log("OAuth login detected, cleaning URL hash...");
+            // Dùng replaceState để xóa hash mà không tải lại trang.
+            // URL sẽ trở về path gốc (ví dụ: /auth -> /auth, / -> /)
+            history.replaceState(null, document.title, window.location.pathname);
+        }
+        
+        // --- BƯỚC 2: KIỂM TRA BAN (LOGIC CŨ) ---
+        // Vẫn kiểm tra ban cho người dùng đăng nhập
         if ((event === 'INITIAL_SESSION' || event === 'SIGNED_IN') && session) {
             const { data, error } = await window.supabase
                 .from('profiles')
@@ -257,16 +261,16 @@ function setupAuthStateObserver() {
             if (data && data.is_banned) {
                 alert("Tài khoản của bạn đã bị khóa.");
                 await window.supabase.auth.signOut(); // Đăng xuất ngay nếu bị ban
-                // Không cần return, để luồng chạy tiếp xử lý UI đăng xuất
-                session = null; // Coi như session không hợp lệ
+                session = null; // Coi như session không hợp lệ, sẽ đi vào luồng đăng xuất
             }
         }
 
+        // --- BƯỚC 3: CẬP NHẬT TRẠNG THÁI VÀ GIAO DIỆN ---
         const user = session?.user || null;
         const wasLoggedIn = !!currentUser; // Lưu trạng thái trước khi cập nhật
-        currentUser = user; // Cập nhật trạng thái người dùng hiện tại
+        currentUser = user; // Cập nhật trạng thái người dùng toàn cục
 
-        // Cập nhật giao diện và listener
+        // Cập nhật giao diện và listener dựa trên trạng thái user mới
         if (user) {
             updateUIForLoggedInUser(user);
             listenToProfileChanges(user.id);
@@ -275,20 +279,34 @@ function setupAuthStateObserver() {
             unsubscribeFromProfileChanges();
         }
 
-        // Đánh dấu auth đã sẵn sàng sau lần kiểm tra đầu tiên hoặc khi có thay đổi trạng thái
-        const authNowReady = !authStateReady || (user && !wasLoggedIn) || (!user && wasLoggedIn);
-        if(!authStateReady && (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'SIGNED_OUT')) {
-             authStateReady = true;
-        } else if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
-             authStateReady = true; // Đảm bảo luôn sẵn sàng sau khi login/logout
-        }
-
-        // Chỉ cập nhật trang nếu trạng thái auth đã sẵn sàng VÀ có sự thay đổi trạng thái đăng nhập
-        // Hoặc đây là lần đầu tiên auth sẵn sàng (tải trang)
-        if (authStateReady && authNowReady) {
-             let pageIdFromUrl = window.location.pathname.substring(1) || 'home';
+        // --- BƯỚC 4: HIỂN THỊ TRANG (LOGIC ĐÃ CẢI TIẾN) ---
+        
+        // Kiểm tra xem trạng thái đăng nhập có thực sự thay đổi không
+        // (ví dụ: từ null -> user, hoặc user -> null)
+        const authStatusChanged = (user && !wasLoggedIn) || (!user && wasLoggedIn);
+        
+        // Chúng ta chỉ gọi hàm _displayPage (vẽ lại trang) trong 2 trường hợp:
+        // 1. Đây là lần tải trang đầu tiên (!authStateReady) -> để hiển thị trang ban đầu.
+        // 2. Trạng thái đăng nhập vừa thay đổi (authStatusChanged) -> để cập nhật UI
+        if (!authStateReady || authStatusChanged) {
              
-             // FIX 1: Thêm setTimeout để đảm bảo currentUser được cập nhật trước khi render
+             // Đánh dấu là đã sẵn sàng sau lần chạy đầu tiên
+             if (!authStateReady) {
+                authStateReady = true;
+             }
+
+             // Lấy pageId từ URL path (lúc này đã được dọn dẹp)
+             let pageIdFromUrl = window.location.pathname.substring(1) || 'home';
+
+             // Nếu đăng nhập thành công và đang ở trang /auth, tự động chuyển về /home
+             if (user && pageIdFromUrl === 'auth') {
+                 pageIdFromUrl = 'home';
+                 // Cập nhật URL về /home mà không reload
+                 history.replaceState({ pageId: 'home' }, '', '/');
+             }
+             
+             // FIX: Thêm setTimeout để đảm bảo currentUser được cập nhật
+             // và DOM (nút user) kịp render trước khi _displayPage chạy
              setTimeout(() => {
                 _displayPage(pageIdFromUrl); 
              }, 0); // Đẩy việc render trang xuống cuối event loop
@@ -387,6 +405,10 @@ function updateUIForLoggedInUser(user) {
                 const userMenuButton = document.getElementById('user-menu-button');
                 // Luôn trỏ kính về nút user menu khi đã đăng nhập
                 if (userMenuButton) { // Thêm kiểm tra
+                    // Kiểm tra xem nút user có đang active không, nếu không thì tự add
+                    if (!userMenuButton.classList.contains('active')) {
+                        userMenuButton.classList.add('active');
+                    }
                     moveGlass(userMenuButton);
                 }
             }
