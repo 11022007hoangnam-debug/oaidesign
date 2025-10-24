@@ -21,6 +21,7 @@ let resourcesInitialized = false;
 let currentUser = null;
 let profileSubscription = null; // Biến lưu "camera an ninh"
 let authStateReady = false; // Task 10: Cờ kiểm tra trạng thái xác thực
+let isDownloading = false; // NÂNG CẤP C.2: Cờ chống spam click tải
 
 const authOverlay = document.getElementById('auth-overlay');
 const authOverlayOai = document.getElementById('auth-overlay-oai'); // NÂNG CẤP 3: Thêm biến cho O-AI overlay
@@ -76,8 +77,9 @@ function _displayPage(pageId) { // pageId ở đây là trang gốc được yê
         if(pageElements[page]) pageElements[page].classList.add('hidden');
         if (navLinks[page]) navLinks[page].classList.remove('active');
     });
-    const logoutLink = document.getElementById('nav-logout');
-    if (logoutLink) logoutLink.classList.remove('active');
+    // NÂNG CẤP B.1: Đổi tên biến cho rõ ràng
+    const accountMenuButton = document.getElementById('account-menu-button');
+    if (accountMenuButton) accountMenuButton.classList.remove('active');
 
     // Hiển thị trang đích
     if(pageElements[finalPageId]) {
@@ -105,8 +107,9 @@ function _displayPage(pageId) { // pageId ở đây là trang gốc được yê
         let targetElementForGlass = navLinks[finalPageId];
 
         if (currentUser) {
+            // NÂNG CẤP B.1: Đổi mục tiêu
             if (!targetElementForGlass) {
-                targetElementForGlass = logoutLink; // Mặc định là nút tài khoản nếu trang không có nav link
+                targetElementForGlass = accountMenuButton; // Mặc định là nút tài khoản nếu trang không có nav link
             }
         } else {
              if (!targetElementForGlass && finalPageId !== 'auth') { // Nếu chưa đăng nhập và không phải trang auth
@@ -284,15 +287,28 @@ function setupAuthStateObserver() {
 
 
 // --- LOGIC TẢI FILE (ĐÃ HOÀN THIỆN) ---
-// Task 3: Viết lại hàm downloadResource
-async function downloadResource(resourceId) {
-    if (!currentUser) {
-        alert("Vui lòng đăng nhập để tải tài nguyên!");
-        // Không gọi showPage('auth') nữa vì overlay sẽ hiện
+// NÂNG CẤP C.1 & C.2: Viết lại hàm downloadResource
+async function downloadResource(resourceId, buttonElement) {
+    // C.2: Ngăn chặn spam click
+    if (isDownloading) {
+        console.log("Đang có một lượt tải khác, vui lòng đợi...");
         return;
+    }
+    
+    // C.2: Đặt cờ & vô hiệu hóa nút
+    isDownloading = true;
+    if (buttonElement) {
+        buttonElement.disabled = true;
+        buttonElement.textContent = 'Đang xử lý...';
     }
 
     try {
+        if (!currentUser) {
+            alert("Vui lòng đăng nhập để tải tài nguyên!");
+            // Không gọi showPage('auth') nữa vì overlay sẽ hiện
+            return; // Thoát sớm
+        }
+
         const userId = currentUser.id;
         const today = getCurrentDateString();
         const storageKey = `downloadLimit_${userId}`;
@@ -303,15 +319,16 @@ async function downloadResource(resourceId) {
             limitData = { date: today, count: 0 };
         }
 
+        // C.1: Kiểm tra giới hạn TẢI TRƯỚC KHI làm bất cứ điều gì khác
         if (limitData.count >= 10) {
             alert("Bạn đã đạt đến giới hạn 10 lượt tải tài nguyên mỗi ngày. Vui lòng quay lại vào ngày mai.");
-            return;
+            return; // Thoát sớm
         }
 
         if (!resourceId || resourceId === 'undefined') {
             console.error("Lỗi: resourceId không hợp lệ.");
-            alert("Đã xảy ra lỗi, không thể tìm thấy tài nguyên này.");
-            return;
+            alert("Đã xảy ra lỗi, không thể tìm thấy tài nguyên này (ID không hợp lệ).");
+            return; // Thoát sớm
         }
 
         const { data, error } = await window.supabase
@@ -325,17 +342,20 @@ async function downloadResource(resourceId) {
                  console.error('Không tìm thấy tài nguyên với ID:', resourceId);
                  alert('Không tìm thấy tài nguyên này trong cơ sở dữ liệu.');
             } else {
-                throw error;
+                console.error("Lỗi Supabase:", error.message);
+                throw error; // Ném lỗi để catch xử lý
             }
-            return;
+            return; // Thoát
         }
 
         if (data && data.downloadLink) {
             console.log('Tìm thấy link, đang mở:', data.downloadLink);
             window.open(data.downloadLink, '_blank');
 
+            // Cập nhật bộ đếm
             limitData.count++;
             localStorage.setItem(storageKey, JSON.stringify(limitData));
+            console.log(`Lượt tải hôm nay: ${limitData.count}/10`);
 
         } else {
             console.warn('Không tìm thấy link tải cho resource ID:', resourceId);
@@ -343,57 +363,95 @@ async function downloadResource(resourceId) {
         }
 
     } catch (error) {
-        console.error("Lỗi khi lấy link tải:", error.message);
+        console.error("Lỗi trong hàm downloadResource:", error.message);
         alert("Đã xảy ra lỗi khi cố gắng lấy link tải. Vui lòng thử lại.");
+    } finally {
+        // C.2: Luôn luôn reset cờ và kích hoạt lại nút
+        isDownloading = false;
+        if (buttonElement) {
+            buttonElement.disabled = false;
+            buttonElement.textContent = 'Tải Về';
+        }
     }
 }
 
 
 // --- CÁC HÀM CẬP NHẬT GIAO DIỆN VÀ XỬ LÝ SỰ KIỆN ---
-// (Hàm updateUIForLoggedInUser và updateUIForLoggedOutUser không đổi)
+
+// NÂNG CẤP B.1: Cập nhật UI cho người dùng đã đăng nhập (Menu Dropdown)
 function updateUIForLoggedInUser(user) {
     if (authButtonContainer) {
         const userMetadata = user.user_metadata;
         const displayName = userMetadata?.full_name || userMetadata?.name || user.email.split('@')[0];
-        const avatarUrl = userMetadata?.avatar_url || 'https://i.imgur.com/3Z4Yp4J.png';
+        const avatarUrl = userMetadata?.avatar_url || 'https://i.imgur.com/3Z4Yp4J.png'; // Dùng avatar mặc định nếu không có
+
+        // Tạo HTML cho nút và dropdown
         authButtonContainer.innerHTML = `
-            <a href="#" id="nav-logout" class="nav-link flex items-center gap-2" onclick="signOutUser(event)">
+            <!-- Nút chính hiển thị thông tin user -->
+            <button id="account-menu-button" class="nav-link flex items-center gap-2 cursor-pointer" type="button">
                 <img src="${avatarUrl}" alt="Avatar" class="h-6 w-6 rounded-full object-cover">
-                <span class="font-semibold">${displayName || 'Tài Khoản'}</span>
-            </a>
+                <span class="font-semibold">${displayName}</span>
+            </button>
+            
+            <!-- Menu Dropdown (ẩn mặc định) -->
+            <div id="account-dropdown" class="account-dropdown">
+                <button id="logout-button" class="account-dropdown-item logout-btn">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                    </svg>
+                    <span>Đăng xuất</span>
+                </button>
+            </div>
         `;
+        
         navLinks.auth = null; // Xóa tham chiếu cũ
-        // Thêm tham chiếu mới vào navLinks
-        navLinks.logout = document.getElementById('nav-logout');
+        navLinks.logout = document.getElementById('account-menu-button'); // Tham chiếu mới
+
+        // Thêm Event Listeners cho menu mới
+        const menuButton = document.getElementById('account-menu-button');
+        const dropdown = document.getElementById('account-dropdown');
+        const logoutButton = document.getElementById('logout-button');
+
+        if (menuButton && dropdown) {
+            menuButton.addEventListener('click', (event) => {
+                event.stopPropagation(); // Ngăn sự kiện click lan ra window
+                dropdown.classList.toggle('open');
+            });
+        }
+        if (logoutButton) {
+            logoutButton.addEventListener('click', (event) => {
+                event.preventDefault();
+                signOutUser(event);
+            });
+        }
 
         // Cập nhật kính sau khi DOM thay đổi
         setTimeout(() => {
             if (typeof moveGlass === 'function') {
                 const activeLink = document.querySelector('#desktop-nav .nav-link.active');
-                // Ưu tiên active link, nếu không có thì trỏ về nút logout
                 moveGlass(activeLink || navLinks.logout);
             }
         }, 50); // Delay nhỏ để DOM kịp cập nhật
     }
 }
 
+// NÂNG CẤP B.2: Cập nhật UI cho người dùng đã đăng xuất (Logo mới)
 function updateUIForLoggedOutUser() {
     if (authButtonContainer) {
         authButtonContainer.innerHTML = `
             <a href="#" id="nav-login" class="nav-link" onclick="showPage('auth', event)">
-                <img src="https://i.imgur.com/3Z4Yp4J.png" alt="Login Icon" style="height: 20px;">
+                <!-- NÂNG CẤP B.2: Logo đăng nhập mới -->
+                <img src="https://i.imgur.com/hhc1Ect.png" alt="Login Icon" style="height: 20px;">
                 <span>Đăng Nhập</span>
             </a>
         `;
         navLinks.logout = null; // Xóa tham chiếu cũ
-        // Thêm tham chiếu mới vào navLinks
-        navLinks.auth = document.getElementById('nav-login');
+        navLinks.auth = document.getElementById('nav-login'); // Tham chiếu mới
 
          // Cập nhật kính sau khi DOM thay đổi
         setTimeout(() => {
             if (typeof moveGlass === 'function') {
                 const activeLink = document.querySelector('#desktop-nav .nav-link.active');
-                 // Ưu tiên active link, nếu không có thì trỏ về nút login
                 moveGlass(activeLink || navLinks.auth);
             }
         }, 50); // Delay nhỏ để DOM kịp cập nhật
@@ -530,6 +588,18 @@ document.addEventListener('DOMContentLoaded', () => {
     // setupAuthStateObserver sẽ gọi nó sau khi auth sẵn sàng.
     setupAuthStateObserver();
 
+    // NÂNG CẤP B.1: Thêm listener để đóng dropdown khi click ra ngoài
+    window.addEventListener('click', (event) => {
+        const dropdown = document.getElementById('account-dropdown');
+        const menuButton = document.getElementById('account-menu-button');
+        // Nếu dropdown đang mở VÀ click không phải vào nút menu VÀ không phải vào bên trong dropdown
+        if (dropdown && dropdown.classList.contains('open') && 
+            !menuButton.contains(event.target) && 
+            !dropdown.contains(event.target)) {
+            dropdown.classList.remove('open');
+        }
+    });
+
     const loginGoogleBtn = document.getElementById('login-google-btn');
     if (loginGoogleBtn) loginGoogleBtn.addEventListener('click', signInWithGoogle);
 
@@ -545,12 +615,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const resourceGrid = document.getElementById('resource-grid');
     if(resourceGrid) {
         resourceGrid.addEventListener('click', (event) => {
-            // Chỉ thêm listener nếu người dùng đã đăng nhập
-            if (currentUser && event.target && event.target.classList.contains('download-btn')) {
-                const resourceId = event.target.dataset.id;
-                downloadResource(resourceId);
-            } else if (!currentUser && event.target && event.target.classList.contains('download-btn')) {
+            const button = event.target.closest('.download-btn'); // Lấy nút chính xác
+            if (currentUser && button) {
+                const resourceId = button.dataset.id;
+                // NÂNG CẤP C.2: Truyền element của nút vào hàm
+                downloadResource(resourceId, button); 
+            } else if (!currentUser && button) {
                  // Có thể thêm thông báo yêu cầu đăng nhập nếu muốn, nhưng overlay đã xử lý việc chặn
+                 alert("Vui lòng đăng nhập để tải tài nguyên!");
             }
         });
     }
@@ -696,7 +768,7 @@ async function sendMessage() {
         chatMessages.appendChild(errorDiv);
         chatMessages.scrollTop = chatMessages.scrollHeight;
     } finally {
-        typingIndicator.classList.add('hidden');
+        typingIndicator.add('hidden');
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 }
