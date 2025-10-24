@@ -27,7 +27,6 @@ const authOverlayOai = document.getElementById('auth-overlay-oai'); // NÂNG C�
 const loginForm = document.getElementById('login-form');
 const registerForm = document.getElementById('register-form');
 const authButtonContainer = document.getElementById('auth-button-container');
-const userDropdown = document.getElementById('user-dropdown'); // Thêm mới: Biến cho dropdown người dùng
 
 // --- CÁC HÀM TIỆN ÍCH ---
 function toggleAuthForms() {
@@ -77,11 +76,8 @@ function _displayPage(pageId) { // pageId ở đây là trang gốc được yê
         if(pageElements[page]) pageElements[page].classList.add('hidden');
         if (navLinks[page]) navLinks[page].classList.remove('active');
     });
-    // Cập nhật: Thay vì navLinks.logout, chúng ta tìm button (nếu có)
-    const userMenuButton = document.getElementById('user-menu-button');
-    if (userMenuButton) userMenuButton.classList.remove('active');
-    // const logoutLink = document.getElementById('nav-logout'); // Dòng này không còn dùng
-    // if (logoutLink) logoutLink.classList.remove('active'); // Dòng này không còn dùng
+    const logoutLink = document.getElementById('nav-logout');
+    if (logoutLink) logoutLink.classList.remove('active');
 
     // Hiển thị trang đích
     if(pageElements[finalPageId]) {
@@ -104,30 +100,27 @@ function _displayPage(pageId) { // pageId ở đây là trang gốc được yê
         */
     }
 
-    // Task 11 & Cập nhật Dropdown: Sửa lỗi hiệu ứng Kính Menu
+    // Task 11: Sửa lỗi hiệu ứng Kính Menu
     if (typeof moveGlass === 'function') {
         let targetElementForGlass = navLinks[finalPageId];
 
         if (currentUser) {
-            // Nếu đã đăng nhập, mục tiêu là nút user menu
-            const userButton = document.getElementById('user-menu-button');
-            if (userButton) {
-                 userButton.classList.add('active'); // Thêm active cho nút user
-                 targetElementForGlass = userButton;
+            if (!targetElementForGlass) {
+                targetElementForGlass = logoutLink; // Mặc định là nút tài khoản nếu trang không có nav link
             }
         } else {
-             // Nếu chưa đăng nhập
-             if (navLinks[finalPageId]) {
-                 navLinks[finalPageId].classList.add('active'); // Active link trang
-                 targetElementForGlass = navLinks[finalPageId];
-             } else {
-                 navLinks.auth.classList.add('active'); // Mặc định là nút login
+             if (!targetElementForGlass && finalPageId !== 'auth') { // Nếu chưa đăng nhập và không phải trang auth
+                targetElementForGlass = navLinks.auth; // Mặc định là nút đăng nhập
+            } else if (finalPageId === 'auth'){ // Nếu là trang auth thì luôn trỏ về login
                  targetElementForGlass = navLinks.auth;
-             }
+            }
         }
-        
-        // Di chuyển kính đến mục tiêu
-        moveGlass(targetElementForGlass);
+
+
+        if (targetElementForGlass) {
+            targetElementForGlass.classList.add('active');
+            moveGlass(targetElementForGlass);
+        }
     }
 
     // Logic cũ từ showPage (init resources, zalo, observe)
@@ -357,53 +350,41 @@ async function downloadResource(resourceId) {
 
 
 // --- CÁC HÀM CẬP NHẬT GIAO DIỆN VÀ XỬ LÝ SỰ KIỆN ---
-
-// Cập nhật: Thay thế logic <a> bằng <button> và dropdown
+// (Hàm updateUIForLoggedInUser và updateUIForLoggedOutUser không đổi)
 function updateUIForLoggedInUser(user) {
     if (authButtonContainer) {
         const userMetadata = user.user_metadata;
         const displayName = userMetadata?.full_name || userMetadata?.name || user.email.split('@')[0];
         const avatarUrl = userMetadata?.avatar_url || 'https://i.imgur.com/3Z4Yp4J.png';
-        
-        // Cập nhật: Sử dụng <button> để kích hoạt dropdown
         authButtonContainer.innerHTML = `
-            <button id="user-menu-button" onclick="toggleUserDropdown(event)" class="nav-link flex items-center gap-2" aria-label="Mở menu người dùng" type="button">
+            <a href="#" id="nav-logout" class="nav-link flex items-center gap-2" onclick="signOutUser(event)">
                 <img src="${avatarUrl}" alt="Avatar" class="h-6 w-6 rounded-full object-cover">
                 <span class="font-semibold">${displayName || 'Tài Khoản'}</span>
-                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-            </button>
+            </a>
         `;
-        navLinks.auth = null; // Cập nhật logic: null khi đăng nhập
-        navLinks.logout = null; // Loại bỏ navLinks.logout cũ
+        navLinks.auth = null; // Xóa tham chiếu cũ
+        // Thêm tham chiếu mới vào navLinks
+        navLinks.logout = document.getElementById('nav-logout');
 
         // Cập nhật kính sau khi DOM thay đổi
         setTimeout(() => {
             if (typeof moveGlass === 'function') {
                 const activeLink = document.querySelector('#desktop-nav .nav-link.active');
-                // Cập nhật: Trỏ về nút user-menu-button mới
-                const userButton = document.getElementById('user-menu-button');
-                moveGlass(activeLink || userButton);
+                // Ưu tiên active link, nếu không có thì trỏ về nút logout
+                moveGlass(activeLink || navLinks.logout);
             }
         }, 50); // Delay nhỏ để DOM kịp cập nhật
     }
 }
 
-// Cập nhật: Sử dụng SVG icon và đảm bảo dropdown bị ẩn
 function updateUIForLoggedOutUser() {
     if (authButtonContainer) {
-        // Cập nhật: Sử dụng SVG icon
         authButtonContainer.innerHTML = `
-            <a href="#" id="nav-login" class="nav-link flex items-center gap-2" onclick="showPage('auth', event)">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h5a3 3 0 013 3v1"></path></svg>
+            <a href="#" id="nav-login" class="nav-link" onclick="showPage('auth', event)">
+                <img src="https://i.imgur.com/3Z4Yp4J.png" alt="Login Icon" style="height: 20px;">
                 <span>Đăng Nhập</span>
             </a>
         `;
-        
-        // Thêm mới: Đảm bảo dropdown bị ẩn khi đăng xuất
-        if (userDropdown) {
-            userDropdown.classList.add('hidden');
-        }
-        
         navLinks.logout = null; // Xóa tham chiếu cũ
         // Thêm tham chiếu mới vào navLinks
         navLinks.auth = document.getElementById('nav-login');
@@ -465,7 +446,7 @@ async function handleEmailLogin(event) {
     // Không cần alert thành công, onAuthStateChange sẽ xử lý
 }
 
-// (Hàm signOutUser không đổi - Sẽ được gọi từ dropdown trong HTML)
+// (Hàm signOutUser không đổi)
 async function signOutUser(event) {
     if (event) event.preventDefault();
     await unsubscribeFromProfileChanges();
@@ -543,23 +524,11 @@ async function initializeResources() {
     renderResources();
 }
 
-// Task 10 & Cập nhật Dropdown: Cập nhật DOMContentLoaded
+// Task 10 & FIX Auth Overlay: Cập nhật DOMContentLoaded
 document.addEventListener('DOMContentLoaded', () => {
     // Không gọi _displayPage('home') ở đây nữa,
     // setupAuthStateObserver sẽ gọi nó sau khi auth sẵn sàng.
     setupAuthStateObserver();
-
-    // Thêm mới: Listener để đóng dropdown khi click ra ngoài
-    window.addEventListener('click', (event) => {
-        const userMenuButton = document.getElementById('user-menu-button'); 
-        if (userDropdown && !userDropdown.classList.contains('hidden')) {
-            const isClickInsideDropdown = userDropdown.contains(event.target);
-            const isClickOnButton = userMenuButton && userMenuButton.contains(event.target);
-            if (!isClickInsideDropdown && !isClickOnButton) {
-                userDropdown.classList.add('hidden');
-            }
-        }
-    });
 
     const loginGoogleBtn = document.getElementById('login-google-btn');
     if (loginGoogleBtn) loginGoogleBtn.addEventListener('click', signInWithGoogle);
@@ -597,15 +566,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // --- CÁC HÀM GIAO DIỆN KHÁC ---
-
-// Thêm mới: Hàm bật/tắt dropdown người dùng
-function toggleUserDropdown(event) {
-    event.stopPropagation(); // Ngăn sự kiện click lan ra window
-    if (userDropdown) {
-        userDropdown.classList.toggle('hidden');
-    }
-}
-
 // (openModal, closeModal, mobile menu, close notification, assistant, chat, observeSections, video gallery, backToTop, flyingLogos, moveGlass, typingAnimation không đổi)
 function openModal(modalId) {
     const modal = document.getElementById(modalId);
@@ -785,14 +745,8 @@ function renderVideoGallery() {
         const card = document.createElement('div');
         card.className = 'video-card group';
         card.dataset.videoId = video.id;
-
-        // Thêm mới: Thuộc tính accessibility
-        card.setAttribute('role', 'button');
-        card.setAttribute('tabindex', '0');
-        card.setAttribute('aria-label', `Xem video: ${video.title}`);
-
         card.innerHTML = `
-            <img src="https://img.youtube.com/vi/${video.id}/hqdefault.jpg" alt="${video.title}" class="w-full h-full object-cover" loading="lazy">
+            <img src="https://img.youtube.com/vi/${video.id}/hqdefault.jpg" alt="${video.title}" class="w-full h-full object-cover">
             <div class="absolute inset-0 bg-black bg-opacity-20 group-hover:bg-opacity-40 transition-all duration-300"></div>
             <div class="play-icon">
                 <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>
@@ -800,33 +754,7 @@ function renderVideoGallery() {
             <p class="absolute bottom-0 left-0 p-3 text-white font-semibold text-sm drop-shadow-lg">${video.title}</p>
         `;
         grid.appendChild(card);
-
-        // Thêm mới: Xử lý sự kiện nhấn phím Enter/Space cho accessibility
-        card.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                openVideoModal(video.id); // Gọi hàm mới
-            }
-        });
     });
-}
-
-// Thêm mới: Tách logic mở video modal ra hàm riêng
-function openVideoModal(videoId) {
-    const playerContainer = document.getElementById('video-player-container');
-    if (playerContainer) {
-        playerContainer.innerHTML = `
-            <iframe
-                class="w-full h-full"
-                src="https://www.youtube.com/embed/${videoId}?autoplay=1"
-                title="YouTube video player"
-                frameborder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                allowfullscreen>
-            </iframe>
-        `;
-    }
-    openModal('video-modal');
 }
 
 const videoGrid = document.getElementById('video-grid');
@@ -835,7 +763,20 @@ if (videoGrid) {
         const card = e.target.closest('.video-card');
         if (card) {
             const videoId = card.dataset.videoId;
-            openVideoModal(videoId); // Cập nhật: Gọi hàm mới
+            const playerContainer = document.getElementById('video-player-container');
+            if (playerContainer) {
+                playerContainer.innerHTML = `
+                    <iframe
+                        class="w-full h-full"
+                        src="https://www.youtube.com/embed/${videoId}?autoplay=1"
+                        title="YouTube video player"
+                        frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowfullscreen>
+                    </iframe>
+                `;
+            }
+            openModal('video-modal');
         }
     });
 }
@@ -884,20 +825,17 @@ function initFlyingLogos() {
     }
 }
 
-// Cập nhật: Tối ưu logic, ẩn kính khi không có target
 function moveGlass(element) {
     const navContainer = document.getElementById('desktop-nav');
     if (!navContainer) return;
     const glassBg = navContainer.querySelector('.nav-glass-bg');
-    // Cập nhật: Thêm kiểm tra glassBg và logic ẩn kính
-    if (!glassBg) return; 
-
-    if (element && navContainer.contains(element)) {
-        // Nếu có element hợp lệ, di chuyển kính
+    if (!element || !glassBg) return;
+    // Thêm kiểm tra element có thực sự nằm trong navContainer không
+    if (navContainer.contains(element)) {
         glassBg.style.width = `${element.offsetWidth}px`;
         glassBg.style.left = `${element.offsetLeft}px`;
     } else {
-        // Nếu không có element (null) hoặc element không thuộc nav, ẩn kính
+        // Nếu element không có trong nav (ví dụ: logout đang bị ẩn), ẩn kính đi
         glassBg.style.width = `0px`;
     }
 }
@@ -913,8 +851,7 @@ if (navContainer) {
     });
 
     navContainer.addEventListener('mouseleave', () => {
-        // Cập nhật: Tìm .active, có thể là .nav-link hoặc #user-menu-button
-        const activeItem = navContainer.querySelector('.nav-link.active') || navContainer.querySelector('#user-menu-button.active');
+        const activeItem = navContainer.querySelector('.nav-link.active');
         moveGlass(activeItem); // activeItem có thể là null nếu không có link nào active
     });
 }
@@ -925,7 +862,6 @@ function typingAnimation() {
     const signatureElement = document.getElementById('hero-signature');
     const cursorElement = document.querySelector('.cursor');
     const textContentWrapper = document.getElementById('hero-text-content');
-    // Kiểm tra logic này đã tồn tại và chính xác
     if (!textElement || !signatureElement || !cursorElement || !textContentWrapper) {
         console.warn('Typing animation elements not found.');
         return;
@@ -948,32 +884,24 @@ function typingAnimation() {
         cursorElement.style.opacity = '1';
 
         function type() {
-            // Thêm kiểm tra element tồn tại bên trong hàm đệ quy (an toàn hơn)
-            if (i < fullText.length && textElement) { 
+            if (i < fullText.length) {
                 textElement.innerHTML = `“${fullText.substring(0, i + 1)}”`;
                 i++;
                 setTimeout(type, 25);
             } else {
-                if(signatureElement) { // Kiểm tra trước khi dùng
-                    signatureElement.style.transition = 'opacity 1s ease-in-out';
-                    signatureElement.style.opacity = '1';
-                }
-                if(cursorElement) { // Kiểm tra trước khi dùng
-                    cursorElement.style.animation = 'none';
-                    cursorElement.style.opacity = '0';
-                }
+                signatureElement.style.transition = 'opacity 1s ease-in-out';
+                signatureElement.style.opacity = '1';
+                cursorElement.style.animation = 'none';
+                cursorElement.style.opacity = '0';
 
                 setTimeout(() => {
-                    // Kiểm tra element trước khi dùng
-                    if (textContentWrapper && signatureElement) { 
-                        textContentWrapper.style.transition = 'opacity 0.8s ease-out, filter 0.8s ease-out';
-                        signatureElement.style.transition = 'opacity 0.8s ease-out, filter 0.8s ease-out';
-                        textContentWrapper.style.opacity = '0';
-                        textContentWrapper.style.filter = 'blur(5px)';
-                        signatureElement.style.opacity = '0';
-                        signatureElement.style.filter = 'blur(5px)';
-                        setTimeout(runAnimation, 1000);
-                    }
+                    textContentWrapper.style.transition = 'opacity 0.8s ease-out, filter 0.8s ease-out';
+                    signatureElement.style.transition = 'opacity 0.8s ease-out, filter 0.8s ease-out';
+textContentWrapper.style.opacity = '0';
+                    textContentWrapper.style.filter = 'blur(5px)';
+                    signatureElement.style.opacity = '0';
+                    signatureElement.style.filter = 'blur(5px)';
+                    setTimeout(runAnimation, 1000);
                 }, 10000);
             }
         }
@@ -1033,14 +961,8 @@ function getDimensions(aspectRatio, resolution) {
 
 
 
-// Task 5, 6, 7 & Cập nhật: Cập nhật initializeOAIStudio
+// Task 5, 6, 7: Cập nhật initializeOAIStudio
 function initializeOAIStudio() {
-    // Thêm mới: Kiểm tra overlay "Coming Soon" bằng getComputedStyle
-    if (authOverlayOai && getComputedStyle(authOverlayOai).display !== 'none') {
-        console.log("O-AI Studio overlay is active, skipping initialization.");
-        return; // Không chạy gì cả nếu overlay đang hiển thị
-    }
-
     const sendBtn = document.getElementById('prompt-send-btn');
     const promptInput = document.getElementById('prompt-input');
     const modelSelection = document.getElementById('model-selection');

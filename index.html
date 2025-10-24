@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- NÂNG CẤP: Thay đổi tiêu đề trang -->
     <title>Oai Design - Người bạn đồng hành cùng Designer</title>
-    <!-- NÂNG CẤP 1: Thay đổi Favicon -->
-    <link rel="icon" href="https://i.imgur.com/DqKkuXz.png" type="image/png">
+    <!-- NÂNG CẤP: Thêm Favicon (sử dụng logo làm placeholder) -->
+    <link rel="icon" href="https://i.imgur.com/9Rul623.png" type="image/png">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Thay đổi font chữ sang Open Sans -->
@@ -64,24 +64,12 @@
                     <img src="https://i.imgur.com/WHofi7l.png" alt="Donate Icon">
                     <span class="text-yellow-400">Donate</span>
                 </a>
-                 <!-- === NÂNG CẤP 5 & 6: Nút Đăng nhập/Tài khoản và Cấu trúc Dropdown === -->
-                 <div id="auth-button-container" class="ml-4 relative"> <!-- NÂNG CẤP 6: Thêm 'relative' -->
+                 <!-- === NÂNG CẤP: Nút Đăng nhập/Tài khoản === -->
+                 <div id="auth-button-container" class="ml-4">
                     <a href="#" id="nav-login" class="nav-link" onclick="showPage('auth', event)">
-                         <!-- NÂNG CẤP 5: Thay đổi icon đăng nhập -->
-                         <img src="https://i.imgur.com/hhc1Ect.png" alt="Login Icon" style="height: 20px;">
+                         <img src="https://i.imgur.com/3Z4Yp4J.png" alt="Login Icon" style="height: 20px;">
                         <span>Đăng Nhập</span>
                     </a>
-                </div>
-                <!-- NÂNG CẤP 6: Thêm cấu trúc HTML cho dropdown -->
-                <div id="user-dropdown" 
-                     class="hidden absolute top-full right-0 mt-3 w-48 bg-gray-800 border border-gray-700 rounded-lg shadow-lg py-2 z-[60]
-                            opacity-0 transform scale-95 transition-all duration-200 ease-in-out">
-                    <a href="#" 
-                       onclick="signOutUser(event)"
-                       class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors">
-                       Đăng xuất
-                    </a>
-                    <!-- Có thể thêm các link khác (ví dụ: "Tài khoản của tôi") ở đây -->
                 </div>
             </div>
             <button id="mobile-menu-button" class="md:hidden text-white focus:outline-none">
@@ -134,7 +122,7 @@
                 <a href="#" onclick="showPage('software', event);"
                     class="text-sm font-bold bg-white text-purple-700 px-4 py-1.5 rounded-full transition-all hover:scale-105 whitespace-nowrap"
                     style="background: linear-gradient(to bottom, #fff, #f0e6ff); box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
-                    Liên Hệ Ngay <!-- Đổi text -->
+                    Xem Chi Tiết <!-- Đổi text -->
                 </a>
             </div>
             <!-- Nút đóng X vẫn giữ nguyên vị trí -->
@@ -576,9 +564,9 @@
                         class="max-w-4xl mx-auto bg-gray-800/50 border border-gray-700 rounded-2xl p-8 flex flex-col md:flex-row items-center gap-8 mb-24">
                         <div class="md:w-1/2 text-center md:text-left">
                             <h3 class="text-2xl font-semibold text-sky-400 mb-4">Chung tay xây dựng</h3>
-                            <!-- NÂNG CẤP 3: Thay đổi nội dung Donate -->
                             <p class="text-gray-300 leading-relaxed">
-                                Toàn bộ kinh phí ủng hộ sẽ được sử dụng để duy trì website và tổ chức các buổi giao lưu thiết kế miễn phí cho cộng đồng. Hoặc đơn giản chỉ là muốn ủng hộ Oai Design.
+                                Toàn bộ kinh phí ủng hộ sẽ được sử dụng để duy trì website, mua thêm tài nguyên chất
+                                lượng cao và tổ chức các buổi chia sẻ kiến thức miễn phí cho cộng đồng.
                                 <br><br>
                                 Đây là hành động hoàn toàn tự nguyện, không bắt buộc. Sự có mặt và ủng hộ tinh thần của
                                 bạn đã là một món quà quý giá!
@@ -687,11 +675,12 @@
         <div id="page-oai-studio" class="hidden relative"> <!-- NÂNG CẤP: Thêm relative -->
             
             <!-- === NÂNG CẤP: Lớp phủ bảo vệ cho O-AI Studio === -->
-            <!-- FIX 2: Thay đổi nội dung, style để thành "Coming Soon" và luôn hiển thị -->
-            <div id="auth-overlay-oai" class="absolute inset-0 z-30 flex flex-col items-center justify-center pt-32 bg-gray-900/80 backdrop-blur-lg" style="display: flex;">
-                <h2 class="text-4xl font-bold text-white mb-4">Coming Soon! 🚀</h2>
-                <p class="text-gray-300 text-lg mb-8">Tính năng O-AI Studio đang được hoàn thiện.</p>
-                <p class="text-gray-400">Hãy quay lại sau nhé!</p>
+            <!-- FIX 2: Thay đổi nội dung, z-index và style display -->
+            <div id="auth-overlay-oai" class="absolute inset-0 flex flex-col items-center justify-start pt-32 bg-gray-900/80 backdrop-blur-lg" style="display: flex; z-index: 30;">
+                <h2 class="text-3xl font-bold text-white mb-4">O-AI Studio</h2>
+                <p class="text-gray-300 mb-8 text-xl">Tính năng này đang được phát triển. Vui lòng quay lại sau!</p>
+                <h3 class="text-6xl">🚀</h3>
+                <h3 class="text-2xl font-semibold text-yellow-400 mt-4">Coming Soon!</h3>
             </div>
 
             <!-- SỬA LỖI: Bọc toàn bộ trang trong một container duy nhất -->
@@ -1162,7 +1151,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         const supabaseUrl = 'https://eczovnahwntestpokikd.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIZ0cmVUiOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVjem92bmFod250ZXN0cG9raWtkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwNDAyNDIsImV4cCI6MjA3NjYxNjI0Mn0._Y-SzUccct4DGaAjOP7grRSFUdfV2Quvo3N31lLUquQ';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVjem92bmFod250ZXN0cG9raWtkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwNDAyNDIsImV4cCI6MjA3NjYxNjI0Mn0._Y-SzUccct4DGaAjOP7grRSFUdfV2Quvo3N31lLUquQ';
         // Make supabase client globally available to script.js
         window.supabase = supabase.createClient(supabaseUrl, supabaseKey);
     </script>
