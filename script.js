@@ -350,12 +350,18 @@ async function downloadResource(resourceId, buttonElement) {
             localStorage.setItem(storageKey, JSON.stringify(limitData));
             console.log(`Lượt tải hôm nay: ${limitData.count}/10`);
 
-            // FIX 4: Mở khóa nút NÀY NGAY LẬP TỨC.
-            // Các nút khác không bị ảnh hưởng và có thể được click song song.
+            // FIX 5 (CUỐI CÙNG):
+            // 1. Mở khóa nút ngay lập tức.
+            //    Hành động này sẽ được thực thi trong "tick" (chu kỳ) hiện tại.
             resetButtonState();
             
-            // Mở link. Thao tác này sẽ chạy song song với các lệnh mở link khác.
-            window.open(data.downloadLink, '_blank');
+            // 2. Đẩy lệnh "window.open" (vốn đang gây kẹt)
+            //    sang "tick" (chu kỳ) tiếp theo của trình duyệt.
+            //    Điều này đảm bảo trình duyệt có thời gian VẼ LẠI cái nút
+            //    trước khi xử lý lệnh mở tab mới.
+            setTimeout(() => {
+                window.open(data.downloadLink, '_blank');
+            }, 0); // Delay 0ms để đẩy sang hàng đợi (event loop)
 
         } else {
             console.warn('Không tìm thấy link tải cho resource ID:', resourceId);
@@ -1261,3 +1267,5 @@ function initializeOAIStudio() {
         promptInput.style.height = (promptInput.scrollHeight) + 'px';
     });
 }
+
+
