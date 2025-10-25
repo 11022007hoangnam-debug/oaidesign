@@ -21,7 +21,7 @@ let resourcesInitialized = false;
 let currentUser = null;
 let profileSubscription = null; // Biến lưu "camera an ninh"
 let authStateReady = false; // Task 10: Cờ kiểm tra trạng thái xác thực
-let isDownloading = false; // NÂNG CẤP C.2: Cờ chống spam click tải
+// let isDownloading = false; // FIX 4: XÓA BỎ BIẾN KHÓA TOÀN CỤC (isDownloading)
 
 const authOverlay = document.getElementById('auth-overlay');
 const authOverlayOai = document.getElementById('auth-overlay-oai'); // NÂNG CẤP 3: Thêm biến cho O-AI overlay
@@ -51,15 +51,6 @@ function _displayPage(pageId) { // pageId ở đây là trang gốc được yê
     // Luôn ẩn cả hai overlay khi bắt đầu
     if (authOverlay) authOverlay.style.display = 'none';
     // if (authOverlayOai) authOverlayOai.style.display = 'none'; // FIX 2: KHÔNG ẩn overlay OAI (đã được đặt thành "Coming Soon")
-
-    // FIX 1: Gỡ bỏ kiểm tra authStateReady. Logic overlay bên dưới sẽ xử lý việc này.
-    /*
-    // Task 10: Chỉ chạy khi auth đã sẵn sàng
-    if (!authStateReady) {
-        console.log("Auth state not ready, delaying page display.");
-        return;
-    }
-    */
 
     // Xác định trang hợp lệ để hiển thị (không chuyển hướng nếu chưa đăng nhập)
     let finalPageId = pageId;
@@ -95,11 +86,6 @@ function _displayPage(pageId) { // pageId ở đây là trang gốc được yê
         if (finalPageId === 'resources' && authOverlay) {
             authOverlay.style.display = 'flex';
         }
-        /* Bỏ logic cho OAI vì nó luôn hiển thị
-        else if (finalPageId === 'oai-studio' && authOverlayOai) {
-            authOverlayOai.style.display = 'flex';
-        }
-        */
     }
 
     // Task 11: Sửa lỗi hiệu ứng Kính Menu
@@ -287,36 +273,30 @@ function setupAuthStateObserver() {
 
 
 // --- LOGIC TẢI FILE (ĐÃ HOÀN THIỆN) ---
-// NÂNG CẤP C.1 & C.2: Viết lại hàm downloadResource
-// FIX 2: Sửa toàn bộ hàm downloadResource để xử lý lỗi "kẹt"
+// FIX 4: Sửa toàn bộ hàm downloadResource, XÓA isDownloading
 async function downloadResource(resourceId, buttonElement) {
-    // C.2: Ngăn chặn spam click
-    if (isDownloading) {
-        console.log("Đang có một lượt tải khác, vui lòng đợi...");
+    
+    // FIX 4: Chỉ kiểm tra nút NÀY có bị disabled hay không.
+    // Đây là cơ chế chống spam click duy nhất (trên từng nút).
+    if (buttonElement.disabled) {
+        console.log("Nút này đang được xử lý, vui lòng đợi...");
         return;
     }
     
-    // C.2: Đặt cờ & vô hiệu hóa nút
-    isDownloading = true;
-    if (buttonElement) {
-        buttonElement.disabled = true;
-        buttonElement.textContent = 'Đang xử lý...';
-    }
+    // FIX 4: Khóa CHỈ NÚT NÀY LẠI
+    buttonElement.disabled = true;
+    buttonElement.textContent = 'Đang xử lý...';
 
-    // FIX 2: Tạo hàm reset nội bộ để gọi tại mọi điểm thoát
-    // Hàm này sẽ giải phóng cờ và bật lại nút
-    function resetDownloadState() {
-        isDownloading = false;
-        if (buttonElement) {
-            buttonElement.disabled = false;
-            buttonElement.textContent = 'Tải Về';
-        }
+    // FIX 4: Tạo hàm reset nội bộ CHỈ CHO NÚT NÀY
+    function resetButtonState() {
+        buttonElement.disabled = false;
+        buttonElement.textContent = 'Tải Về';
     }
 
     try {
         if (!currentUser) {
             alert("Vui lòng đăng nhập để tải tài nguyên!");
-            resetDownloadState(); // FIX 2: Reset trước khi return
+            resetButtonState(); // Mở khóa nút
             return;
         }
 
@@ -333,14 +313,14 @@ async function downloadResource(resourceId, buttonElement) {
         // C.1: Kiểm tra giới hạn TẢI TRƯỚC KHI làm bất cứ điều gì khác
         if (limitData.count >= 10) {
             alert("Bạn đã đạt đến giới hạn 10 lượt tải tài nguyên mỗi ngày. Vui lòng quay lại vào ngày mai.");
-            resetDownloadState(); // FIX 2: Reset trước khi return
+            resetButtonState(); // Mở khóa nút
             return; // Thoát sớm
         }
 
         if (!resourceId || resourceId === 'undefined') {
             console.error("Lỗi: resourceId không hợp lệ.");
             alert("Đã xảy ra lỗi, không thể tìm thấy tài nguyên này (ID không hợp lệ).");
-            resetDownloadState(); // FIX 2: Reset trước khi return
+            resetButtonState(); // Mở khóa nút
             return; // Thoát sớm
         }
 
@@ -358,7 +338,7 @@ async function downloadResource(resourceId, buttonElement) {
                 console.error("Lỗi Supabase:", error.message);
                 throw error; // Ném lỗi để catch xử lý
             }
-            resetDownloadState(); // FIX 2: Reset trước khi return (dù có throw hay không)
+            resetButtonState(); // Mở khóa nút
             return; // Thoát
         }
 
@@ -370,28 +350,24 @@ async function downloadResource(resourceId, buttonElement) {
             localStorage.setItem(storageKey, JSON.stringify(limitData));
             console.log(`Lượt tải hôm nay: ${limitData.count}/10`);
 
-            // FIX 3: Giải phóng cờ và nút ngay lập tức.
-            // Đẩy window.open() vào hàng đợi (event loop) bằng setTimeout(..., 0)
-            // để đảm bảo hàm downloadResource() kết thúc và giải phóng cờ 'isDownloading'
-            // NGAY LẬP TỨC, tránh tình trạng "kẹt" khi mở tab mới.
-            resetDownloadState();
+            // FIX 4: Mở khóa nút NÀY NGAY LẬP TỨC.
+            // Các nút khác không bị ảnh hưởng và có thể được click song song.
+            resetButtonState();
             
-            setTimeout(() => {
-                window.open(data.downloadLink, '_blank');
-            }, 0); // Đặt 0ms delay để nó chạy ở tick tiếp theo của event loop
+            // Mở link. Thao tác này sẽ chạy song song với các lệnh mở link khác.
+            window.open(data.downloadLink, '_blank');
 
         } else {
             console.warn('Không tìm thấy link tải cho resource ID:', resourceId);
             alert('Rất tiếc, link tải cho tài nguyên này chưa được cập nhật.');
-            resetDownloadState(); // FIX 2: Reset khi không tìm thấy link
+            resetButtonState(); // Mở khóa nút
         }
 
     } catch (error) {
         console.error("Lỗi trong hàm downloadResource:", error.message);
         alert("Đã xảy ra lỗi khi cố gắng lấy link tải. Vui lòng thử lại.");
-        resetDownloadState(); // FIX 2: Reset khi có lỗi
+        resetButtonState(); // Mở khóa nút khi có lỗi
     } 
-    // FIX 2: Khối finally đã được gỡ bỏ vì logic reset đã được xử lý ở mọi điểm thoát.
 }
 
 
@@ -523,7 +499,7 @@ async function handleEmailLogin(event) {
     // Không cần alert thành công, onAuthStateChange sẽ xử lý
 }
 
-// (Hàm signOutUser không đổi) -> (FIX 1: Sửa hàm signOutUser)
+// FIX 1: Sửa hàm signOutUser (đã sửa ở phiên bản trước, giữ nguyên)
 async function signOutUser(event) {
     if (event) event.preventDefault();
     await unsubscribeFromProfileChanges();
@@ -763,7 +739,7 @@ async function sendMessage() {
     try {
         const apiKey = "";
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-        const systemPrompt = "Bạn là 'Oai Mini', trợ lý AI trên website 'Oai Design'. Nhiệm vụ của bạn là CHỈ trả lời các câu hỏi liên quan đến nội dung, dịch vụ, tài nguyên, hoặc các chủ đề về thiết kế (design) có trên website này. Nếu người dùng hỏi về chủ đề không liên quan (ví dụ: thời tiết, chính trị, nấu ăn, các chủ đề chung chung...), bạn PHẢI lịch sự từ chối và hướng họ quay lại chủ đề của website. Luôn trả lời bằng tiếng Việt, ngắn gọn, thân thiện.";
+        const systemPrompt = "Bạn là 'Oai Mini', trợ lý AI trên website 'Oai Design'. NhiệmB vụ của bạn là CHỈ trả lời các câu hỏi liên quan đến nội dung, dịch vụ, tài nguyên, hoặc các chủ đề về thiết kế (design) có trên website này. Nếu người dùng hỏi về chủ đề không liên quan (ví dụ: thời tiết, chính trị, nấu ăn, các chủ đề chung chung...), bạn PHẢI lịch sự từ chối và hướng họ quay lại chủ đề của website. Luôn trả lời bằng tiếng Việt, ngắn gọn, thân thiện.";
         const payload = {
             contents: [{ parts: [{ text: userMessage }] }],
             systemInstruction: { parts: [{ text: systemPrompt }] },
