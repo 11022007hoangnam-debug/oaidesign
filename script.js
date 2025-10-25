@@ -370,11 +370,15 @@ async function downloadResource(resourceId, buttonElement) {
             localStorage.setItem(storageKey, JSON.stringify(limitData));
             console.log(`Lượt tải hôm nay: ${limitData.count}/10`);
 
-            // FIX 2: Reset trạng thái (mở cờ, bật nút) NGAY TRƯỚC KHI mở tab mới.
-            // Đây là mấu chốt để giải quyết lỗi "kẹt".
+            // FIX 3: Giải phóng cờ và nút ngay lập tức.
+            // Đẩy window.open() vào hàng đợi (event loop) bằng setTimeout(..., 0)
+            // để đảm bảo hàm downloadResource() kết thúc và giải phóng cờ 'isDownloading'
+            // NGAY LẬP TỨC, tránh tình trạng "kẹt" khi mở tab mới.
             resetDownloadState();
-
-            window.open(data.downloadLink, '_blank');
+            
+            setTimeout(() => {
+                window.open(data.downloadLink, '_blank');
+            }, 0); // Đặt 0ms delay để nó chạy ở tick tiếp theo của event loop
 
         } else {
             console.warn('Không tìm thấy link tải cho resource ID:', resourceId);
