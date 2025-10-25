@@ -288,6 +288,7 @@ function setupAuthStateObserver() {
 
 // --- LOGIC TẢI FILE (ĐÃ HOÀN THIỆN) ---
 // NÂNG CẤP C.1 & C.2: Viết lại hàm downloadResource
+// FIX 2: Sửa toàn bộ hàm downloadResource để xử lý lỗi "kẹt"
 async function downloadResource(resourceId, buttonElement) {
     // C.2: Ngăn chặn spam click
     if (isDownloading) {
@@ -302,11 +303,21 @@ async function downloadResource(resourceId, buttonElement) {
         buttonElement.textContent = 'Đang xử lý...';
     }
 
+    // FIX 2: Tạo hàm reset nội bộ để gọi tại mọi điểm thoát
+    // Hàm này sẽ giải phóng cờ và bật lại nút
+    function resetDownloadState() {
+        isDownloading = false;
+        if (buttonElement) {
+            buttonElement.disabled = false;
+            buttonElement.textContent = 'Tải Về';
+        }
+    }
+
     try {
         if (!currentUser) {
             alert("Vui lòng đăng nhập để tải tài nguyên!");
-            // Không gọi showPage('auth') nữa vì overlay sẽ hiện
-            return; // Thoát sớm
+            resetDownloadState(); // FIX 2: Reset trước khi return
+            return;
         }
 
         const userId = currentUser.id;
@@ -322,12 +333,14 @@ async function downloadResource(resourceId, buttonElement) {
         // C.1: Kiểm tra giới hạn TẢI TRƯỚC KHI làm bất cứ điều gì khác
         if (limitData.count >= 10) {
             alert("Bạn đã đạt đến giới hạn 10 lượt tải tài nguyên mỗi ngày. Vui lòng quay lại vào ngày mai.");
+            resetDownloadState(); // FIX 2: Reset trước khi return
             return; // Thoát sớm
         }
 
         if (!resourceId || resourceId === 'undefined') {
             console.error("Lỗi: resourceId không hợp lệ.");
             alert("Đã xảy ra lỗi, không thể tìm thấy tài nguyên này (ID không hợp lệ).");
+            resetDownloadState(); // FIX 2: Reset trước khi return
             return; // Thoát sớm
         }
 
@@ -345,34 +358,36 @@ async function downloadResource(resourceId, buttonElement) {
                 console.error("Lỗi Supabase:", error.message);
                 throw error; // Ném lỗi để catch xử lý
             }
+            resetDownloadState(); // FIX 2: Reset trước khi return (dù có throw hay không)
             return; // Thoát
         }
 
         if (data && data.downloadLink) {
             console.log('Tìm thấy link, đang mở:', data.downloadLink);
-            window.open(data.downloadLink, '_blank');
 
             // Cập nhật bộ đếm
             limitData.count++;
             localStorage.setItem(storageKey, JSON.stringify(limitData));
             console.log(`Lượt tải hôm nay: ${limitData.count}/10`);
 
+            // FIX 2: Reset trạng thái (mở cờ, bật nút) NGAY TRƯỚC KHI mở tab mới.
+            // Đây là mấu chốt để giải quyết lỗi "kẹt".
+            resetDownloadState();
+
+            window.open(data.downloadLink, '_blank');
+
         } else {
             console.warn('Không tìm thấy link tải cho resource ID:', resourceId);
             alert('Rất tiếc, link tải cho tài nguyên này chưa được cập nhật.');
+            resetDownloadState(); // FIX 2: Reset khi không tìm thấy link
         }
 
     } catch (error) {
         console.error("Lỗi trong hàm downloadResource:", error.message);
         alert("Đã xảy ra lỗi khi cố gắng lấy link tải. Vui lòng thử lại.");
-    } finally {
-        // C.2: Luôn luôn reset cờ và kích hoạt lại nút
-        isDownloading = false;
-        if (buttonElement) {
-            buttonElement.disabled = false;
-            buttonElement.textContent = 'Tải Về';
-        }
-    }
+        resetDownloadState(); // FIX 2: Reset khi có lỗi
+    } 
+    // FIX 2: Khối finally đã được gỡ bỏ vì logic reset đã được xử lý ở mọi điểm thoát.
 }
 
 
@@ -504,7 +519,7 @@ async function handleEmailLogin(event) {
     // Không cần alert thành công, onAuthStateChange sẽ xử lý
 }
 
-// (Hàm signOutUser không đổi)
+// (Hàm signOutUser không đổi) -> (FIX 1: Sửa hàm signOutUser)
 async function signOutUser(event) {
     if (event) event.preventDefault();
     await unsubscribeFromProfileChanges();
@@ -512,8 +527,10 @@ async function signOutUser(event) {
     if (error) {
         alert("Đăng xuất thất bại: " + error.message);
     }
-    // onAuthStateChange sẽ tự động cập nhật UI và hiển thị trang home
-    // Không cần gọi showPage hay _displayPage ở đây nữa
+    // onAuthStateChange sẽ tự động cập nhật UI (đổi menu)
+    // FIX 1: Chủ động gọi showPage('home') để render lại nội dung trang
+    // và đảm bảo người dùng được đưa về trang chủ sau khi đăng xuất.
+    showPage('home');
 }
 
 
@@ -768,7 +785,7 @@ async function sendMessage() {
         chatMessages.appendChild(errorDiv);
         chatMessages.scrollTop = chatMessages.scrollHeight;
     } finally {
-        typingIndicator.add('hidden');
+        typingIndicator.classList.add('hidden');
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 }
