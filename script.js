@@ -273,7 +273,7 @@ function setupAuthStateObserver() {
 
 
 // --- LOGIC TẢI FILE (ĐÃ HOÀN THIỆN) ---
-// LOGIC MỚI: Sửa đổi hàm downloadResource để "tính phí" (trừ lượt) trước khi gọi Supabase
+// LOGIC FIX CÔNG BẰNG: Chỉ trừ lượt khi lấy link thành công
 async function downloadResource(resourceId, buttonElement) {
     
     // 1. Khóa nút này lại
@@ -308,7 +308,7 @@ async function downloadResource(resourceId, buttonElement) {
             limitData = { date: today, count: 0 };
         }
 
-        // 4. KIỂM TRA LƯỢT TẢI
+        // 4. KIỂM TRA LƯỢT TẢI (chưa trừ vội)
         if (limitData.count >= 10) {
             alert("Bạn đã đạt đến giới hạn 10 lượt tải tài nguyên mỗi ngày. Vui lòng quay lại vào ngày mai.");
             resetButtonState();
@@ -323,14 +323,7 @@ async function downloadResource(resourceId, buttonElement) {
             return;
         }
 
-        // 6. LOGIC MỚI: TRỪ LƯỢT TẢI (TÍNH PHÍ) NGAY LẬP TỨC
-        // Trừ lượt của người dùng TRƯỚC KHI gọi Supabase
-        limitData.count++;
-        localStorage.setItem(storageKey, JSON.stringify(limitData));
-        console.log(`Đã trừ lượt. Lượt tải hôm nay: ${limitData.count}/10`);
-        // ----------------------------------------------------
-
-        // 7. Bắt đầu gọi Supabase (với Timeout)
+        // 6. Bắt đầu gọi Supabase (với Timeout) để LẤY LINK
         const supabaseQuery = window.supabase
             .from('resources')
             .select('downloadLink')
@@ -346,17 +339,17 @@ async function downloadResource(resourceId, buttonElement) {
             timeoutPromise
         ]);
         
-        // 8. Xử lý kết quả Supabase
+        // 7. Xử lý kết quả Supabase
         if (error) {
             console.error("Lỗi Supabase hoặc hết thời gian:", error.message);
             
-            // Thông báo lỗi (lượt tải đã bị trừ)
+            // Thông báo lỗi (lượt tải KHÔNG bị trừ)
             if (error.message.includes('hết thời gian')) {
-                 alert('Yêu cầu hết thời gian. Lượt tải của bạn đã được tính. Vui lòng kiểm tra mạng và đồng hồ, sau đó thử lại.');
+                 alert('Yêu cầu hết thời gian. Lượt tải của bạn KHÔNG bị trừ. Vui lòng kiểm tra mạng và đồng hồ, sau đó thử lại.');
             } else if (error.code === 'PGRST116') {
-                 alert('Không tìm thấy tài nguyên này. Lượt tải của bạn đã được tính. Vui lòng liên hệ admin.');
+                 alert('Không tìm thấy tài nguyên này. Lượt tải của bạn KHÔNG bị trừ.');
             } else {
-                alert('Đã xảy ra lỗi khi lấy link. Lượt tải của bạn đã được tính. Vui lòng thử lại.');
+                alert('Đã xảy ra lỗi khi lấy link. Lượt tải của bạn KHÔNG bị trừ. Vui lòng thử lại.');
                 throw error;
             }
             
@@ -364,9 +357,15 @@ async function downloadResource(resourceId, buttonElement) {
             return; // Thoát
         }
 
-        // 9. Thành công: Mở link tải
+        // 8. LẤY LINK THÀNH CÔNG: MỚI TRỪ LƯỢT VÀ MỞ LINK
         if (data && data.downloadLink) {
             console.log('Tìm thấy link, đang mở:', data.downloadLink);
+
+            // LOGIC MỚI: Chỉ trừ lượt KHI thành công
+            limitData.count++;
+            localStorage.setItem(storageKey, JSON.stringify(limitData));
+            console.log(`Lấy link thành công. Đã trừ lượt. Lượt tải hôm nay: ${limitData.count}/10`);
+            // ------------------------------------
 
             // Mở khóa nút
             resetButtonState();
@@ -377,16 +376,16 @@ async function downloadResource(resourceId, buttonElement) {
             }, 0);
 
         } else {
-            console.warn('Không tìm thấy link tải cho resource ID:', resourceId);
-            // Thông báo lỗi (lượt tải đã bị trừ)
-            alert('Rất tiếc, link tải cho tài nguyên này chưa được cập nhật. Lượt tải của bạn đã được tính. Vui lòng liên hệ admin.');
+            console.warn('Không tìm thấy link tải cho resource ID (dữ liệu trả về null):', resourceId);
+            // Thông báo lỗi (lượt tải KHÔNG bị trừ)
+            alert('Rất tiếc, link tải cho tài nguyên này chưa được cập nhật (null). Lượt tải của bạn KHÔNG bị trừ.');
             resetButtonState(); // Mở khóa nút
         }
 
     } catch (error) {
         console.error("Lỗi nghiêm trọng trong hàm downloadResource:", error.message);
-        // Thông báo lỗi (lượt tải đã bị trừ)
-        alert("Đã xảy ra lỗi nghiêm trọng. Lượt tải của bạn đã được tính. Vui lòng thử lại.");
+        // Thông báo lỗi (lượt tải KHÔNG bị trừ)
+        alert("Đã xảy ra lỗi nghiêm trọng. Lượt tải của bạn KHÔNG bị trừ. Vui lòng thử lại.");
         resetButtonState(); // Luôn mở khóa nút khi có lỗi
     } 
 }
