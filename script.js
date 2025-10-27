@@ -273,106 +273,121 @@ function setupAuthStateObserver() {
 
 
 // --- LOGIC TẢI FILE (ĐÃ HOÀN THIỆN) ---
-// FIX 4: Sửa toàn bộ hàm downloadResource, XÓA isDownloading
+// LOGIC MỚI: Sửa đổi hàm downloadResource để "tính phí" (trừ lượt) trước khi gọi Supabase
 async function downloadResource(resourceId, buttonElement) {
     
-    // FIX 4: Chỉ kiểm tra nút NÀY có bị disabled hay không.
-    // Đây là cơ chế chống spam click duy nhất (trên từng nút).
+    // 1. Khóa nút này lại
     if (buttonElement.disabled) {
         console.log("Nút này đang được xử lý, vui lòng đợi...");
         return;
     }
-    
-    // FIX 4: Khóa CHỈ NÚT NÀY LẠI
     buttonElement.disabled = true;
     buttonElement.textContent = 'Đang xử lý...';
 
-    // FIX 4: Tạo hàm reset nội bộ CHỈ CHO NÚT NÀY
+    // Hàm nội bộ để mở khóa nút
     function resetButtonState() {
         buttonElement.disabled = false;
         buttonElement.textContent = 'Tải Về';
     }
 
     try {
+        // 2. Kiểm tra đăng nhập
         if (!currentUser) {
             alert("Vui lòng đăng nhập để tải tài nguyên!");
-            resetButtonState(); // Mở khóa nút
+            resetButtonState();
             return;
         }
 
+        // 3. Lấy dữ liệu lượt tải
         const userId = currentUser.id;
         const today = getCurrentDateString();
         const storageKey = `downloadLimit_${userId}`;
-
         let limitData = JSON.parse(localStorage.getItem(storageKey));
 
         if (!limitData || limitData.date !== today) {
             limitData = { date: today, count: 0 };
         }
 
-        // C.1: Kiểm tra giới hạn TẢI TRƯỚC KHI làm bất cứ điều gì khác
+        // 4. KIỂM TRA LƯỢT TẢI
         if (limitData.count >= 10) {
             alert("Bạn đã đạt đến giới hạn 10 lượt tải tài nguyên mỗi ngày. Vui lòng quay lại vào ngày mai.");
-            resetButtonState(); // Mở khóa nút
-            return; // Thoát sớm
+            resetButtonState();
+            return;
         }
 
+        // 5. Kiểm tra resourceId (phải hợp lệ)
         if (!resourceId || resourceId === 'undefined') {
             console.error("Lỗi: resourceId không hợp lệ.");
             alert("Đã xảy ra lỗi, không thể tìm thấy tài nguyên này (ID không hợp lệ).");
-            resetButtonState(); // Mở khóa nút
-            return; // Thoát sớm
+            resetButtonState();
+            return;
         }
 
-        const { data, error } = await window.supabase
+        // 6. LOGIC MỚI: TRỪ LƯỢT TẢI (TÍNH PHÍ) NGAY LẬP TỨC
+        // Trừ lượt của người dùng TRƯỚC KHI gọi Supabase
+        limitData.count++;
+        localStorage.setItem(storageKey, JSON.stringify(limitData));
+        console.log(`Đã trừ lượt. Lượt tải hôm nay: ${limitData.count}/10`);
+        // ----------------------------------------------------
+
+        // 7. Bắt đầu gọi Supabase (với Timeout)
+        const supabaseQuery = window.supabase
             .from('resources')
             .select('downloadLink')
             .eq('id', resourceId)
             .single();
 
+        const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Yêu cầu hết thời gian (10s).')), 10000)
+        );
+
+        const { data, error } = await Promise.race([
+            supabaseQuery,
+            timeoutPromise
+        ]);
+        
+        // 8. Xử lý kết quả Supabase
         if (error) {
-            if (error.code === 'PGRST116') {
-                 console.error('Không tìm thấy tài nguyên với ID:', resourceId);
-                 alert('Không tìm thấy tài nguyên này trong cơ sở dữ liệu.');
+            console.error("Lỗi Supabase hoặc hết thời gian:", error.message);
+            
+            // Thông báo lỗi (lượt tải đã bị trừ)
+            if (error.message.includes('hết thời gian')) {
+                 alert('Yêu cầu hết thời gian. Lượt tải của bạn đã được tính. Vui lòng kiểm tra mạng và đồng hồ, sau đó thử lại.');
+            } else if (error.code === 'PGRST116') {
+                 alert('Không tìm thấy tài nguyên này. Lượt tải của bạn đã được tính. Vui lòng liên hệ admin.');
             } else {
-                console.error("Lỗi Supabase:", error.message);
-                throw error; // Ném lỗi để catch xử lý
+                alert('Đã xảy ra lỗi khi lấy link. Lượt tải của bạn đã được tính. Vui lòng thử lại.');
+                throw error;
             }
+            
             resetButtonState(); // Mở khóa nút
             return; // Thoát
         }
 
+        // 9. Thành công: Mở link tải
         if (data && data.downloadLink) {
             console.log('Tìm thấy link, đang mở:', data.downloadLink);
 
-            // Cập nhật bộ đếm
-            limitData.count++;
-            localStorage.setItem(storageKey, JSON.stringify(limitData));
-            console.log(`Lượt tải hôm nay: ${limitData.count}/10`);
-
-            // FIX 5 (CUỐI CÙNG):
-            // 1. Mở khóa nút ngay lập tức.
-            //    Hành động này sẽ được thực thi trong "tick" (chu kỳ) hiện tại.
+            // Mở khóa nút
             resetButtonState();
             
-            // 2. Đẩy lệnh "window.open" (vốn đang gây kẹt)
-            //    sang "tick" (chu kỳ) tiếp theo của trình duyệt.
-            //    Điều này đảm bảo trình duyệt có thời gian VẼ LẠI cái nút
-            //    trước khi xử lý lệnh mở tab mới.
+            // Dùng setTimeout(0) để mở link ở tick tiếp theo, tránh kẹt trình duyệt
             setTimeout(() => {
                 window.open(data.downloadLink, '_blank');
-            }, 0); // Delay 0ms để đẩy sang hàng đợi (event loop)
+            }, 0);
 
         } else {
             console.warn('Không tìm thấy link tải cho resource ID:', resourceId);
-            alert('Rất tiếc, link tải cho tài nguyên này chưa được cập nhật.');
+            // Thông báo lỗi (lượt tải đã bị trừ)
+            alert('Rất tiếc, link tải cho tài nguyên này chưa được cập nhật. Lượt tải của bạn đã được tính. Vui lòng liên hệ admin.');
             resetButtonState(); // Mở khóa nút
         }
 
     } catch (error) {
-        console.error("Lỗi trong hàm downloadResource:", error.message);
-        alert("Đã xảy ra lỗi khi cố gắng lấy link tải. Vui lòng thử lại.");
-        resetButtonState(); // Mở khóa nút khi có lỗi
+        console.error("Lỗi nghiêm trọng trong hàm downloadResource:", error.message);
+        // Thông báo lỗi (lượt tải đã bị trừ)
+        alert("Đã xảy ra lỗi nghiêm trọng. Lượt tải của bạn đã được tính. Vui lòng thử lại.");
+        resetButtonState(); // Luôn mở khóa nút khi có lỗi
     } 
 }
 
@@ -1267,5 +1282,3 @@ function initializeOAIStudio() {
         promptInput.style.height = (promptInput.scrollHeight) + 'px';
     });
 }
-
-
