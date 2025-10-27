@@ -274,6 +274,7 @@ function setupAuthStateObserver() {
 
 // --- LOGIC TẢI FILE (ĐÃ HOÀN THIỆN) ---
 // LOGIC FIX CÔNG BẰNG: Chỉ trừ lượt khi lấy link thành công
+// SỬ DỤNG AbortController cho Timeout
 async function downloadResource(resourceId, buttonElement) {
     
     // 1. Khóa nút này lại
@@ -290,6 +291,11 @@ async function downloadResource(resourceId, buttonElement) {
         buttonElement.textContent = 'Tải Về';
     }
 
+    // **FIX 7: Tạo AbortController và Timeout**
+    const controller = new AbortController();
+    const signal = controller.signal;
+    let timeoutId; // Khai báo ID của timeout để có thể hủy
+    
     try {
         // 2. Kiểm tra đăng nhập
         if (!currentUser) {
@@ -323,34 +329,39 @@ async function downloadResource(resourceId, buttonElement) {
             return;
         }
 
-        // 6. Bắt đầu gọi Supabase (với Timeout) để LẤY LINK
-        const supabaseQuery = window.supabase
+        // **FIX 7: Thiết lập đồng hồ 10 giây**
+        // Nếu sau 10 giây, Supabase chưa trả lời, controller sẽ hủy yêu cầu
+        timeoutId = setTimeout(() => {
+            console.warn('Yêu cầu Supabase hết 10 giây. Đang hủy...');
+            controller.abort();
+        }, 10000); // 10 giây timeout
+
+        // 6. Bắt đầu gọi Supabase (với signal) để LẤY LINK
+        const { data, error } = await window.supabase
             .from('resources')
             .select('downloadLink')
             .eq('id', resourceId)
+            .signal(signal) // <-- Truyền tín hiệu hủy vào Supabase
             .single();
 
-        const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Yêu cầu hết thời gian (10s).')), 10000)
-        );
-
-        const { data, error } = await Promise.race([
-            supabaseQuery,
-            timeoutPromise
-        ]);
-        
         // 7. Xử lý kết quả Supabase
+        
+        // **FIX 7: Hủy timeout NGAY LẬP TỨC**
+        // (Vì Supabase đã trả lời, dù là lỗi hay thành công, không cần timeout nữa)
+        clearTimeout(timeoutId);
+
         if (error) {
-            console.error("Lỗi Supabase hoặc hết thời gian:", error.message);
+            console.error("Lỗi Supabase hoặc hết thời gian:", error.message, error.name);
             
             // Thông báo lỗi (lượt tải KHÔNG bị trừ)
-            if (error.message.includes('hết thời gian')) {
-                 alert('Yêu cầu hết thời gian. Lượt tải của bạn KHÔNG bị trừ. Vui lòng kiểm tra mạng và đồng hồ, sau đó thử lại.');
+            // Lỗi timeout bây giờ sẽ có tên là 'AbortError'
+            if (error.name === 'AbortError' || error.message.includes('aborted')) {
+                 alert('Yêu cầu hết thời gian (10s). Lượt tải của bạn KHÔNG bị trừ. Vui lòng kiểm tra mạng và thử lại.');
             } else if (error.code === 'PGRST116') {
                  alert('Không tìm thấy tài nguyên này. Lượt tải của bạn KHÔNG bị trừ.');
             } else {
+                // Các lỗi khác (có thể là 'Via NUL' nếu nó vẫn xảy ra)
                 alert('Đã xảy ra lỗi khi lấy link. Lượt tải của bạn KHÔNG bị trừ. Vui lòng thử lại.');
-                throw error; // Ném lại lỗi để catch bên ngoài xử lý nếu cần
             }
             
             resetButtonState(); // Mở khóa nút
@@ -383,13 +394,18 @@ async function downloadResource(resourceId, buttonElement) {
         }
 
     } catch (error) {
+        // **FIX 7: Đảm bảo hủy timeout ngay cả khi có lỗi JS nghiêm trọng**
+        if (timeoutId) clearTimeout(timeoutId); 
+
         // THÊM LOG CHI TIẾT LỖI Ở ĐÂY
         console.error("Caught error inside downloadResource:", error); 
         // --------------------------
         console.error("Lỗi nghiêm trọng trong hàm downloadResource:", error.message);
+        
+        // FIX 8: Đảo thứ tự
+        resetButtonState(); // Mở khóa nút TRƯỚC
         // Thông báo lỗi (lượt tải KHÔNG bị trừ)
         alert("Đã xảy ra lỗi nghiêm trọng. Lượt tải của bạn KHÔNG bị trừ. Vui lòng thử lại.");
-        resetButtonState(); // Luôn mở khóa nút khi có lỗi
     } 
 }
 
