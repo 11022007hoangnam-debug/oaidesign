@@ -350,7 +350,7 @@ async function downloadResource(resourceId, buttonElement) {
                  alert('Không tìm thấy tài nguyên này. Lượt tải của bạn KHÔNG bị trừ.');
             } else {
                 alert('Đã xảy ra lỗi khi lấy link. Lượt tải của bạn KHÔNG bị trừ. Vui lòng thử lại.');
-                throw error;
+                throw error; // Ném lại lỗi để catch bên ngoài xử lý nếu cần
             }
             
             resetButtonState(); // Mở khóa nút
@@ -383,6 +383,9 @@ async function downloadResource(resourceId, buttonElement) {
         }
 
     } catch (error) {
+        // THÊM LOG CHI TIẾT LỖI Ở ĐÂY
+        console.error("Caught error inside downloadResource:", error); 
+        // --------------------------
         console.error("Lỗi nghiêm trọng trong hàm downloadResource:", error.message);
         // Thông báo lỗi (lượt tải KHÔNG bị trừ)
         alert("Đã xảy ra lỗi nghiêm trọng. Lượt tải của bạn KHÔNG bị trừ. Vui lòng thử lại.");
@@ -611,7 +614,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const menuButton = document.getElementById('account-menu-button');
         // Nếu dropdown đang mở VÀ click không phải vào nút menu VÀ không phải vào bên trong dropdown
         if (dropdown && dropdown.classList.contains('open') && 
-            !menuButton.contains(event.target) && 
+            menuButton && !menuButton.contains(event.target) &&  // Thêm kiểm tra menuButton tồn tại
             !dropdown.contains(event.target)) {
             dropdown.classList.remove('open');
         }
