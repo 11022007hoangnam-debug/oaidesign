@@ -1,8 +1,8 @@
 // --- KHAI BÁO BIẾN TOÀN CỤC ---
-// === BẮT ĐẦU CẬP NHẬT GIAI ĐOẠN NHẠY CẢM ===
-// Đây là URL của Worker (Giai đoạn cực kì cẩn thận) ở đây
+// === BẮT ĐẦU CẬP NHẬT GIAI ĐOẠN 3 ===
+// Dán URL của Worker (bạn nhận được sau Giai đoạn 1.5) vào đây
 // Ví dụ: 'https://oai-downloader.ten-ban.workers.dev'
-const WORKER_URL = 'https://oai-downloader.xinchaomoinguoi1102.workers.dev'; 
+const WORKER_URL = 'https://oai-downloader.xinchaomoinguoi1102.workers.dev'; // <<<--- DÁN URL WORKER CỦA BẠN VÀO ĐÂY
 const LOCK_DURATION_MS = 7 * 24 * 60 * 60 * 1000; // 7 ngày
 // === KẾT THÚC CẬP NHẬT GIAI ĐOẠN 3 ===
 
@@ -41,8 +41,6 @@ const passwordSubmitBtn = document.getElementById('password-submit-btn');
 // --- CÁC HÀM TIỆN ÍCH ---
 
 function toggleAuthForms() {
-    const loginForm = document.getElementById('login-form');
-    const registerForm = document.getElementById('register-form');
     if (loginForm && registerForm) {
         loginForm.classList.toggle('hidden');
         registerForm.classList.toggle('hidden');
@@ -100,7 +98,7 @@ function _displayPage(pageId) {
          pageElements[finalPageId].classList.remove('hidden');
     } else {
          console.error(`Page element for '${finalPageId}' not found!`);
-         if (pageElements.home) pageElements.home.classList.remove('hidden'); // Fallback về home
+         pageElements.home.classList.remove('hidden'); // Fallback về home
     }
 
     if ((finalPageId === 'resources') && !currentUser) {
@@ -220,11 +218,7 @@ function listenToProfileChanges(userId) {
 
 async function unsubscribeFromProfileChanges() {
     if (profileSubscription) {
-        try {
-            await window.supabase.removeChannel(profileSubscription);
-        } catch (error) {
-            console.warn("Lỗi khi hủy đăng ký listener:", error.message);
-        }
+        await window.supabase.removeChannel(profileSubscription);
     }
     profileSubscription = null;
 }
@@ -259,7 +253,7 @@ function setupAuthStateObserver() {
             listenToProfileChanges(user.id);
         } else {
             updateUIForLoggedOutUser();
-            await unsubscribeFromProfileChanges(); // Thêm await ở đây
+            unsubscribeFromProfileChanges();
         }
 
         const authNowReady = !authStateReady || (user && !wasLoggedIn) || (!user && wasLoggedIn);
@@ -279,17 +273,12 @@ function setupAuthStateObserver() {
 
 // === GIAI ĐOẠN 3: LOGIC TẢI FILE MỚI HOÀN TOÀN ===
 
-/**
- * Hàm này BẮT ĐẦU quá trình (Phòng thủ 1: Khóa 7 ngày)
- * Nó không thực sự tải file, nó chỉ mở modal mật khẩu
- * @param {string} resourceId - ID của file từ database
- * @param {HTMLElement} buttonElement - Nút vừa được bấm
- */
+// Hàm này BẮT ĐẦU quá trình (Phòng thủ 1: Khóa 7 ngày)
+// Nó không thực sự tải file, nó chỉ mở modal mật khẩu
 async function startDownloadProcess(resourceId, buttonElement) {
     // 1. Kiểm tra đăng nhập
     if (!currentUser) {
         alert("Vui lòng đăng nhập để tải tài nguyên!");
-        showPage('auth'); // Chuyển đến trang đăng nhập
         return;
     }
     
@@ -314,10 +303,7 @@ async function startDownloadProcess(resourceId, buttonElement) {
     if (passwordInput) passwordInput.focus(); // Tự động trỏ vào ô mật khẩu
 }
 
-/**
- * Hàm này được gọi khi người dùng bấm "Xác Nhận" trên Modal
- * @param {Event} event - Sự kiện submit của form
- */
+// Hàm này được gọi khi người dùng bấm "Xác Nhận" trên Modal
 async function handlePasswordSubmit(event) {
     event.preventDefault(); // Ngăn form tự reload trang
     
@@ -550,13 +536,11 @@ async function initializeResources() {
 
     gridContainer.innerHTML = `<p class="text-gray-400 col-span-full text-center">Đang tải tài nguyên...</p>`;
     
-    // QUAN TRỌNG: KHÔNG lấy cột 'downloadLink'. RLS của Supabase (Giai đoạn 2.6)
-    // sẽ chặn yêu cầu này nếu 'downloadLink' bị lộ.
-    // === CẬP NHẬT: Thêm .order() để sắp xếp theo cột 'sort_order' mới ===
+    // NÂNG CẤP: Chỉ lấy các trường công khai & Thêm sắp xếp
     const { data: resourceData, error } = await window.supabase
         .from('resources')
         .select('id, title, imageUrl, category, sort_order') // Chỉ lấy các trường công khai
-        .order('sort_order', { ascending: true, nullsFirst: false }); // Sắp xếp theo thứ tự tăng dần, NULL xuống cuối
+        .order('sort_order', { ascending: true, nullsLast: true }); // Sắp xếp theo cột mới
         
     if (error) {
         console.error("Lỗi tải tài nguyên:", error.message);
@@ -832,7 +816,7 @@ async function sendMessage() {
     try {
         const apiKey = ""; 
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-        const systemPrompt = "Bạn là 'Oai Mini', trợ lý AI trên website 'Oai Design'. NhiệmB vụ của bạn là CHỈ trả lời các câu hỏi liên quan đến nội dung, dịch vụ, tài nguyên, hoặc các chủ đề về thiết kế (design) có trên website này. Nếu người dùng hỏi về chủ đề không liên quan (ví dụ: thời tiết, chính trị, nấu ăn, các chủ đề chung chung...), bạn PHẢI lịch sự từ chối và hướng họ quay lại chủ đề của website. Luôn trả lời bằng tiếng Việt, ngắn gọn, thân thiện.";
+        const systemPrompt = "Bạn là 'Oai Mini', trợ lý AI trên website 'Oai Design'. Nhiệm vụ của bạn là CHỈ trả lời các câu hỏi liên quan đến nội dung, dịch vụ, tài nguyên, hoặc các chủ đề về thiết kế (design) có trên website này. Nếu người dùng hỏi về chủ đề không liên quan (ví dụ: thời tiết, chính trị, nấu ăn, các chủ đề chung chung...), bạn PHẢI lịch sự từ chối và hướng họ quay lại chủ đề của website. Luôn trả lời bằng tiếng Việt, ngắn gọn, thân thiện.";
         const payload = {
             contents: [{ parts: [{ text: userMessage }] }],
             systemInstruction: { parts: [{ text: systemPrompt }] },
@@ -878,7 +862,7 @@ const observeSections = () => {
                 entry.target.classList.add('visible');
             }
             if (entry.intersectionRatio > 0.5) {
-                const sectionId = entry.target.id || entry.target.parentElement?.id;
+                const sectionId = entry.target.id || entry.target.parentElement?.id; // Thêm ?. để tránh lỗi nếu không có parent
                 if(sectionId) showAssistantMessage(sectionId);
             }
         });
@@ -992,10 +976,12 @@ function moveGlass(element) {
     if (!navContainer) return;
     const glassBg = navContainer.querySelector('.nav-glass-bg');
     if (!element || !glassBg) return;
+    // Thêm kiểm tra element có thực sự nằm trong navContainer không
     if (navContainer.contains(element)) {
         glassBg.style.width = `${element.offsetWidth}px`;
         glassBg.style.left = `${element.offsetLeft}px`;
     } else {
+        // Nếu element không có trong nav (ví dụ: logout đang bị ẩn), ẩn kính đi
         glassBg.style.width = `0px`;
     }
 }
@@ -1012,7 +998,7 @@ if (navContainer) {
 
     navContainer.addEventListener('mouseleave', () => {
         const activeItem = navContainer.querySelector('.nav-link.active');
-        moveGlass(activeItem);
+        moveGlass(activeItem); // activeItem có thể là null nếu không có link nào active
     });
 }
 
@@ -1074,8 +1060,9 @@ textContentWrapper.style.opacity = '0';
 function downloadImageFromButton(buttonElement) {
     const resultBlock = buttonElement.closest('.ai-result-block');
     if (!resultBlock) return;
+    // Sửa selector để tìm đúng ảnh bên trong wrapper
     const img = resultBlock.querySelector('.ai-image-wrapper img');
-    if (img && img.src && !img.src.startsWith('https://placehold.co')) {
+    if (img && img.src && !img.src.startsWith('https://placehold.co')) { // Đảm bảo không tải placeholder
         const link = document.createElement('a');
         link.href = img.src;
         link.download = 'oai-studio-image.png';
@@ -1088,27 +1075,30 @@ function downloadImageFromButton(buttonElement) {
 }
 
 
+// Task 7 & 4: Hàm phụ trợ lấy kích thước (Thêm logic 2K)
 function getDimensions(aspectRatio, resolution) {
     let width = 1024;
     let height = 1024;
 
     if (resolution === '1K') {
         if (aspectRatio === '1:1') { width = 1024; height = 1024; }
-        else if (aspectRatio === '16:9') { width = 1360; height = 768; }
-        else if (aspectRatio === '9:16') { width = 768; height = 1360; }
-        else if (aspectRatio === '4:3') { width = 1152; height = 864; }
-        else if (aspectRatio === '3:4') { width = 864; height = 1152; }
-    } else if (resolution === '2K') {
+        else if (aspectRatio === '16:9') { width = 1360; height = 768; } // ~1.77
+        else if (aspectRatio === '9:16') { width = 768; height = 1360; } // ~0.56
+        else if (aspectRatio === '4:3') { width = 1152; height = 864; } // 1.33
+        else if (aspectRatio === '3:4') { width = 864; height = 1152; } // 0.75
+    } else if (resolution === '2K') { // NÂNG CẤP 4: Thêm logic 2K
         if (aspectRatio === '1:1') { width = 2048; height = 2048; }
-        else if (aspectRatio === '16:9') { width = 2720; height = 1536; }
-        else if (aspectRatio === '9:16') { width = 1536; height = 2720; }
-        else if (aspectRatio === '4:3') { width = 2304; height = 1728; }
-        else if (aspectRatio === '3:4') { width = 1728; height = 2304; }
+        else if (aspectRatio === '16:9') { width = 2720; height = 1536; } // Gần 2K chiều cao, giữ tỉ lệ
+        else if (aspectRatio === '9:16') { width = 1536; height = 2720; } // Gần 2K chiều rộng, giữ tỉ lệ
+        else if (aspectRatio === '4:3') { width = 2304; height = 1728; } // Gần 2K chiều rộng, giữ tỉ lệ
+        else if (aspectRatio === '3:4') { width = 1728; height = 2304; } // Gần 2K chiều cao, giữ tỉ lệ
     }
 
+    // Stable Diffusion yêu cầu kích thước là bội số của 64
     width = Math.round(width / 64) * 64;
     height = Math.round(height / 64) * 64;
 
+    // Đảm bảo kích thước tối thiểu (ví dụ: SDXL cần ít nhất 512)
     width = Math.max(width, 512);
     height = Math.max(height, 512);
 
@@ -1117,6 +1107,7 @@ function getDimensions(aspectRatio, resolution) {
 
 
 
+// Task 5, 6, 7: Cập nhật initializeOAIStudio
 function initializeOAIStudio() {
     const sendBtn = document.getElementById('prompt-send-btn');
     const promptInput = document.getElementById('prompt-input');
@@ -1132,20 +1123,186 @@ function initializeOAIStudio() {
         return;
     }
 
-    // === GIAI ĐOẠN 3: XÓA API KEY KHỎI CLIENT ===
-    // const apiKeys = { ... }; // ĐÃ XÓA
-    // const modelConfigs = { ... }; // ĐÃ XÓA
-    // Chúng ta sẽ gọi "Người Gác Cổng" (Worker) để tạo ảnh,
-    // nhưng chúng ta sẽ làm điều đó trong một bản cập nhật tương lai.
-    // Hiện tại, chúng ta tập trung vào logic tải file.
+    // === NÂNG CẤP BẢO MẬT: XÓA BỎ API KEY KHỎI CLIENT ===
+    // const apiKeys = {
+    //     google: 'AIzaSyAJ9z9WHlWVKqFbGIjQiSQdrtNT1g_vFu0',
+    //     stability: '' // ĐIỀN API KEY STABILITY AI CỦA BẠN VÀO ĐÂY NẾU CÓ
+    // };
+    // === KẾT THÚC NÂNG CẤP BẢO MẬT ===
 
-    // Tạm thời vô hiệu hóa chức năng này
+    // === NÂNG CẤP BẢO MẬT: Logic này bây giờ phải gọi Worker (backend) ===
+    // (Hiện tại chúng ta sẽ vô hiệu hóa nó)
     const generateImage = async () => {
-        alert("Chức năng O-AI Studio đang được bảo trì để nâng cấp bảo mật. Vui lòng quay lại sau.");
-        return;
+         alert("Chức năng O-AI Studio đang được bảo trì để nâng cấp bảo mật. Vui lòng quay lại sau!");
+         return; 
+    
+        // === TOÀN BỘ LOGIC CŨ BÊN DƯỚI SẼ BỊ VÔ HIỆU HÓA ===
+        /*
+        // Kiểm tra đăng nhập trước khi tạo ảnh
+        if (!currentUser) {
+             alert("Vui lòng đăng nhập để sử dụng O-AI Studio.");
+             // Không cần gọi showPage('auth') vì overlay sẽ hiện nếu trang đang mở
+             return;
+        }
+
+        const prompt = promptInput.value.trim();
+        if (!prompt) {
+            alert("Vui lòng nhập mô tả cho hình ảnh!");
+            return;
+        }
+
+        const activeModelCard = modelSelection.querySelector('.model-card.active');
+        const modelName = activeModelCard.dataset.modelName;
+        const config = modelConfigs[modelName];
+
+        if (!config || !config.endpoint) {
+            alert(`Model "${modelName}" hiện chưa khả dụng hoặc chưa được cấu hình.`);
+            return;
+        }
+
+        if ((modelName === 'Stable Diffusion' && !apiKeys.stability)) {
+             alert(`API Key cho model Stable Diffusion chưa được cung cấp trong script.js. Vui lòng thêm key để sử dụng model này.`);
+            return; // Chỉ chặn nếu chọn SD mà không có key
+        }
+         if (modelName === 'O-AI Nano' && !apiKeys.google) {
+             alert(`API Key cho model O-AI Nano chưa được cung cấp trong script.js.`);
+             return; // Chặn nếu chọn Nano mà không có key
+        }
+
+        placeholder.classList.add('hidden');
+
+        // Lấy giá trị Tỷ lệ & Độ phân giải
+        const activeAspectBtn = aspectRatioSelection.querySelector('.aspect-ratio-btn.active');
+        const aspectRatio = activeAspectBtn ? activeAspectBtn.dataset.aspect : '1:1';
+        const resolution = resolutionSelection.value || '1K';
+
+        // Tính toán kích thước
+        const { width, height } = getDimensions(aspectRatio, resolution);
+
+        // Tạo khối loading ngay lập tức
+        const newBlock = document.createElement('div');
+        newBlock.className = 'conversation-block';
+        newBlock.innerHTML = `
+            <div class="user-prompt-block">
+                <p>${prompt.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>
+            </div>
+            <div class="ai-result-block">
+                 <div class="loading-spinner flex flex-col justify-center items-center h-[512px]"> <!-- Đặt chiều cao cố định cho spinner -->
+                    <svg class="animate-spin h-8 w-8 text-sky-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <p class="text-gray-400 mt-2 text-sm">AI đang vẽ (${width}x${height}), vui lòng đợi...</p> <!-- Hiển thị kích thước yêu cầu -->
+                </div>
+            </div>
+        `;
+        conversationArea.appendChild(newBlock);
+
+        // Reset prompt input và cuộn xuống
+        promptInput.value = '';
+        promptInput.style.height = 'auto'; // Reset chiều cao
+        conversationArea.scrollTop = conversationArea.scrollHeight;
+
+        const resultBlock = newBlock.querySelector('.ai-result-block'); // Tham chiếu đến khối kết quả
+
+        // Gọi API
+        try {
+            const payload = config.buildPayload(prompt, width, height);
+            console.log(`Sending payload to ${modelName}:`, { prompt, width, height }); // Log payload để debug
+
+            const response = await fetch(config.endpoint, {
+                method: 'POST',
+                headers: config.headers,
+                body: JSON.stringify(payload)
+            });
+
+             // Log chi tiết lỗi nếu có
+            if (!response.ok) {
+                let errorDetails = `API Error ${response.status}: ${response.statusText}`;
+                try {
+                    const errorJson = await response.json();
+                    errorDetails += `\n${JSON.stringify(errorJson, null, 2)}`;
+                } catch (e) {
+                    const errorText = await response.text();
+                    errorDetails += `\nResponse: ${errorText}`;
+                }
+                 console.error(errorDetails); // Log lỗi chi tiết
+                throw new Error(`Yêu cầu API thất bại (Status: ${response.status}). Kiểm tra console để biết chi tiết.`);
+            }
+
+
+            const data = await response.json();
+            const base64Data = config.getResult(data);
+
+            if (base64Data) {
+                const imageUrl = `data:image/png;base64,${base64Data}`;
+                // Cập nhật khối kết quả với ảnh và nút tải
+                resultBlock.innerHTML = `
+                    <div class="ai-image-wrapper">
+                         <img src="${imageUrl}" alt="AI generated image for: ${prompt.replace(/"/g, "'")}" class="block max-w-full max-h-full object-contain">
+                    </div>
+                    <div class="mt-3 flex gap-2"> <!-- Bỏ ID không cần thiết -->
+                         <button class="ai-action-btn" onclick="downloadImageFromButton(this)">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                            <span>Tải xuống</span>
+                        </button>
+                    </div>
+                `;
+            } else {
+                 console.error("Không nhận được dữ liệu base64 hợp lệ từ API response:", data);
+                throw new Error("Phản hồi API không chứa dữ liệu hình ảnh hợp lệ.");
+            }
+        } catch (error) {
+            console.error("Lỗi trong quá trình tạo ảnh:", error);
+            // Hiển thị lỗi trong khối kết quả
+            resultBlock.innerHTML = `<p class="text-red-400 p-4 bg-red-900/20 rounded-lg text-sm"><b>Đã xảy ra lỗi:</b> ${error.message}</p>`;
+        } finally {
+             // Đảm bảo cuộn xuống cuối sau khi có kết quả hoặc lỗi
+             conversationArea.scrollTop = conversationArea.scrollHeight;
+        }
+        */
     };
     
-    // Event Listeners (Vẫn giữ)
+    // NÂNG CẤP BẢO MẬT: Xóa bỏ model configs vì chúng chứa API key
+    /*
+    const modelConfigs = {
+        'Stable Diffusion': {
+            endpoint: `https://api.stability.ai/v1/generation/stable-diffusion-xl-1024-v1-0/text-to-image`,
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${apiKeys.stability}`
+            },
+            buildPayload: (prompt, width, height) => ({
+                text_prompts: [{ text: prompt }],
+                cfg_scale: 7,
+                height: height,
+                width: width,
+                steps: 30, // Có thể tăng steps để ảnh chi tiết hơn (vd: 40-50)
+                samples: 1,
+            }),
+            getResult: (data) => data.artifacts?.[0]?.base64 // Thêm ?. để tránh lỗi nếu không có artifacts
+        },
+        'O-AI Nano': {
+            endpoint: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent?key=${apiKeys.google}`,
+            headers: { 'Content-Type': 'application/json' },
+            buildPayload: (prompt, width, height) => ({ // API này không dùng width/height
+                contents: [{ parts: [{ text: prompt }] }],
+                generationConfig: { responseModalities: ["IMAGE"] }
+            }),
+            getResult: (data) => {
+                const imagePart = data?.candidates?.[0]?.content?.parts?.find(part => part.inlineData && part.inlineData.mimeType.startsWith('image/'));
+                return imagePart?.inlineData?.data;
+            }
+        },
+        'O-AI Gen 4': { endpoint: null },
+        'O-AI Gen 4 Ultra': { endpoint: null }
+    };
+    */
+    // === KẾT THÚC NÂNG CẤP BẢO MẬT ===
+
+
+    // Event Listeners (Không đổi)
     if (modelSelection) {
         const models = modelSelection.querySelectorAll('.model-card');
         models.forEach(model => {
@@ -1173,17 +1330,18 @@ function initializeOAIStudio() {
             if (promptItem && promptInput) {
                 promptInput.value = promptItem.dataset.prompt;
                 promptInput.focus();
+                // Tự động điều chỉnh chiều cao sau khi chèn preset
                 promptInput.style.height = 'auto';
                 promptInput.style.height = (promptInput.scrollHeight) + 'px';
             }
         });
     }
 
-    sendBtn.addEventListener('click', generateImage); // Gọi hàm đã vô hiệu hóa
+    sendBtn.addEventListener('click', generateImage);
     promptInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
-            generateImage(); // Gọi hàm đã vô hiệu hóa
+            generateImage();
         }
     });
 
