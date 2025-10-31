@@ -977,7 +977,7 @@
                 <svg fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path
                         d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm3.23 13.88c-.14.41-.46.73-.87.87-.59.2-1.99.2-2.36.2s-1.77 0-2.36-.2c-.41-.14-.73-.46-.87-.87-.2-1.21-.2-2.55-.2-2.88s0-1.67.2-2.88c.14-.41.46-.73.87-.87.59-.2-1.99-.2-2.36-.2s1.77 0 2.36.2c.41.14.73.46.87.87.2 1.21.2 2.55.2 2.88s0 1.67-.2 2.88zM9.5 12c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5-.67 1.5-1.5 1.5-1.5-.67-1.5-1.5z">
-                    </path>
+                    </Hành động của bạn:h>
                 </svg>
             </a>
             <a href="https://www.youtube.com/@hocvalamdesigner" target="_blank" title="Youtube">
@@ -1145,16 +1145,46 @@
         </div>
     </div>
 
+    <!-- === BẮT ĐẦU: Modal Nhập Mật Khẩu Tải File (GIAI ĐOẠN 3.1) === -->
+    <div id="password-modal"
+        class="modal fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-sm hidden"
+        onclick="closeModal('password-modal')">
+        <div class="modal-content bg-gray-800 w-11/12 md:max-w-md mx-auto rounded-lg shadow-lg p-8 border border-gray-700"
+            onclick="event.stopPropagation()">
+            <h3 class="text-2xl font-bold mb-4 text-sky-400">Yêu Cầu Mật Khẩu</h3>
+            <p class="text-gray-400 mb-4 text-sm">Vui lòng nhập mật khẩu tải file để tiếp tục. Mật khẩu được cung cấp bởi Oai Design.</p>
+            <!-- Form để xử lý việc nhập mật khẩu -->
+            <form id="password-form">
+                <div class="mb-4">
+                    <label for="download-password" class="block text-gray-300 text-sm font-bold mb-2">Mật khẩu:</label>
+                    <input
+                        class="bg-gray-700 border border-gray-600 rounded w-full py-2 px-3 text-white leading-tight focus:outline-none focus:ring-2 focus:ring-sky-500"
+                        id="download-password" type="password" placeholder="••••••••" required>
+                </div>
+                <!-- Vùng thông báo lỗi (ví dụ: sai mật khẩu) -->
+                <p id="password-error" class="text-red-400 text-sm mb-4 hidden">Mật khẩu không chính xác!</p>
+                <div class="flex items-center justify-between">
+                    <button
+                        id="password-submit-btn"
+                        class="bg-sky-500 hover:bg-sky-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full transition-all duration-200 hover:scale-105"
+                        type="submit">
+                        Xác Nhận
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- === KẾT THÚC: Modal Nhập Mật Khẩu Tải File === -->
+
     <script src="script.js"></script>
 
     <!-- === SUPABASE SDK === -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         const supabaseUrl = 'https://eczovnahwntestpokikd.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVjem92bmFod250ZXN0cG9raWtkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwNDAyNDIsImV4cCI6MjA3NjYxNjI0Mn0._Y-SzUccct4DGaAjOP7grRSFUdfV2Quvo3N31lLUquQ';
+        const supabaseKey = 'eyJhbGciOiJIZDI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVjem92bmFod250ZXN0cG9raWtkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwNDAyNDIsImV4cCI6MjA3NjYxNjI0Mn0._Y-SzUccct4DGaAjOP7grRSFUdfV2Quvo3N31lLUquQ';
         // Make supabase client globally available to script.js
         window.supabase = supabase.createClient(supabaseUrl, supabaseKey);
     </script>
 </body>
 </html>
-

@@ -1,4 +1,11 @@
 // --- KHAI BÁO BIẾN TOÀN CỤC ---
+// === BẮT ĐẦU CẬP NHẬT GIAI ĐOẠN NHẠY CẢM ===
+// Đây là URL của Worker (Giai đoạn cực kì cẩn thận) ở đây
+// Ví dụ: 'https://oai-downloader.ten-ban.workers.dev'
+const WORKER_URL = 'https://oai-downloader.xinchaomoinguoi1102.workers.dev'; 
+const LOCK_DURATION_MS = 7 * 24 * 60 * 60 * 1000; // 7 ngày
+// === KẾT THÚC CẬP NHẬT GIAI ĐOẠN 3 ===
+
 const pages = ['home', 'oai-studio', 'resources', 'software', 'contact', 'auth'];
 const navLinks = {
     home: document.getElementById('nav-home'),
@@ -19,22 +26,41 @@ const pageElements = {
 
 let resourcesInitialized = false;
 let currentUser = null;
-let profileSubscription = null; // Biến lưu "camera an ninh"
-let authStateReady = false; // Task 10: Cờ kiểm tra trạng thái xác thực
-// let isDownloading = false; // FIX 4: XÓA BỎ BIẾN KHÓA TOÀN CỤC (isDownloading)
+let profileSubscription = null;
+let authStateReady = false;
 
-const authOverlay = document.getElementById('auth-overlay');
-const authOverlayOai = document.getElementById('auth-overlay-oai'); // NÂNG CẤP 3: Thêm biến cho O-AI overlay
-const loginForm = document.getElementById('login-form');
-const registerForm = document.getElementById('register-form');
-const authButtonContainer = document.getElementById('auth-button-container');
+// === GIAI ĐOẠN 3: Thêm biến cho Modal Mật khẩu ===
+let currentResourceId = null; // Biến tạm để lưu ID file đang chờ tải
+let currentDownloadButton = null; // Biến tạm để lưu nút đang xử lý
+const passwordModal = document.getElementById('password-modal');
+const passwordForm = document.getElementById('password-form');
+const passwordInput = document.getElementById('download-password');
+const passwordError = document.getElementById('password-error');
+const passwordSubmitBtn = document.getElementById('password-submit-btn');
 
 // --- CÁC HÀM TIỆN ÍCH ---
+
 function toggleAuthForms() {
+    const loginForm = document.getElementById('login-form');
+    const registerForm = document.getElementById('register-form');
     if (loginForm && registerForm) {
         loginForm.classList.toggle('hidden');
         registerForm.classList.toggle('hidden');
     }
+}
+
+// === GIAI ĐOẠN 3: Hàm tính thời gian còn lại (để hiển thị trên nút bị khóa) ===
+function getRemainingTime(expiryTime) {
+    const remaining = expiryTime - Date.now();
+    if (remaining <= 0) return null;
+    
+    const days = Math.floor(remaining / (1000 * 60 * 60 * 24));
+    if (days > 0) return `(còn ${days} ngày)`;
+    
+    const hours = Math.floor(remaining / (1000 * 60 * 60));
+    if (hours > 0) return `(còn ${hours} giờ)`;
+    
+    return '(còn < 1 giờ)';
 }
 
 // Task 3: Hàm phụ trợ lấy ngày YYYY-MM-DD
@@ -47,60 +73,53 @@ function getCurrentDateString() {
 }
 
 // Task 1 & 10 & 3 & FIX: Hàm _displayPage (lõi logic hiển thị)
-function _displayPage(pageId) { // pageId ở đây là trang gốc được yêu cầu
-    // Luôn ẩn cả hai overlay khi bắt đầu
+function _displayPage(pageId) { 
+    const authOverlay = document.getElementById('auth-overlay');
+    const authOverlayOai = document.getElementById('auth-overlay-oai');
+    
     if (authOverlay) authOverlay.style.display = 'none';
     // if (authOverlayOai) authOverlayOai.style.display = 'none'; // FIX 2: KHÔNG ẩn overlay OAI (đã được đặt thành "Coming Soon")
 
-    // Xác định trang hợp lệ để hiển thị (không chuyển hướng nếu chưa đăng nhập)
     let finalPageId = pageId;
     if (!pages.includes(finalPageId)) {
         console.warn(`Invalid pageId '${finalPageId}', defaulting to 'home'.`);
         finalPageId = 'home';
     }
-    // Không cho xem trang đăng nhập khi đã đăng nhập
     if (finalPageId === 'auth' && currentUser) {
         finalPageId = 'home';
     }
 
-    // Ẩn tất cả các trang và bỏ active các link
     pages.forEach(page => {
         if(pageElements[page]) pageElements[page].classList.add('hidden');
         if (navLinks[page]) navLinks[page].classList.remove('active');
     });
-    // NÂNG CẤP B.1: Đổi tên biến cho rõ ràng
     const accountMenuButton = document.getElementById('account-menu-button');
     if (accountMenuButton) accountMenuButton.classList.remove('active');
 
-    // Hiển thị trang đích
     if(pageElements[finalPageId]) {
          pageElements[finalPageId].classList.remove('hidden');
     } else {
          console.error(`Page element for '${finalPageId}' not found!`);
-         pageElements.home.classList.remove('hidden'); // Fallback về home
+         if (pageElements.home) pageElements.home.classList.remove('hidden'); // Fallback về home
     }
 
-    // FIX Auth Overlay: Hiển thị overlay NẾU CẦN *sau khi* đã hiển thị trang
-    // FIX 2: Xóa logic hiển thị authOverlayOai vì nó luôn bật (Coming Soon)
-    if ((finalPageId === 'resources') && !currentUser) { // Đã xóa '|| finalPageId === 'oai-studio'
+    if ((finalPageId === 'resources') && !currentUser) {
         if (finalPageId === 'resources' && authOverlay) {
             authOverlay.style.display = 'flex';
         }
     }
 
-    // Task 11: Sửa lỗi hiệu ứng Kính Menu
     if (typeof moveGlass === 'function') {
         let targetElementForGlass = navLinks[finalPageId];
 
         if (currentUser) {
-            // NÂNG CẤP B.1: Đổi mục tiêu
             if (!targetElementForGlass) {
-                targetElementForGlass = accountMenuButton; // Mặc định là nút tài khoản nếu trang không có nav link
+                targetElementForGlass = accountMenuButton;
             }
         } else {
-             if (!targetElementForGlass && finalPageId !== 'auth') { // Nếu chưa đăng nhập và không phải trang auth
-                targetElementForGlass = navLinks.auth; // Mặc định là nút đăng nhập
-            } else if (finalPageId === 'auth'){ // Nếu là trang auth thì luôn trỏ về login
+             if (!targetElementForGlass && finalPageId !== 'auth') {
+                targetElementForGlass = navLinks.auth;
+            } else if (finalPageId === 'auth'){
                  targetElementForGlass = navLinks.auth;
             }
         }
@@ -112,8 +131,7 @@ function _displayPage(pageId) { // pageId ở đây là trang gốc được yê
         }
     }
 
-    // Logic cũ từ showPage (init resources, zalo, observe)
-    if (finalPageId === 'resources' && currentUser) { // Chỉ init nếu đã đăng nhập
+    if (finalPageId === 'resources' && currentUser) {
         if (!resourcesInitialized) {
             initializeResources();
             resourcesInitialized = true;
@@ -144,28 +162,21 @@ function _displayPage(pageId) { // pageId ở đây là trang gốc được yê
 function showPage(pageId, event) {
     if (event) event.preventDefault();
 
-    // Xác định trang hợp lệ (ví dụ: nếu gõ sai tên)
     let targetPageId = pageId;
     if (!pages.includes(targetPageId)) {
         targetPageId = 'home';
     }
-     // Nếu đã đăng nhập mà bấm vào link đăng nhập -> về home
-    if (targetPageId === 'auth' && currentUser) {
+     if (targetPageId === 'auth' && currentUser) {
          targetPageId = 'home';
     }
 
 
     const currentPath = window.location.pathname.substring(1) || 'home';
 
-    // Chỉ push state nếu trang thực sự thay đổi
     if (targetPageId !== currentPath) {
          const newPath = (targetPageId === 'home') ? '/' : `/${targetPageId}`;
-         // Cập nhật URL với trang ĐƯỢC YÊU CẦU
          history.pushState({ pageId: targetPageId }, '', newPath);
     }
-
-    // Gọi hàm cập nhật DOM với trang ĐƯỢC YÊU CẦU
-    // _displayPage sẽ tự xử lý việc hiển thị trang VÀ overlay nếu cần
     _displayPage(targetPageId);
 }
 
@@ -174,20 +185,17 @@ function showPage(pageId, event) {
 function handlePopState(event) {
     let pageId = event.state?.pageId;
     if (!pageId) {
-        // Xử lý khi tải trang trực tiếp bằng URL
         pageId = window.location.pathname.substring(1) || 'home';
     }
     if (!pages.includes(pageId)) {
-        pageId = 'home'; // Fallback cho URL không hợp lệ
+        pageId = 'home';
     }
-    _displayPage(pageId); // Gọi với pageId từ history/URL
+    _displayPage(pageId);
 }
-// Task 1: Thêm listener cho popstate
 window.addEventListener('popstate', handlePopState);
 
 
 // --- LOGIC BẢO MẬT "NGƯỜI GIÁM SÁT" ---
-// (Không đổi)
 function listenToProfileChanges(userId) {
     if (profileSubscription) {
         window.supabase.removeChannel(profileSubscription);
@@ -212,16 +220,18 @@ function listenToProfileChanges(userId) {
 
 async function unsubscribeFromProfileChanges() {
     if (profileSubscription) {
-        await window.supabase.removeChannel(profileSubscription);
-        profileSubscription = null;
+        try {
+            await window.supabase.removeChannel(profileSubscription);
+        } catch (error) {
+            console.warn("Lỗi khi hủy đăng ký listener:", error.message);
+        }
     }
+    profileSubscription = null;
 }
 
 // --- LOGIC XÁC THỰC VỚI SUPABASE ---
-// Task 10: Cập nhật setupAuthStateObserver
 function setupAuthStateObserver() {
     window.supabase.auth.onAuthStateChange(async (event, session) => {
-        // Xác thực ban đầu và kiểm tra ban
         if ((event === 'INITIAL_SESSION' || event === 'SIGNED_IN') && session) {
             const { data, error } = await window.supabase
                 .from('profiles')
@@ -229,205 +239,193 @@ function setupAuthStateObserver() {
                 .eq('id', session.user.id)
                 .single();
 
-            if (error && error.code !== 'PGRST116') { // Bỏ qua lỗi không tìm thấy profile
+            if (error && error.code !== 'PGRST116') {
                 console.error("Lỗi kiểm tra trạng thái ban:", error);
             }
 
             if (data && data.is_banned) {
                 alert("Tài khoản của bạn đã bị khóa.");
-                await window.supabase.auth.signOut(); // Đăng xuất ngay nếu bị ban
-                // Không cần return, để luồng chạy tiếp xử lý UI đăng xuất
-                session = null; // Coi như session không hợp lệ
+                await window.supabase.auth.signOut();
+                session = null;
             }
         }
 
         const user = session?.user || null;
-        const wasLoggedIn = !!currentUser; // Lưu trạng thái trước khi cập nhật
-        currentUser = user; // Cập nhật trạng thái người dùng hiện tại
+        const wasLoggedIn = !!currentUser;
+        currentUser = user;
 
-        // Cập nhật giao diện và listener
         if (user) {
             updateUIForLoggedInUser(user);
             listenToProfileChanges(user.id);
         } else {
             updateUIForLoggedOutUser();
-            unsubscribeFromProfileChanges();
+            await unsubscribeFromProfileChanges(); // Thêm await ở đây
         }
 
-        // Đánh dấu auth đã sẵn sàng sau lần kiểm tra đầu tiên hoặc khi có thay đổi trạng thái
         const authNowReady = !authStateReady || (user && !wasLoggedIn) || (!user && wasLoggedIn);
         if(!authStateReady && (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'SIGNED_OUT')) {
              authStateReady = true;
         } else if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
-             authStateReady = true; // Đảm bảo luôn sẵn sàng sau khi login/logout
+             authStateReady = true;
         }
 
-        // Chỉ cập nhật trang nếu trạng thái auth đã sẵn sàng VÀ có sự thay đổi trạng thái đăng nhập
-        // Hoặc đây là lần đầu tiên auth sẵn sàng (tải trang)
         if (authStateReady && authNowReady) {
              let pageIdFromUrl = window.location.pathname.substring(1) || 'home';
-             _displayPage(pageIdFromUrl); // Gọi _displayPage để render đúng trang và overlay (nếu cần)
+             _displayPage(pageIdFromUrl);
         }
     });
 }
 
 
-// --- LOGIC TẢI FILE (ĐÃ HOÀN THIỆN) ---
-// LOGIC FIX CÔNG BẰNG: Chỉ trừ lượt khi lấy link thành công
-// SỬ DỤNG AbortController cho Timeout
-async function downloadResource(resourceId, buttonElement) {
-    
-    // 1. Khóa nút này lại
-    if (buttonElement.disabled) {
-        console.log("Nút này đang được xử lý, vui lòng đợi...");
+// === GIAI ĐOẠN 3: LOGIC TẢI FILE MỚI HOÀN TOÀN ===
+
+/**
+ * Hàm này BẮT ĐẦU quá trình (Phòng thủ 1: Khóa 7 ngày)
+ * Nó không thực sự tải file, nó chỉ mở modal mật khẩu
+ * @param {string} resourceId - ID của file từ database
+ * @param {HTMLElement} buttonElement - Nút vừa được bấm
+ */
+async function startDownloadProcess(resourceId, buttonElement) {
+    // 1. Kiểm tra đăng nhập
+    if (!currentUser) {
+        alert("Vui lòng đăng nhập để tải tài nguyên!");
+        showPage('auth'); // Chuyển đến trang đăng nhập
         return;
     }
-    buttonElement.disabled = true;
-    buttonElement.textContent = 'Đang xử lý...';
-
-    // Hàm nội bộ để mở khóa nút
-    function resetButtonState() {
-        buttonElement.disabled = false;
-        buttonElement.textContent = 'Tải Về';
+    
+    // 2. (Phòng thủ 1) Kiểm tra "Khóa 1 Tuần"
+    const lockKey = `download_lock_${currentUser.id}_${resourceId}`;
+    const expiryTime = localStorage.getItem(lockKey);
+    
+    if (expiryTime && Date.now() < parseInt(expiryTime, 10)) {
+        const remaining = getRemainingTime(parseInt(expiryTime, 10));
+        alert(`Bạn đã tải file này. Vui lòng quay lại sau. ${remaining || ''}`);
+        return;
     }
 
-    // **FIX 7: Tạo AbortController và Timeout**
-    const controller = new AbortController();
-    const signal = controller.signal;
-    let timeoutId; // Khai báo ID của timeout để có thể hủy
+    // 3. Mở Modal Mật khẩu
+    currentResourceId = resourceId; // Lưu ID file đang chờ
+    currentDownloadButton = buttonElement; // Lưu nút đang chờ
     
+    if (passwordInput) passwordInput.value = ''; // Xóa mật khẩu cũ
+    if (passwordError) passwordError.classList.add('hidden'); // Ẩn lỗi cũ
+    
+    openModal('password-modal'); // Mở pop-up
+    if (passwordInput) passwordInput.focus(); // Tự động trỏ vào ô mật khẩu
+}
+
+/**
+ * Hàm này được gọi khi người dùng bấm "Xác Nhận" trên Modal
+ * @param {Event} event - Sự kiện submit của form
+ */
+async function handlePasswordSubmit(event) {
+    event.preventDefault(); // Ngăn form tự reload trang
+    
+    if (!currentResourceId || !currentDownloadButton || !currentUser || !passwordInput || !passwordSubmitBtn || !passwordError) {
+        console.error("Thiếu thông tin để xử lý tải file.");
+        return;
+    }
+
+    const password = passwordInput.value;
+    if (!password) {
+        passwordError.textContent = "Vui lòng nhập mật khẩu.";
+        passwordError.classList.remove('hidden');
+        return;
+    }
+
+    // Vô hiệu hóa nút "Xác Nhận" để tránh bấm đúp
+    passwordSubmitBtn.disabled = true;
+    passwordSubmitBtn.textContent = 'Đang kiểm tra...';
+    passwordError.classList.add('hidden');
+
     try {
-        // 2. Kiểm tra đăng nhập
-        if (!currentUser) {
-            alert("Vui lòng đăng nhập để tải tài nguyên!");
-            resetButtonState();
-            return;
+        // Lấy "Thẻ An Ninh" (Token)
+        const session = await window.supabase.auth.getSession();
+        const authToken = session?.data?.session?.access_token;
+
+        if (!authToken) {
+            throw new Error("Không tìm thấy token. Vui lòng đăng nhập lại.");
         }
 
-        // 3. Lấy dữ liệu lượt tải
-        const userId = currentUser.id;
-        const today = getCurrentDateString();
-        const storageKey = `downloadLimit_${userId}`;
-        let limitData = JSON.parse(localStorage.getItem(storageKey));
+        // 4. (Phòng thủ 2) Gọi "Người Gác Cổng" (Cloudflare Worker)
+        // Gửi "Thẻ An Ninh" (Token) + Mật khẩu + ID file
+        const response = await fetch(WORKER_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}` // Gửi "Thẻ An Ninh"
+            },
+            body: JSON.stringify({
+                resourceId: currentResourceId,
+                password: password
+            })
+        });
 
-        if (!limitData || limitData.date !== today) {
-            limitData = { date: today, count: 0 };
+        const data = await response.json();
+
+        // 5. Xử lý kết quả
+        if (!response.ok) {
+            // Nếu Worker báo lỗi (sai mật khẩu, hết hạn token, file không tồn tại...)
+            throw new Error(data.error || 'Đã xảy ra lỗi không xác định.');
         }
 
-        // 4. KIỂM TRA LƯỢT TẢI (chưa trừ vội)
-        if (limitData.count >= 10) {
-            alert("Bạn đã đạt đến giới hạn 10 lượt tải tài nguyên mỗi ngày. Vui lòng quay lại vào ngày mai.");
-            resetButtonState();
-            return;
+        // 6. THÀNH CÔNG! (Worker trả về link 5 phút)
+        const { downloadLink, fileName } = data;
+
+        if (!downloadLink || !fileName) {
+            throw new Error('Phản hồi từ máy chủ không hợp lệ.');
         }
 
-        // 5. Kiểm tra resourceId (phải hợp lệ)
-        if (!resourceId || resourceId === 'undefined') {
-            console.error("Lỗi: resourceId không hợp lệ.");
-            alert("Đã xảy ra lỗi, không thể tìm thấy tài nguyên này (ID không hợp lệ).");
-            resetButtonState();
-            return;
-        }
+        // 7. Kích hoạt "Tải về tàng hình"
+        const link = document.createElement('a');
+        link.href = downloadLink;
+        link.download = fileName; // Tên file mà trình duyệt sẽ lưu
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
 
-        // **FIX 7: Thiết lập đồng hồ 10 giây**
-        // Nếu sau 10 giây, Supabase chưa trả lời, controller sẽ hủy yêu cầu
-        timeoutId = setTimeout(() => {
-            console.warn('Yêu cầu Supabase hết 10 giây. Đang hủy...');
-            controller.abort();
-        }, 10000); // 10 giây timeout
-
-        // 6. Bắt đầu gọi Supabase (với signal) để LẤY LINK
-        const { data, error } = await window.supabase
-            .from('resources')
-            .select('downloadLink')
-            .eq('id', resourceId)
-            .signal(signal) // <-- Truyền tín hiệu hủy vào Supabase
-            .single();
-
-        // 7. Xử lý kết quả Supabase
+        // 8. Kích hoạt "Khóa 1 Tuần"
+        const lockKey = `download_lock_${currentUser.id}_${currentResourceId}`;
+        const expiryTime = Date.now() + LOCK_DURATION_MS;
+        localStorage.setItem(lockKey, expiryTime.toString());
         
-        // **FIX 7: Hủy timeout NGAY LẬP TỨC**
-        // (Vì Supabase đã trả lời, dù là lỗi hay thành công, không cần timeout nữa)
-        clearTimeout(timeoutId);
+        // Cập nhật giao diện nút
+        currentDownloadButton.textContent = `Đã tải ${getRemainingTime(expiryTime)}`;
+        currentDownloadButton.disabled = true;
+        currentDownloadButton.classList.add('opacity-50', 'cursor-not-allowed');
 
-        if (error) {
-            console.error("Lỗi Supabase hoặc hết thời gian:", error.message, error.name);
-            
-            // Thông báo lỗi (lượt tải KHÔNG bị trừ)
-            // Lỗi timeout bây giờ sẽ có tên là 'AbortError'
-            if (error.name === 'AbortError' || error.message.includes('aborted')) {
-                 alert('Yêu cầu hết thời gian (10s). Lượt tải của bạn KHÔNG bị trừ. Vui lòng kiểm tra mạng và thử lại.');
-            } else if (error.code === 'PGRST116') {
-                 alert('Không tìm thấy tài nguyên này. Lượt tải của bạn KHÔNG bị trừ.');
-            } else {
-                // Các lỗi khác (có thể là 'Via NUL' nếu nó vẫn xảy ra)
-                alert('Đã xảy ra lỗi khi lấy link. Lượt tải của bạn KHÔNG bị trừ. Vui lòng thử lại.');
-            }
-            
-            resetButtonState(); // Mở khóa nút
-            return; // Thoát
-        }
-
-        // 8. LẤY LINK THÀNH CÔNG: MỚI TRỪ LƯỢT VÀ MỞ LINK
-        if (data && data.downloadLink) {
-            console.log('Tìm thấy link, đang mở:', data.downloadLink);
-
-            // LOGIC MỚI: Chỉ trừ lượt KHI thành công
-            limitData.count++;
-            localStorage.setItem(storageKey, JSON.stringify(limitData));
-            console.log(`Lấy link thành công. Đã trừ lượt. Lượt tải hôm nay: ${limitData.count}/10`);
-            // ------------------------------------
-
-            // Mở khóa nút
-            resetButtonState();
-            
-            // Dùng setTimeout(0) để mở link ở tick tiếp theo, tránh kẹt trình duyệt
-            setTimeout(() => {
-                window.open(data.downloadLink, '_blank');
-            }, 0);
-
-        } else {
-            console.warn('Không tìm thấy link tải cho resource ID (dữ liệu trả về null):', resourceId);
-            // Thông báo lỗi (lượt tải KHÔNG bị trừ)
-            alert('Rất tiếc, link tải cho tài nguyên này chưa được cập nhật (null). Lượt tải của bạn KHÔNG bị trừ.');
-            resetButtonState(); // Mở khóa nút
-        }
+        // 9. Đóng Modal
+        closeModal('password-modal');
 
     } catch (error) {
-        // **FIX 7: Đảm bảo hủy timeout ngay cả khi có lỗi JS nghiêm trọng**
-        if (timeoutId) clearTimeout(timeoutId); 
-
-        // THÊM LOG CHI TIẾT LỖI Ở ĐÂY
-        console.error("Caught error inside downloadResource:", error); 
-        // --------------------------
-        console.error("Lỗi nghiêm trọng trong hàm downloadResource:", error.message);
-        
-        // FIX 8: Đảo thứ tự
-        resetButtonState(); // Mở khóa nút TRƯỚC
-        // Thông báo lỗi (lượt tải KHÔNG bị trừ)
-        alert("Đã xảy ra lỗi nghiêm trọng. Lượt tải của bạn KHÔNG bị trừ. Vui lòng thử lại.");
-    } 
+        // Xử lý lỗi (ví dụ: sai mật khẩu)
+        console.error("Lỗi khi xử lý tải file:", error.message);
+        passwordError.textContent = error.message; // Hiển thị lỗi cho người dùng
+        passwordError.classList.remove('hidden');
+    } finally {
+        // Mở lại nút "Xác Nhận"
+        passwordSubmitBtn.disabled = false;
+        passwordSubmitBtn.textContent = 'Xác Nhận';
+    }
 }
+// === KẾT THÚC LOGIC TẢI FILE MỚI ===
 
 
 // --- CÁC HÀM CẬP NHẬT GIAO DIỆN VÀ XỬ LÝ SỰ KIỆN ---
 
 // NÂNG CẤP B.1: Cập nhật UI cho người dùng đã đăng nhập (Menu Dropdown)
 function updateUIForLoggedInUser(user) {
+    const authButtonContainer = document.getElementById('auth-button-container');
     if (authButtonContainer) {
         const userMetadata = user.user_metadata;
         const displayName = userMetadata?.full_name || userMetadata?.name || user.email.split('@')[0];
-        const avatarUrl = userMetadata?.avatar_url || 'https://i.imgur.com/3Z4Yp4J.png'; // Dùng avatar mặc định nếu không có
+        const avatarUrl = userMetadata?.avatar_url || 'https://i.imgur.com/3Z4Yp4J.png';
 
-        // Tạo HTML cho nút và dropdown
         authButtonContainer.innerHTML = `
-            <!-- Nút chính hiển thị thông tin user -->
             <button id="account-menu-button" class="nav-link flex items-center gap-2 cursor-pointer" type="button">
                 <img src="${avatarUrl}" alt="Avatar" class="h-6 w-6 rounded-full object-cover">
                 <span class="font-semibold">${displayName}</span>
             </button>
-            
-            <!-- Menu Dropdown (ẩn mặc định) -->
             <div id="account-dropdown" class="account-dropdown">
                 <button id="logout-button" class="account-dropdown-item logout-btn">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -438,17 +436,16 @@ function updateUIForLoggedInUser(user) {
             </div>
         `;
         
-        navLinks.auth = null; // Xóa tham chiếu cũ
-        navLinks.logout = document.getElementById('account-menu-button'); // Tham chiếu mới
+        navLinks.auth = null;
+        navLinks.logout = document.getElementById('account-menu-button');
 
-        // Thêm Event Listeners cho menu mới
         const menuButton = document.getElementById('account-menu-button');
         const dropdown = document.getElementById('account-dropdown');
         const logoutButton = document.getElementById('logout-button');
 
         if (menuButton && dropdown) {
             menuButton.addEventListener('click', (event) => {
-                event.stopPropagation(); // Ngăn sự kiện click lan ra window
+                event.stopPropagation();
                 dropdown.classList.toggle('open');
             });
         }
@@ -459,41 +456,38 @@ function updateUIForLoggedInUser(user) {
             });
         }
 
-        // Cập nhật kính sau khi DOM thay đổi
         setTimeout(() => {
             if (typeof moveGlass === 'function') {
                 const activeLink = document.querySelector('#desktop-nav .nav-link.active');
                 moveGlass(activeLink || navLinks.logout);
             }
-        }, 50); // Delay nhỏ để DOM kịp cập nhật
+        }, 50);
     }
 }
 
 // NÂNG CẤP B.2: Cập nhật UI cho người dùng đã đăng xuất (Logo mới)
 function updateUIForLoggedOutUser() {
+    const authButtonContainer = document.getElementById('auth-button-container');
     if (authButtonContainer) {
         authButtonContainer.innerHTML = `
             <a href="#" id="nav-login" class="nav-link" onclick="showPage('auth', event)">
-                <!-- NÂNG CẤP B.2: Logo đăng nhập mới -->
                 <img src="https://i.imgur.com/hhc1Ect.png" alt="Login Icon" style="height: 20px;">
                 <span>Đăng Nhập</span>
             </a>
         `;
-        navLinks.logout = null; // Xóa tham chiếu cũ
-        navLinks.auth = document.getElementById('nav-login'); // Tham chiếu mới
+        navLinks.logout = null;
+        navLinks.auth = document.getElementById('nav-login');
 
-         // Cập nhật kính sau khi DOM thay đổi
         setTimeout(() => {
             if (typeof moveGlass === 'function') {
                 const activeLink = document.querySelector('#desktop-nav .nav-link.active');
                 moveGlass(activeLink || navLinks.auth);
             }
-        }, 50); // Delay nhỏ để DOM kịp cập nhật
+        }, 50);
     }
 }
 
 
-// (Các hàm signInWithGoogle, handleEmailRegister, handleEmailLogin không đổi)
 async function signInWithGoogle(event) {
     event.preventDefault();
     const { error } = await window.supabase.auth.signInWithOAuth({ provider: 'google' });
@@ -535,10 +529,8 @@ async function handleEmailLogin(event) {
     if (error) {
         alert("Đăng nhập thất bại: " + error.message);
     }
-    // Không cần alert thành công, onAuthStateChange sẽ xử lý
 }
 
-// FIX 1: Sửa hàm signOutUser (đã sửa ở phiên bản trước, giữ nguyên)
 async function signOutUser(event) {
     if (event) event.preventDefault();
     await unsubscribeFromProfileChanges();
@@ -546,53 +538,103 @@ async function signOutUser(event) {
     if (error) {
         alert("Đăng xuất thất bại: " + error.message);
     }
-    // onAuthStateChange sẽ tự động cập nhật UI (đổi menu)
-    // FIX 1: Chủ động gọi showPage('home') để render lại nội dung trang
-    // và đảm bảo người dùng được đưa về trang chủ sau khi đăng xuất.
     showPage('home');
 }
 
 
-// (Hàm initializeResources không đổi)
+// === GIAI ĐOẠN 3: Cập nhật hàm initializeResources ===
 async function initializeResources() {
     const categoriesContainer = document.getElementById('resource-categories');
     const gridContainer = document.getElementById('resource-grid');
     if (!categoriesContainer || !gridContainer) return;
 
     gridContainer.innerHTML = `<p class="text-gray-400 col-span-full text-center">Đang tải tài nguyên...</p>`;
-    const { data: resourceData, error } = await window.supabase.from('resources').select('*');
+    
+    // QUAN TRỌNG: KHÔNG lấy cột 'downloadLink'. RLS của Supabase (Giai đoạn 2.6)
+    // sẽ chặn yêu cầu này nếu 'downloadLink' bị lộ.
+    // === CẬP NHẬT: Thêm .order() để sắp xếp theo cột 'sort_order' mới ===
+    const { data: resourceData, error } = await window.supabase
+        .from('resources')
+        .select('id, title, imageUrl, category, sort_order') // Chỉ lấy các trường công khai
+        .order('sort_order', { ascending: true, nullsFirst: false }); // Sắp xếp theo thứ tự tăng dần, NULL xuống cuối
+        
     if (error) {
-        gridContainer.innerHTML = `<p class="text-red-400 col-span-full text-center">Không thể tải tài nguyên. Vui lòng thử lại sau.</p>`;
+        console.error("Lỗi tải tài nguyên:", error.message);
+        gridContainer.innerHTML = `<p class="text-red-400 col-span-full text-center">Không thể tải tài nguyên. Lỗi: ${error.message}</p>`;
         return;
     }
     if (!resourceData || resourceData.length === 0) {
         gridContainer.innerHTML = `<p class="text-gray-400 col-span-full text-center">Chưa có tài nguyên nào.</p>`;
         return;
     }
+
     const categories = ['Tất cả', ...new Set(resourceData.map(item => item.category))];
     let activeCategoryButton = null;
+    
     function renderResources(filter = 'Tất cả') {
         gridContainer.innerHTML = '';
         const filteredData = filter === 'Tất cả' ? resourceData : resourceData.filter(item => item.category === filter);
+        
         if (filteredData.length === 0) {
             gridContainer.innerHTML = `<p class="text-gray-400 col-span-full text-center">Không có tài nguyên nào trong mục này.</p>`;
             return;
         }
+
+        // Lấy ID người dùng (nếu có) để kiểm tra khóa
+        const userId = currentUser?.id;
+
         filteredData.forEach(item => {
             const card = document.createElement('div');
             card.className = 'resource-card bg-gray-800/50 border border-gray-700 rounded-lg overflow-hidden flex flex-col';
             const categoryClass = item.category === 'Livestream' ? 'text-yellow-400 bg-yellow-500/10' : 'text-sky-400 bg-sky-500/10';
+            
+            let buttonHtml;
+            // (Phòng thủ 1) Kiểm tra "Khóa 1 Tuần" ngay khi render
+            if (userId) {
+                const lockKey = `download_lock_${userId}_${item.id}`;
+                const expiryTime = localStorage.getItem(lockKey);
+                
+                if (expiryTime && Date.now() < parseInt(expiryTime, 10)) {
+                    // Bị khóa
+                    const remaining = getRemainingTime(parseInt(expiryTime, 10));
+                    buttonHtml = `
+                        <button 
+                            data-id="${item.id}" 
+                            class="download-btn mt-auto text-center w-full bg-gray-600 text-white font-bold py-2 px-4 rounded-lg text-sm opacity-50 cursor-not-allowed"
+                            disabled>
+                            Đã tải ${remaining || ''}
+                        </button>`;
+                } else {
+                    // Không bị khóa
+                    buttonHtml = `
+                        <button 
+                            data-id="${item.id}" 
+                            class="download-btn mt-auto text-center w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-2 px-4 rounded-lg transition-colors text-sm">
+                            Tải Về
+                        </button>`;
+                }
+            } else {
+                // Chưa đăng nhập
+                buttonHtml = `
+                    <button 
+                        data-id="${item.id}" 
+                        class="download-btn mt-auto text-center w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-2 px-4 rounded-lg transition-colors text-sm">
+                        Tải Về
+                    </button>`;
+            }
+
             card.innerHTML = `
                 <img src="${item.imageUrl}" alt="${item.title}" class="w-full h-40 object-cover" onerror="this.onerror=null;this.src='https://placehold.co/400x300/1f2937/9ca3af?text=Image+Not+Found';">
                 <div class="p-4 flex flex-col flex-grow">
                     <h4 class="font-semibold text-white mb-1 flex-grow">${item.title}</h4>
                     <span class="text-xs ${categoryClass} px-2 py-1 rounded-full self-start mb-3">${item.category}</span>
-                    <button data-id="${item.id}" class="download-btn mt-auto text-center w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-2 px-4 rounded-lg transition-colors text-sm">Tải Về</button>
+                    ${buttonHtml}
                 </div>
             `;
             gridContainer.appendChild(card);
         });
     }
+    
     categoriesContainer.innerHTML = '';
     categories.forEach(category => {
         const button = document.createElement('button');
@@ -615,22 +657,19 @@ async function initializeResources() {
         });
         categoriesContainer.appendChild(button);
     });
+    
     renderResources();
 }
 
-// Task 10 & FIX Auth Overlay: Cập nhật DOMContentLoaded
+// === GIAI ĐOẠN 3: Thêm Event Listeners ===
 document.addEventListener('DOMContentLoaded', () => {
-    // Không gọi _displayPage('home') ở đây nữa,
-    // setupAuthStateObserver sẽ gọi nó sau khi auth sẵn sàng.
     setupAuthStateObserver();
 
-    // NÂNG CẤP B.1: Thêm listener để đóng dropdown khi click ra ngoài
     window.addEventListener('click', (event) => {
         const dropdown = document.getElementById('account-dropdown');
         const menuButton = document.getElementById('account-menu-button');
-        // Nếu dropdown đang mở VÀ click không phải vào nút menu VÀ không phải vào bên trong dropdown
         if (dropdown && dropdown.classList.contains('open') && 
-            menuButton && !menuButton.contains(event.target) &&  // Thêm kiểm tra menuButton tồn tại
+            menuButton && !menuButton.contains(event.target) &&
             !dropdown.contains(event.target)) {
             dropdown.classList.remove('open');
         }
@@ -648,17 +687,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const registerFormEl = document.querySelector('#register-form form');
     if (registerFormEl) registerFormEl.addEventListener('submit', handleEmailRegister);
 
+    // Gắn listener cho Modal Mật khẩu
+    if (passwordForm) {
+        passwordForm.addEventListener('submit', handlePasswordSubmit);
+    }
+
+    // Gắn listener cho Lưới Tài nguyên
     const resourceGrid = document.getElementById('resource-grid');
     if(resourceGrid) {
         resourceGrid.addEventListener('click', (event) => {
-            const button = event.target.closest('.download-btn'); // Lấy nút chính xác
-            if (currentUser && button) {
+            const button = event.target.closest('.download-btn');
+            if (button && !button.disabled) { // Chỉ xử lý nếu nút không bị khóa
                 const resourceId = button.dataset.id;
-                // NÂNG CẤP C.2: Truyền element của nút vào hàm
-                downloadResource(resourceId, button); 
+                // Gọi hàm MỞ MODAL, không gọi hàm tải file
+                startDownloadProcess(resourceId, button); 
             } else if (!currentUser && button) {
-                 // Có thể thêm thông báo yêu cầu đăng nhập nếu muốn, nhưng overlay đã xử lý việc chặn
                  alert("Vui lòng đăng nhập để tải tài nguyên!");
+                 showPage('auth', event); // Chuyển đến trang đăng nhập
             }
         });
     }
@@ -668,13 +713,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof renderVideoGallery === 'function') renderVideoGallery();
     if (typeof typingAnimation === 'function') typingAnimation();
     if (typeof initializeOAIStudio === 'function') initializeOAIStudio();
-
-    // Không cần setTimeout cho moveGlass nữa vì onAuthStateChange sẽ xử lý
 });
 
 
 // --- CÁC HÀM GIAO DIỆN KHÁC ---
-// (openModal, closeModal, mobile menu, close notification, assistant, chat, observeSections, video gallery, backToTop, flyingLogos, moveGlass, typingAnimation không đổi)
 function openModal(modalId) {
     const modal = document.getElementById(modalId);
     if (!modal) return;
@@ -692,6 +734,18 @@ function closeModal(modalId) {
             const videoContainer = document.getElementById('video-player-container');
             if (videoContainer) videoContainer.innerHTML = '';
         }
+        // === GIAI ĐOẠN 3: Reset nút khi đóng modal mật khẩu ===
+        if (modalId === 'password-modal') {
+             if (passwordSubmitBtn) {
+                passwordSubmitBtn.disabled = false;
+                passwordSubmitBtn.textContent = 'Xác Nhận';
+             }
+             if (passwordError) {
+                passwordError.classList.add('hidden');
+             }
+             currentResourceId = null;
+             currentDownloadButton = null;
+        }
     }, 300);
 }
 
@@ -708,11 +762,11 @@ if (closeNotificationBtn) {
     closeNotificationBtn.addEventListener('click', () => {
         const notifBarWrapper = document.getElementById('notification-bar-wrapper');
         if (notifBarWrapper) {
-            notifBarWrapper.style.transition = 'height 0.3s ease, opacity 0.3s ease, margin-top 0.3s ease'; // Thêm transition
+            notifBarWrapper.style.transition = 'height 0.3s ease, opacity 0.3s ease, margin-top 0.3s ease';
             notifBarWrapper.style.height = '0';
             notifBarWrapper.style.opacity = '0';
-            notifBarWrapper.style.marginTop = '0'; // Đảm bảo không còn khoảng trống
-            notifBarWrapper.style.overflow = 'hidden'; // Ẩn nội dung khi co lại
+            notifBarWrapper.style.marginTop = '0';
+            notifBarWrapper.style.overflow = 'hidden';
             setTimeout(() => notifBarWrapper.style.display = 'none', 300);
         }
     });
@@ -776,7 +830,7 @@ async function sendMessage() {
     chatMessages.scrollTop = chatMessages.scrollHeight;
     typingIndicator.classList.remove('hidden');
     try {
-        const apiKey = "";
+        const apiKey = ""; 
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
         const systemPrompt = "Bạn là 'Oai Mini', trợ lý AI trên website 'Oai Design'. NhiệmB vụ của bạn là CHỈ trả lời các câu hỏi liên quan đến nội dung, dịch vụ, tài nguyên, hoặc các chủ đề về thiết kế (design) có trên website này. Nếu người dùng hỏi về chủ đề không liên quan (ví dụ: thời tiết, chính trị, nấu ăn, các chủ đề chung chung...), bạn PHẢI lịch sự từ chối và hướng họ quay lại chủ đề của website. Luôn trả lời bằng tiếng Việt, ngắn gọn, thân thiện.";
         const payload = {
@@ -824,7 +878,7 @@ const observeSections = () => {
                 entry.target.classList.add('visible');
             }
             if (entry.intersectionRatio > 0.5) {
-                const sectionId = entry.target.id || entry.target.parentElement?.id; // Thêm ?. để tránh lỗi nếu không có parent
+                const sectionId = entry.target.id || entry.target.parentElement?.id;
                 if(sectionId) showAssistantMessage(sectionId);
             }
         });
@@ -938,12 +992,10 @@ function moveGlass(element) {
     if (!navContainer) return;
     const glassBg = navContainer.querySelector('.nav-glass-bg');
     if (!element || !glassBg) return;
-    // Thêm kiểm tra element có thực sự nằm trong navContainer không
     if (navContainer.contains(element)) {
         glassBg.style.width = `${element.offsetWidth}px`;
         glassBg.style.left = `${element.offsetLeft}px`;
     } else {
-        // Nếu element không có trong nav (ví dụ: logout đang bị ẩn), ẩn kính đi
         glassBg.style.width = `0px`;
     }
 }
@@ -960,7 +1012,7 @@ if (navContainer) {
 
     navContainer.addEventListener('mouseleave', () => {
         const activeItem = navContainer.querySelector('.nav-link.active');
-        moveGlass(activeItem); // activeItem có thể là null nếu không có link nào active
+        moveGlass(activeItem);
     });
 }
 
@@ -1022,9 +1074,8 @@ textContentWrapper.style.opacity = '0';
 function downloadImageFromButton(buttonElement) {
     const resultBlock = buttonElement.closest('.ai-result-block');
     if (!resultBlock) return;
-    // Sửa selector để tìm đúng ảnh bên trong wrapper
     const img = resultBlock.querySelector('.ai-image-wrapper img');
-    if (img && img.src && !img.src.startsWith('https://placehold.co')) { // Đảm bảo không tải placeholder
+    if (img && img.src && !img.src.startsWith('https://placehold.co')) {
         const link = document.createElement('a');
         link.href = img.src;
         link.download = 'oai-studio-image.png';
@@ -1037,30 +1088,27 @@ function downloadImageFromButton(buttonElement) {
 }
 
 
-// Task 7 & 4: Hàm phụ trợ lấy kích thước (Thêm logic 2K)
 function getDimensions(aspectRatio, resolution) {
     let width = 1024;
     let height = 1024;
 
     if (resolution === '1K') {
         if (aspectRatio === '1:1') { width = 1024; height = 1024; }
-        else if (aspectRatio === '16:9') { width = 1360; height = 768; } // ~1.77
-        else if (aspectRatio === '9:16') { width = 768; height = 1360; } // ~0.56
-        else if (aspectRatio === '4:3') { width = 1152; height = 864; } // 1.33
-        else if (aspectRatio === '3:4') { width = 864; height = 1152; } // 0.75
-    } else if (resolution === '2K') { // NÂNG CẤP 4: Thêm logic 2K
+        else if (aspectRatio === '16:9') { width = 1360; height = 768; }
+        else if (aspectRatio === '9:16') { width = 768; height = 1360; }
+        else if (aspectRatio === '4:3') { width = 1152; height = 864; }
+        else if (aspectRatio === '3:4') { width = 864; height = 1152; }
+    } else if (resolution === '2K') {
         if (aspectRatio === '1:1') { width = 2048; height = 2048; }
-        else if (aspectRatio === '16:9') { width = 2720; height = 1536; } // Gần 2K chiều cao, giữ tỉ lệ
-        else if (aspectRatio === '9:16') { width = 1536; height = 2720; } // Gần 2K chiều rộng, giữ tỉ lệ
-        else if (aspectRatio === '4:3') { width = 2304; height = 1728; } // Gần 2K chiều rộng, giữ tỉ lệ
-        else if (aspectRatio === '3:4') { width = 1728; height = 2304; } // Gần 2K chiều cao, giữ tỉ lệ
+        else if (aspectRatio === '16:9') { width = 2720; height = 1536; }
+        else if (aspectRatio === '9:16') { width = 1536; height = 2720; }
+        else if (aspectRatio === '4:3') { width = 2304; height = 1728; }
+        else if (aspectRatio === '3:4') { width = 1728; height = 2304; }
     }
 
-    // Stable Diffusion yêu cầu kích thước là bội số của 64
     width = Math.round(width / 64) * 64;
     height = Math.round(height / 64) * 64;
 
-    // Đảm bảo kích thước tối thiểu (ví dụ: SDXL cần ít nhất 512)
     width = Math.max(width, 512);
     height = Math.max(height, 512);
 
@@ -1069,7 +1117,6 @@ function getDimensions(aspectRatio, resolution) {
 
 
 
-// Task 5, 6, 7: Cập nhật initializeOAIStudio
 function initializeOAIStudio() {
     const sendBtn = document.getElementById('prompt-send-btn');
     const promptInput = document.getElementById('prompt-input');
@@ -1085,172 +1132,20 @@ function initializeOAIStudio() {
         return;
     }
 
-    const apiKeys = {
-        google: 'AIzaSyAJ9z9WHlWVKqFbGIjQiSQdrtNT1g_vFu0',
-        stability: '' // ĐIỀN API KEY STABILITY AI CỦA BẠN VÀO ĐÂY NẾU CÓ
-    };
+    // === GIAI ĐOẠN 3: XÓA API KEY KHỎI CLIENT ===
+    // const apiKeys = { ... }; // ĐÃ XÓA
+    // const modelConfigs = { ... }; // ĐÃ XÓA
+    // Chúng ta sẽ gọi "Người Gác Cổng" (Worker) để tạo ảnh,
+    // nhưng chúng ta sẽ làm điều đó trong một bản cập nhật tương lai.
+    // Hiện tại, chúng ta tập trung vào logic tải file.
 
-    const modelConfigs = {
-        'Stable Diffusion': {
-            endpoint: `https://api.stability.ai/v1/generation/stable-diffusion-xl-1024-v1-0/text-to-image`,
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'Authorization': `Bearer ${apiKeys.stability}`
-            },
-            buildPayload: (prompt, width, height) => ({
-                text_prompts: [{ text: prompt }],
-                cfg_scale: 7,
-                height: height,
-                width: width,
-                steps: 30, // Có thể tăng steps để ảnh chi tiết hơn (vd: 40-50)
-                samples: 1,
-            }),
-            getResult: (data) => data.artifacts?.[0]?.base64 // Thêm ?. để tránh lỗi nếu không có artifacts
-        },
-        'O-AI Nano': {
-            endpoint: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent?key=${apiKeys.google}`,
-            headers: { 'Content-Type': 'application/json' },
-            buildPayload: (prompt, width, height) => ({ // API này không dùng width/height
-                contents: [{ parts: [{ text: prompt }] }],
-                generationConfig: { responseModalities: ["IMAGE"] }
-            }),
-            getResult: (data) => {
-                const imagePart = data?.candidates?.[0]?.content?.parts?.find(part => part.inlineData && part.inlineData.mimeType.startsWith('image/'));
-                return imagePart?.inlineData?.data;
-            }
-        },
-        'O-AI Gen 4': { endpoint: null },
-        'O-AI Gen 4 Ultra': { endpoint: null }
-    };
-
+    // Tạm thời vô hiệu hóa chức năng này
     const generateImage = async () => {
-        // Kiểm tra đăng nhập trước khi tạo ảnh
-        if (!currentUser) {
-             alert("Vui lòng đăng nhập để sử dụng O-AI Studio.");
-             // Không cần gọi showPage('auth') vì overlay sẽ hiện nếu trang đang mở
-             return;
-        }
-
-        const prompt = promptInput.value.trim();
-        if (!prompt) {
-            alert("Vui lòng nhập mô tả cho hình ảnh!");
-            return;
-        }
-
-        const activeModelCard = modelSelection.querySelector('.model-card.active');
-        const modelName = activeModelCard.dataset.modelName;
-        const config = modelConfigs[modelName];
-
-        if (!config || !config.endpoint) {
-            alert(`Model "${modelName}" hiện chưa khả dụng hoặc chưa được cấu hình.`);
-            return;
-        }
-
-        if ((modelName === 'Stable Diffusion' && !apiKeys.stability)) {
-             alert(`API Key cho model Stable Diffusion chưa được cung cấp trong script.js. Vui lòng thêm key để sử dụng model này.`);
-            return; // Chỉ chặn nếu chọn SD mà không có key
-        }
-         if (modelName === 'O-AI Nano' && !apiKeys.google) {
-             alert(`API Key cho model O-AI Nano chưa được cung cấp trong script.js.`);
-             return; // Chặn nếu chọn Nano mà không có key
-        }
-
-        placeholder.classList.add('hidden');
-
-        // Lấy giá trị Tỷ lệ & Độ phân giải
-        const activeAspectBtn = aspectRatioSelection.querySelector('.aspect-ratio-btn.active');
-        const aspectRatio = activeAspectBtn ? activeAspectBtn.dataset.aspect : '1:1';
-        const resolution = resolutionSelection.value || '1K';
-
-        // Tính toán kích thước
-        const { width, height } = getDimensions(aspectRatio, resolution);
-
-        // Tạo khối loading ngay lập tức
-        const newBlock = document.createElement('div');
-        newBlock.className = 'conversation-block';
-        newBlock.innerHTML = `
-            <div class="user-prompt-block">
-                <p>${prompt.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>
-            </div>
-            <div class="ai-result-block">
-                 <div class="loading-spinner flex flex-col justify-center items-center h-[512px]"> <!-- Đặt chiều cao cố định cho spinner -->
-                    <svg class="animate-spin h-8 w-8 text-sky-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    <p class="text-gray-400 mt-2 text-sm">AI đang vẽ (${width}x${height}), vui lòng đợi...</p> <!-- Hiển thị kích thước yêu cầu -->
-                </div>
-            </div>
-        `;
-        conversationArea.appendChild(newBlock);
-
-        // Reset prompt input và cuộn xuống
-        promptInput.value = '';
-        promptInput.style.height = 'auto'; // Reset chiều cao
-        conversationArea.scrollTop = conversationArea.scrollHeight;
-
-        const resultBlock = newBlock.querySelector('.ai-result-block'); // Tham chiếu đến khối kết quả
-
-        // Gọi API
-        try {
-            const payload = config.buildPayload(prompt, width, height);
-            console.log(`Sending payload to ${modelName}:`, { prompt, width, height }); // Log payload để debug
-
-            const response = await fetch(config.endpoint, {
-                method: 'POST',
-                headers: config.headers,
-                body: JSON.stringify(payload)
-            });
-
-             // Log chi tiết lỗi nếu có
-            if (!response.ok) {
-                let errorDetails = `API Error ${response.status}: ${response.statusText}`;
-                try {
-                    const errorJson = await response.json();
-                    errorDetails += `\n${JSON.stringify(errorJson, null, 2)}`;
-                } catch (e) {
-                    const errorText = await response.text();
-                    errorDetails += `\nResponse: ${errorText}`;
-                }
-                 console.error(errorDetails); // Log lỗi chi tiết
-                throw new Error(`Yêu cầu API thất bại (Status: ${response.status}). Kiểm tra console để biết chi tiết.`);
-            }
-
-
-            const data = await response.json();
-            const base64Data = config.getResult(data);
-
-            if (base64Data) {
-                const imageUrl = `data:image/png;base64,${base64Data}`;
-                // Cập nhật khối kết quả với ảnh và nút tải
-                resultBlock.innerHTML = `
-                    <div class="ai-image-wrapper">
-                         <img src="${imageUrl}" alt="AI generated image for: ${prompt.replace(/"/g, "'")}" class="block max-w-full max-h-full object-contain">
-                    </div>
-                    <div class="mt-3 flex gap-2"> <!-- Bỏ ID không cần thiết -->
-                         <button class="ai-action-btn" onclick="downloadImageFromButton(this)">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                            <span>Tải xuống</span>
-                        </button>
-                    </div>
-                `;
-            } else {
-                 console.error("Không nhận được dữ liệu base64 hợp lệ từ API response:", data);
-                throw new Error("Phản hồi API không chứa dữ liệu hình ảnh hợp lệ.");
-            }
-        } catch (error) {
-            console.error("Lỗi trong quá trình tạo ảnh:", error);
-            // Hiển thị lỗi trong khối kết quả
-            resultBlock.innerHTML = `<p class="text-red-400 p-4 bg-red-900/20 rounded-lg text-sm"><b>Đã xảy ra lỗi:</b> ${error.message}</p>`;
-        } finally {
-             // Đảm bảo cuộn xuống cuối sau khi có kết quả hoặc lỗi
-             conversationArea.scrollTop = conversationArea.scrollHeight;
-        }
+        alert("Chức năng O-AI Studio đang được bảo trì để nâng cấp bảo mật. Vui lòng quay lại sau.");
+        return;
     };
-
-
-    // Event Listeners (Không đổi)
+    
+    // Event Listeners (Vẫn giữ)
     if (modelSelection) {
         const models = modelSelection.querySelectorAll('.model-card');
         models.forEach(model => {
@@ -1278,20 +1173,17 @@ function initializeOAIStudio() {
             if (promptItem && promptInput) {
                 promptInput.value = promptItem.dataset.prompt;
                 promptInput.focus();
-                // Tự động điều chỉnh chiều cao sau khi chèn preset
                 promptInput.style.height = 'auto';
                 promptInput.style.height = (promptInput.scrollHeight) + 'px';
-                 // const event = new Event('input', { bubbles: true }); // Không cần dispatch event nữa
-                // promptInput.dispatchEvent(event);
             }
         });
     }
 
-    sendBtn.addEventListener('click', generateImage);
+    sendBtn.addEventListener('click', generateImage); // Gọi hàm đã vô hiệu hóa
     promptInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
-            generateImage();
+            generateImage(); // Gọi hàm đã vô hiệu hóa
         }
     });
 
