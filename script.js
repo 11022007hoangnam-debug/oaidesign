@@ -29,13 +29,13 @@ let currentUser = null;
 let profileSubscription = null;
 let authStateReady = false;
 
-// === BẮT ĐẦU FIX LỖI (Thêm lại các biến toàn cục bị thiếu) ===
-const authOverlay = document.getElementById('auth-overlay');
-const authOverlayOai = document.getElementById('auth-overlay-oai');
-const loginForm = document.getElementById('login-form');
-const registerForm = document.getElementById('register-form');
-const authButtonContainer = document.getElementById('auth-button-container');
-// === KẾT THÚC FIX LỖI ===
+// === BẮT ĐẦU FIX LỖI v2 (Chuyển Gán vào DOMContentLoaded) ===
+let authOverlay = null;
+let authOverlayOai = null;
+let loginForm = null;
+let registerForm = null;
+let authButtonContainer = null;
+// === KẾT THÚC FIX LỖI v2 ===
 
 // === GIAI ĐOẠN 3: Thêm biến cho Modal Mật khẩu ===
 let currentResourceId = null; // Biến tạm để lưu ID file đang chờ tải
@@ -656,6 +656,14 @@ async function initializeResources() {
 
 // === GIAI ĐOẠN 3: Thêm Event Listeners ===
 document.addEventListener('DOMContentLoaded', () => {
+    // === BẮT ĐẦU FIX LỖI v2: Gán biến KHI DOM đã sẵn sàng ===
+    authOverlay = document.getElementById('auth-overlay');
+    authOverlayOai = document.getElementById('auth-overlay-oai');
+    loginForm = document.getElementById('login-form');
+    registerForm = document.getElementById('register-form');
+    authButtonContainer = document.getElementById('auth-button-container');
+    // === KẾT THÚC FIX LỖI v2 ===
+
     setupAuthStateObserver();
 
     window.addEventListener('click', (event) => {
@@ -1359,3 +1367,4 @@ function initializeOAIStudio() {
         promptInput.style.height = (promptInput.scrollHeight) + 'px';
     });
 }
+
