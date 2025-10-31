@@ -29,22 +29,98 @@ let currentUser = null;
 let profileSubscription = null;
 let authStateReady = false;
 
-// === BẮT ĐẦU FIX LỖI v2 (Chuyển Gán vào DOMContentLoaded) ===
+// === FIX LỖI v3: Khai báo biến DOM là let, sẽ gán sau ===
 let authOverlay = null;
 let authOverlayOai = null;
 let loginForm = null;
 let registerForm = null;
 let authButtonContainer = null;
-// === KẾT THÚC FIX LỖI v2 ===
 
 // === GIAI ĐOẠN 3: Thêm biến cho Modal Mật khẩu ===
 let currentResourceId = null; // Biến tạm để lưu ID file đang chờ tải
 let currentDownloadButton = null; // Biến tạm để lưu nút đang xử lý
-const passwordModal = document.getElementById('password-modal');
-const passwordForm = document.getElementById('password-form');
-const passwordInput = document.getElementById('download-password');
-const passwordError = document.getElementById('password-error');
-const passwordSubmitBtn = document.getElementById('password-submit-btn');
+let passwordModal = null;
+let passwordForm = null;
+let passwordInput = null;
+let passwordError = null;
+let passwordSubmitBtn = null;
+// === KẾT THÚC KHAI BÁO BIẾN ===
+
+
+// === FIX LỖI v3: HÀM KHỞI TẠO CHÍNH ===
+// Hàm này sẽ được GỌI TỪ index.html SAU KHI window.supabase đã được tạo
+function initializeApp() {
+    
+    // 1. Gán các biến DOM (Vì script được gọi ở cuối body, DOM đã sẵn sàng)
+    authOverlay = document.getElementById('auth-overlay');
+    authOverlayOai = document.getElementById('auth-overlay-oai');
+    loginForm = document.getElementById('login-form');
+    registerForm = document.getElementById('register-form');
+    authButtonContainer = document.getElementById('auth-button-container');
+
+    passwordModal = document.getElementById('password-modal');
+    passwordForm = document.getElementById('password-form');
+    passwordInput = document.getElementById('download-password');
+    passwordError = document.getElementById('password-error');
+    passwordSubmitBtn = document.getElementById('password-submit-btn');
+
+    // 2. Bắt đầu lắng nghe Supabase (VÌ window.supabase ĐÃ TỒN TẠI)
+    setupAuthStateObserver();
+
+    // 3. Gắn các Event Listeners
+    window.addEventListener('click', (event) => {
+        const dropdown = document.getElementById('account-dropdown');
+        const menuButton = document.getElementById('account-menu-button');
+        if (dropdown && dropdown.classList.contains('open') &&
+            menuButton && !menuButton.contains(event.target) &&
+            !dropdown.contains(event.target)) {
+            dropdown.classList.remove('open');
+        }
+    });
+
+    const loginGoogleBtn = document.getElementById('login-google-btn');
+    if (loginGoogleBtn) loginGoogleBtn.addEventListener('click', signInWithGoogle);
+
+    const registerGoogleBtn = document.getElementById('register-google-btn');
+    if (registerGoogleBtn) registerGoogleBtn.addEventListener('click', signInWithGoogle);
+
+    const loginFormEl = document.querySelector('#login-form form');
+    if (loginFormEl) loginFormEl.addEventListener('submit', handleEmailLogin);
+
+    const registerFormEl = document.querySelector('#register-form form');
+    if (registerFormEl) registerFormEl.addEventListener('submit', handleEmailRegister);
+
+    // Gắn listener cho Modal Mật khẩu
+    if (passwordForm) {
+        passwordForm.addEventListener('submit', handlePasswordSubmit);
+    }
+
+    // Gắn listener cho Lưới Tài nguyên
+    const resourceGrid = document.getElementById('resource-grid');
+    if (resourceGrid) {
+        resourceGrid.addEventListener('click', (event) => {
+            const button = event.target.closest('.download-btn');
+            if (button && !button.disabled) { // Chỉ xử lý nếu nút không bị khóa
+                const resourceId = button.dataset.id;
+                // Gọi hàm MỞ MODAL, không gọi hàm tải file
+                startDownloadProcess(resourceId, button);
+            } else if (!currentUser && button) {
+                alert("Vui lòng đăng nhập để tải tài nguyên!");
+                showPage('auth', event); // Chuyển đến trang đăng nhập
+            }
+        });
+    }
+
+    // 4. Khởi tạo các thành phần giao diện khác
+    if (typeof initFlyingLogos === 'function') initFlyingLogos();
+    if (typeof renderVideoGallery === 'function') renderVideoGallery();
+    if (typeof typingAnimation === 'function') typingAnimation();
+    if (typeof initializeOAIStudio === 'function') initializeOAIStudio();
+
+    console.log("Ứng dụng đã khởi tạo thành công!"); // Để kiểm tra
+}
+// === KẾT THÚC HÀM KHỞI TẠO CHÍNH ===
+
 
 // --- CÁC HÀM TIỆN ÍCH ---
 
@@ -80,10 +156,6 @@ function getCurrentDateString() {
 
 // Task 1 & 10 & 3 & FIX: Hàm _displayPage (lõi logic hiển thị)
 function _displayPage(pageId) { 
-    // === FIX LỖI: Xóa bỏ khai báo cục bộ (đã chuyển lên toàn cục) ===
-    // const authOverlay = document.getElementById('auth-overlay');
-    // const authOverlayOai = document.getElementById('auth-overlay-oai');
-    
     if (authOverlay) authOverlay.style.display = 'none';
     // if (authOverlayOai) authOverlayOai.style.display = 'none'; // FIX 2: KHÔNG ẩn overlay OAI (đã được đặt thành "Coming Soon")
 
@@ -234,6 +306,12 @@ async function unsubscribeFromProfileChanges() {
 
 // --- LOGIC XÁC THỰC VỚI SUPABASE ---
 function setupAuthStateObserver() {
+    // FIX LỖI v3: Đảm bảo window.supabase đã tồn tại trước khi gọi
+    if (!window.supabase) {
+        console.error("Supabase client (window.supabase) chưa được khởi tạo!");
+        return;
+    }
+
     window.supabase.auth.onAuthStateChange(async (event, session) => {
         if ((event === 'INITIAL_SESSION' || event === 'SIGNED_IN') && session) {
             const { data, error } = await window.supabase
@@ -410,7 +488,7 @@ async function handlePasswordSubmit(event) {
 
 // NÂNG CẤP B.1: Cập nhật UI cho người dùng đã đăng nhập (Menu Dropdown)
 function updateUIForLoggedInUser(user) {
-    // const authButtonContainer = document.getElementById('auth-button-container'); // FIX: Đã chuyển lên toàn cục
+    // FIX LỖI v3: 'authButtonContainer' giờ đã được gán chính xác
     if (authButtonContainer) {
         const userMetadata = user.user_metadata;
         const displayName = userMetadata?.full_name || userMetadata?.name || user.email.split('@')[0];
@@ -457,12 +535,13 @@ function updateUIForLoggedInUser(user) {
                 moveGlass(activeLink || navLinks.logout);
             }
         }, 50);
+    } else {
+        console.error("'authButtonContainer' không tìm thấy!"); // Log lỗi nếu vẫn sai
     }
 }
 
 // NÂNG CẤP B.2: Cập nhật UI cho người dùng đã đăng xuất (Logo mới)
 function updateUIForLoggedOutUser() {
-    // const authButtonContainer = document.getElementById('auth-button-container'); // FIX: Đã chuyển lên toàn cục
     if (authButtonContainer) {
         authButtonContainer.innerHTML = `
             <a href="#" id="nav-login" class="nav-link" onclick="showPage('auth', event)">
@@ -479,6 +558,8 @@ function updateUIForLoggedOutUser() {
                 moveGlass(activeLink || navLinks.auth);
             }
         }, 50);
+    } else {
+        console.error("'authButtonContainer' không tìm thấy!"); // Log lỗi nếu vẫn sai
     }
 }
 
@@ -654,67 +735,9 @@ async function initializeResources() {
     renderResources();
 }
 
-// === GIAI ĐOẠN 3: Thêm Event Listeners ===
-document.addEventListener('DOMContentLoaded', () => {
-    // === BẮT ĐẦU FIX LỖI v2: Gán biến KHI DOM đã sẵn sàng ===
-    authOverlay = document.getElementById('auth-overlay');
-    authOverlayOai = document.getElementById('auth-overlay-oai');
-    loginForm = document.getElementById('login-form');
-    registerForm = document.getElementById('register-form');
-    authButtonContainer = document.getElementById('auth-button-container');
-    // === KẾT THÚC FIX LỖI v2 ===
-
-    setupAuthStateObserver();
-
-    window.addEventListener('click', (event) => {
-        const dropdown = document.getElementById('account-dropdown');
-        const menuButton = document.getElementById('account-menu-button');
-        if (dropdown && dropdown.classList.contains('open') && 
-            menuButton && !menuButton.contains(event.target) &&
-            !dropdown.contains(event.target)) {
-            dropdown.classList.remove('open');
-        }
-    });
-
-    const loginGoogleBtn = document.getElementById('login-google-btn');
-    if (loginGoogleBtn) loginGoogleBtn.addEventListener('click', signInWithGoogle);
-
-    const registerGoogleBtn = document.getElementById('register-google-btn');
-    if (registerGoogleBtn) registerGoogleBtn.addEventListener('click', signInWithGoogle);
-
-    const loginFormEl = document.querySelector('#login-form form');
-    if (loginFormEl) loginFormEl.addEventListener('submit', handleEmailLogin);
-
-    const registerFormEl = document.querySelector('#register-form form');
-    if (registerFormEl) registerFormEl.addEventListener('submit', handleEmailRegister);
-
-    // Gắn listener cho Modal Mật khẩu
-    if (passwordForm) {
-        passwordForm.addEventListener('submit', handlePasswordSubmit);
-    }
-
-    // Gắn listener cho Lưới Tài nguyên
-    const resourceGrid = document.getElementById('resource-grid');
-    if(resourceGrid) {
-        resourceGrid.addEventListener('click', (event) => {
-            const button = event.target.closest('.download-btn');
-            if (button && !button.disabled) { // Chỉ xử lý nếu nút không bị khóa
-                const resourceId = button.dataset.id;
-                // Gọi hàm MỞ MODAL, không gọi hàm tải file
-                startDownloadProcess(resourceId, button); 
-            } else if (!currentUser && button) {
-                 alert("Vui lòng đăng nhập để tải tài nguyên!");
-                 showPage('auth', event); // Chuyển đến trang đăng nhập
-            }
-        });
-    }
-
-    // Khởi tạo các thành phần khác
-    if (typeof initFlyingLogos === 'function') initFlyingLogos();
-    if (typeof renderVideoGallery === 'function') renderVideoGallery();
-    if (typeof typingAnimation === 'function') typingAnimation();
-    if (typeof initializeOAIStudio === 'function') initializeOAIStudio();
-});
+// === FIX LỖI v3: Xóa bỏ DOMContentLoaded listener ===
+// document.addEventListener('DOMContentLoaded', () => { ... });
+// (Nội dung của nó đã được chuyển vào hàm initializeApp())
 
 
 // --- CÁC HÀM GIAO DIỆN KHÁC ---
@@ -1367,4 +1390,3 @@ function initializeOAIStudio() {
         promptInput.style.height = (promptInput.scrollHeight) + 'px';
     });
 }
-

@@ -17,6 +17,9 @@
         rel="stylesheet">
     
     <link rel="stylesheet" href="style.css">
+    
+    <!-- === FIX LỖI v3: Đã di chuyển script.js xuống cuối <body> === -->
+    <!-- <script src="script.js"></script> --> 
 </head>
 
 <body class="antialiased">
@@ -977,7 +980,7 @@
                 <svg fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path
                         d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm3.23 13.88c-.14.41-.46.73-.87.87-.59.2-1.99.2-2.36.2s-1.77 0-2.36-.2c-.41-.14-.73-.46-.87-.87-.2-1.21-.2-2.55-.2-2.88s0-1.67.2-2.88c.14-.41.46-.73.87-.87.59-.2-1.99-.2-2.36-.2s1.77 0 2.36.2c.41.14.73.46.87.87.2 1.21.2 2.55.2 2.88s0 1.67-.2 2.88zM9.5 12c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5-.67 1.5-1.5 1.5-1.5-.67-1.5-1.5z">
-                    </Hành động của bạn:h>
+                    </path>
                 </svg>
             </a>
             <a href="https://www.youtube.com/@hocvalamdesigner" target="_blank" title="Youtube">
@@ -1176,15 +1179,30 @@
     </div>
     <!-- === KẾT THÚC: Modal Nhập Mật Khẩu Tải File === -->
 
-    <script src="script.js"></script>
+    <!-- === FIX LỖI v3: SỬA LỖI THỨ TỰ TẢI SCRIPT === -->
 
-    <!-- === SUPABASE SDK === -->
+    <!-- BƯỚC 1: Tải thư viện Supabase TRƯỚC -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- BƯỚC 2: Khởi tạo Supabase client (TẠO RA window.supabase) -->
     <script>
         const supabaseUrl = 'https://eczovnahwntestpokikd.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIZDI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVjem92bmFod250ZXN0cG9raWtkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwNDAyNDIsImV4cCI6MjA3NjYxNjI0Mn0._Y-SzUccct4DGaAjOP7grRSFUdfV2Quvo3N31lLUquQ';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVjem92bmFod250ZXN0cG9raWtkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwNDAyNDIsImV4cCI6MjA3NjYxNjI0Mn0._Y-SzUccct4DGaAjOP7grRSFUdfV2Quvo3N31lLUquQ';
         // Make supabase client globally available to script.js
         window.supabase = supabase.createClient(supabaseUrl, supabaseKey);
+    </script>
+
+    <!-- BƯỚC 3: Tải file script.js (lúc này CÓ THỂ GỌI window.supabase) -->
+    <script src="script.js"></script>
+
+    <!-- BƯỚC 4: GỌI HÀM KHỞI TẠO từ script.js (hàm này có trong v3) -->
+    <script>
+        // Đảm bảo hàm initializeApp tồn tại rồi mới gọi
+        if (typeof initializeApp === 'function') {
+            initializeApp();
+        } else {
+            console.error('Lỗi nghiêm trọng: Không tìm thấy hàm initializeApp() trong script.js. Vui lòng đảm bảo bạn đang dùng file script.js v3 mới nhất.');
+        }
     </script>
 </body>
 </html>
