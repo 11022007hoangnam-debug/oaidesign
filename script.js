@@ -29,6 +29,14 @@ let currentUser = null;
 let profileSubscription = null;
 let authStateReady = false;
 
+// === BẮT ĐẦU FIX LỖI (Thêm lại các biến toàn cục bị thiếu) ===
+const authOverlay = document.getElementById('auth-overlay');
+const authOverlayOai = document.getElementById('auth-overlay-oai');
+const loginForm = document.getElementById('login-form');
+const registerForm = document.getElementById('register-form');
+const authButtonContainer = document.getElementById('auth-button-container');
+// === KẾT THÚC FIX LỖI ===
+
 // === GIAI ĐOẠN 3: Thêm biến cho Modal Mật khẩu ===
 let currentResourceId = null; // Biến tạm để lưu ID file đang chờ tải
 let currentDownloadButton = null; // Biến tạm để lưu nút đang xử lý
@@ -72,8 +80,9 @@ function getCurrentDateString() {
 
 // Task 1 & 10 & 3 & FIX: Hàm _displayPage (lõi logic hiển thị)
 function _displayPage(pageId) { 
-    const authOverlay = document.getElementById('auth-overlay');
-    const authOverlayOai = document.getElementById('auth-overlay-oai');
+    // === FIX LỖI: Xóa bỏ khai báo cục bộ (đã chuyển lên toàn cục) ===
+    // const authOverlay = document.getElementById('auth-overlay');
+    // const authOverlayOai = document.getElementById('auth-overlay-oai');
     
     if (authOverlay) authOverlay.style.display = 'none';
     // if (authOverlayOai) authOverlayOai.style.display = 'none'; // FIX 2: KHÔNG ẩn overlay OAI (đã được đặt thành "Coming Soon")
@@ -401,7 +410,7 @@ async function handlePasswordSubmit(event) {
 
 // NÂNG CẤP B.1: Cập nhật UI cho người dùng đã đăng nhập (Menu Dropdown)
 function updateUIForLoggedInUser(user) {
-    const authButtonContainer = document.getElementById('auth-button-container');
+    // const authButtonContainer = document.getElementById('auth-button-container'); // FIX: Đã chuyển lên toàn cục
     if (authButtonContainer) {
         const userMetadata = user.user_metadata;
         const displayName = userMetadata?.full_name || userMetadata?.name || user.email.split('@')[0];
@@ -453,7 +462,7 @@ function updateUIForLoggedInUser(user) {
 
 // NÂNG CẤP B.2: Cập nhật UI cho người dùng đã đăng xuất (Logo mới)
 function updateUIForLoggedOutUser() {
-    const authButtonContainer = document.getElementById('auth-button-container');
+    // const authButtonContainer = document.getElementById('auth-button-container'); // FIX: Đã chuyển lên toàn cục
     if (authButtonContainer) {
         authButtonContainer.innerHTML = `
             <a href="#" id="nav-login" class="nav-link" onclick="showPage('auth', event)">
