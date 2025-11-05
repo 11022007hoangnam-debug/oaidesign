@@ -105,7 +105,8 @@ function initializeApp() {
                 // Gọi hàm MỞ MODAL, không gọi hàm tải file
                 startDownloadProcess(resourceId, button);
             } else if (!currentUser && button) {
-                alert("Vui lòng đăng nhập để tải tài nguyên!");
+                // alert("Vui lòng đăng nhập để tải tài nguyên!"); // Không dùng alert
+                console.warn("User not logged in, redirecting to auth.");
                 showPage('auth', event); // Chuyển đến trang đăng nhập
             }
         });
@@ -288,8 +289,11 @@ function listenToProfileChanges(userId) {
             (payload) => {
                 const isBanned = payload.new.is_banned;
                 if (isBanned) {
-                    alert('Tài khoản của bạn đã bị khóa và sẽ được đăng xuất.');
+                    // === CẬP NHẬT "BAN MẠNH HƠN" ===
+                    // Xóa alert() và gọi signOut() ngay lập tức
+                    console.warn("Realtime update: User has been banned. Forcing logout.");
                     window.supabase.auth.signOut();
+                    // === KẾT THÚC CẬP NHẬT ===
                 }
             }
         )
@@ -325,9 +329,12 @@ function setupAuthStateObserver() {
             }
 
             if (data && data.is_banned) {
-                alert("Tài khoản của bạn đã bị khóa.");
+                // === CẬP NHẬT "BAN MẠNH HƠN" ===
+                // Xóa alert() và gọi signOut() ngay lập tức
+                console.warn("Auth state change: Banned user detected. Forcing logout.");
                 await window.supabase.auth.signOut();
                 session = null;
+                // === KẾT THÚC CẬP NHẬT ===
             }
         }
 
@@ -365,7 +372,9 @@ function setupAuthStateObserver() {
 async function startDownloadProcess(resourceId, buttonElement) {
     // 1. Kiểm tra đăng nhập
     if (!currentUser) {
-        alert("Vui lòng đăng nhập để tải tài nguyên!");
+        // alert("Vui lòng đăng nhập để tải tài nguyên!"); // Không dùng alert
+        console.warn("User not logged in, redirecting to auth.");
+        showPage('auth');
         return;
     }
     
@@ -374,8 +383,8 @@ async function startDownloadProcess(resourceId, buttonElement) {
     const expiryTime = localStorage.getItem(lockKey);
     
     if (expiryTime && Date.now() < parseInt(expiryTime, 10)) {
-        const remaining = getRemainingTime(parseInt(expiryTime, 10));
-        alert(`Bạn đã tải file này. Vui lòng quay lại sau. ${remaining || ''}`);
+        // Tạm thời vẫn dùng alert ở đây để thông báo cho user biết
+        alert(`Bạn đã tải file này. Vui lòng quay lại sau. ${getRemainingTime(parseInt(expiryTime, 10)) || ''}`);
         return;
     }
 
@@ -568,7 +577,7 @@ async function signInWithGoogle(event) {
     event.preventDefault();
     const { error } = await window.supabase.auth.signInWithOAuth({ provider: 'google' });
     if (error) {
-        alert("Đăng nhập Google thất bại: " + error.message);
+        console.error("Đăng nhập Google thất bại: " + error.message);
     }
 }
 
@@ -577,18 +586,18 @@ async function handleEmailRegister(event) {
     const email = document.getElementById('register-email').value;
     const password = document.getElementById('register-password').value;
     if (!email || !password) {
-        alert("Vui lòng nhập đầy đủ Email và Mật khẩu để đăng ký.");
+        alert("Vui lòng nhập đầy đủ Email và Mật khẩu để đăng ký."); // Giữ alert này vì đây là lỗi form
         return;
     }
     if (password.length < 6) {
-        alert("Mật khẩu phải có ít nhất 6 ký tự.");
+        alert("Mật khẩu phải có ít nhất 6 ký tự."); // Giữ alert này
         return;
     }
     const { error } = await window.supabase.auth.signUp({ email, password });
     if (error) {
-        alert("Đăng ký thất bại: " + error.message);
+        alert("Đăng ký thất bại: " + error.message); // Giữ alert này
     } else {
-        alert("Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản.");
+        alert("Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản."); // Giữ alert này
         toggleAuthForms();
     }
 }
@@ -598,12 +607,12 @@ async function handleEmailLogin(event) {
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
     if (!email || !password) {
-        alert("Vui lòng nhập đầy đủ Email và Mật khẩu để đăng nhập.");
+        alert("Vui lòng nhập đầy đủ Email và Mật khẩu để đăng nhập."); // Giữ alert này
         return;
     }
     const { error } = await window.supabase.auth.signInWithPassword({ email, password });
     if (error) {
-        alert("Đăng nhập thất bại: " + error.message);
+        alert("Đăng nhập thất bại: " + error.message); // Giữ alert này
     }
 }
 
@@ -612,7 +621,7 @@ async function signOutUser(event) {
     await unsubscribeFromProfileChanges();
     const { error } = await window.supabase.auth.signOut();
     if (error) {
-        alert("Đăng xuất thất bại: " + error.message);
+        console.error("Đăng xuất thất bại: " + error.message);
     }
     showPage('home');
 }
@@ -1110,7 +1119,7 @@ function downloadImageFromButton(buttonElement) {
         link.click();
         document.body.removeChild(link);
     } else {
-        alert("Không tìm thấy ảnh hợp lệ để tải về.");
+        alert("Không tìm thấy ảnh hợp lệ để tải về."); // Giữ alert này
     }
 }
 
@@ -1173,7 +1182,7 @@ function initializeOAIStudio() {
     // === NÂNG CẤP BẢO MẬT: Logic này bây giờ phải gọi Worker (backend) ===
     // (Hiện tại chúng ta sẽ vô hiệu hóa nó)
     const generateImage = async () => {
-         alert("Chức năng O-AI Studio đang được bảo trì để nâng cấp bảo mật. Vui lòng quay lại sau!");
+         alert("Chức năng O-AI Studio đang được bảo trì để nâng cấp bảo mật. Vui lòng quay lại sau!"); // Giữ alert này
          return; 
     
         // === TOÀN BỘ LOGIC CŨ BÊN DƯỚI SẼ BỊ VÔ HIỆU HÓA ===
