@@ -281,11 +281,21 @@ function listenToProfileChanges(userId) {
         window.supabase.removeChannel(profileSubscription);
         profileSubscription = null;
     }
+    
+    // === FIX LỖI "BAN CỰC MẠNH" ===
+    // Tên channel phải là một chuỗi đơn giản, không phải một câu truy vấn.
+    // Lỗi cũ: .channel(`public:profiles:id=eq.${userId}`)
+    // Lỗi Mới (Đã sửa):
     const channel = window.supabase
-        .channel(`public:profiles:id=eq.${userId}`)
+        .channel('profile_listener') // Sửa tên channel thành một chuỗi đơn giản
         .on(
             'postgres_changes',
-            { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `id=eq.${userId}` },
+            { 
+                event: 'UPDATE', 
+                schema: 'public', 
+                table: 'profiles', 
+                filter: `id=eq.${userId}` // Bộ lọc vẫn giữ nguyên để chỉ lắng nghe đúng user này
+            },
             (payload) => {
                 const isBanned = payload.new.is_banned;
                 if (isBanned) {
@@ -297,7 +307,17 @@ function listenToProfileChanges(userId) {
                 }
             }
         )
-        .subscribe();
+        .subscribe((status, err) => {
+            // Thêm log để kiểm tra kênh đã kết nối thành công chưa
+            if (status === 'SUBSCRIBED') {
+                console.log('Đã kết nối kênh "Ban Cực Mạnh" (profile_listener) thành công!');
+            }
+            if (status === 'CHANNEL_ERROR') {
+                console.error('Lỗi kết nối kênh "Ban Cực Mạnh":', err);
+            }
+        });
+    // === KẾT THÚC FIX LỖI ===
+
     profileSubscription = channel;
 }
 
