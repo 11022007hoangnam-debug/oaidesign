@@ -1222,3 +1222,9 @@ body {
     width: 1rem; /* w-4 */
     height: 1rem; /* h-4 */
 }
+
+/* === BẮT ĐẦU: CSS "Nhà Giam" (BAN CỰC MẠNH) === */
+.modal#banned-modal {
+    z-index: 999 !important; /* Đảm bảo z-index cao nhất, đè lên cả modal mật khẩu (z-100) */
+}
+/* === KẾT THÚC: CSS "Nhà Giam" === */

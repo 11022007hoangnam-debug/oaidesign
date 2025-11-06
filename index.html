@@ -1179,6 +1179,21 @@
     </div>
     <!-- === KẾT THÚC: Modal Nhập Mật Khẩu Tải File === -->
 
+    <!-- === BẮT ĐẦU: Modal "Nhà Giam" (BAN CỰC MẠNH) === -->
+    <div id="banned-modal"
+        class="modal fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-90 backdrop-blur-lg hidden"
+        > <!-- Chú ý: z-index sẽ được ghi đè lên 999 trong CSS, và không có onclick="closeModal(...)" -->
+        <div class="modal-content bg-gray-800 w-11/12 md:max-w-md mx-auto rounded-lg shadow-lg p-8 border border-red-700 text-center"
+            > <!-- Chú ý: không có onclick="event.stopPropagation()" -->
+            <svg class="w-16 h-16 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636M12 9v2m0 4h.01"></path></svg>
+            <h3 class="text-3xl font-bold mb-4 text-red-400">Tài Khoản Đã Bị Khóa</h3>
+            <p class="text-gray-300 mb-4 text-base">Tài khoản của bạn đã bị khóa vĩnh viễn do vi phạm điều khoản dịch vụ.</p>
+            <p class="text-gray-400 text-sm">Mọi thắc mắc, vui lòng liên hệ quản trị viên qua Zalo (Oai Design) để được xem xét. Xin cảm ơn.</p>
+            <!-- Không có nút đóng -->
+        </div>
+    </div>
+    <!-- === KẾT THÚC: Modal "Nhà Giam" === -->
+
     <!-- === FIX LỖI v3: SỬA LỖI THỨ TỰ TẢI SCRIPT === -->
 
     <!-- BƯỚC 1: Tải thư viện Supabase TRƯỚC -->
@@ -1187,7 +1202,7 @@
     <!-- BƯỚC 2: Khởi tạo Supabase client (TẠO RA window.supabase) -->
     <script>
         const supabaseUrl = 'https://eczovnahwntestpokikd.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVjem92bmFod250ZXN0cG9raWtkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwNDAyNDIsImV4cCI6MjA3NjYxNjI0Mn0._Y-SzUccct4DGaAjOP7grRSFUdfV2Quvo3N31lLUquQ';
+        const supabaseKey = 'eyJhbGciOiJIZDA1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVjem92bmFod250ZXN0cG9raWtkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwNDAyNDIsImV4cCI6MjA3NjYxNjI0Mn0._Y-SzUccct4DGaAjOP7grRSFUdfV2Quvo3N31lLUquQ';
         // Make supabase client globally available to script.js
         window.supabase = supabase.createClient(supabaseUrl, supabaseKey);
     </script>

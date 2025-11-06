@@ -44,6 +44,7 @@ let passwordForm = null;
 let passwordInput = null;
 let passwordError = null;
 let passwordSubmitBtn = null;
+let bannedModal = null; // <<< NÂNG CẤP "BAN"
 // === KẾT THÚC KHAI BÁO BIẾN ===
 
 
@@ -63,6 +64,8 @@ function initializeApp() {
     passwordInput = document.getElementById('download-password');
     passwordError = document.getElementById('password-error');
     passwordSubmitBtn = document.getElementById('password-submit-btn');
+
+    bannedModal = document.getElementById('banned-modal'); // <<< NÂNG CẤP "BAN"
 
     // 2. Bắt đầu lắng nghe Supabase (VÌ window.supabase ĐÃ TỒN TẠI)
     setupAuthStateObserver();
@@ -282,12 +285,10 @@ function listenToProfileChanges(userId) {
         profileSubscription = null;
     }
     
-    // === FIX LỖI "BAN CỰC MẠNH" ===
-    // Tên channel phải là một chuỗi đơn giản, không phải một câu truy vấn.
-    // Lỗi cũ: .channel(`public:profiles:id=eq.${userId}`)
-    // Lỗi Mới (Đã sửa):
+    // === NÂNG CẤP "BAN CỰC MẠNH" (Giai đoạn 2) ===
+    // Đổi tên kênh lắng nghe để khớp với phân tích ban đầu
     const channel = window.supabase
-        .channel('profile_listener') // Sửa tên channel thành một chuỗi đơn giản
+        .channel(`user_ban_status_${userId}`) // <<< NÂNG CẤP "BAN": Đổi tên kênh
         .on(
             'postgres_changes',
             { 
@@ -299,10 +300,10 @@ function listenToProfileChanges(userId) {
             (payload) => {
                 const isBanned = payload.new.is_banned;
                 if (isBanned) {
-                    // === CẬP NHẬT "BAN MẠNH HƠN" ===
-                    // Xóa alert() và gọi signOut() ngay lập tức
+                    // === NÂNG CẤP "BAN CỰC MẠNH" ===
                     console.warn("Realtime update: User has been banned. Forcing logout.");
-                    window.supabase.auth.signOut();
+                    showBannedModal(); // <<< NÂNG CẤP "BAN": Hiển thị "Nhà Giam"
+                    window.supabase.auth.signOut(); // Sau đó đăng xuất
                     // === KẾT THÚC CẬP NHẬT ===
                 }
             }
@@ -310,7 +311,7 @@ function listenToProfileChanges(userId) {
         .subscribe((status, err) => {
             // Thêm log để kiểm tra kênh đã kết nối thành công chưa
             if (status === 'SUBSCRIBED') {
-                console.log('Đã kết nối kênh "Ban Cực Mạnh" (profile_listener) thành công!');
+                console.log(`Đã kết nối kênh "Ban Cực Mạnh" (user_ban_status_${userId}) thành công!`);
             }
             if (status === 'CHANNEL_ERROR') {
                 console.error('Lỗi kết nối kênh "Ban Cực Mạnh":', err);
@@ -349,9 +350,9 @@ function setupAuthStateObserver() {
             }
 
             if (data && data.is_banned) {
-                // === CẬP NHẬT "BAN MẠNH HƠN" ===
-                // Xóa alert() và gọi signOut() ngay lập tức
+                // === NÂNG CẤP "BAN CỰC MẠNH" ===
                 console.warn("Auth state change: Banned user detected. Forcing logout.");
+                showBannedModal(); // <<< NÂNG CẤP "BAN": Hiển thị "Nhà Giam"
                 await window.supabase.auth.signOut();
                 session = null;
                 // === KẾT THÚC CẬP NHẬT ===
@@ -571,6 +572,12 @@ function updateUIForLoggedInUser(user) {
 
 // NÂNG CẤP B.2: Cập nhật UI cho người dùng đã đăng xuất (Logo mới)
 function updateUIForLoggedOutUser() {
+    // MẤU CHỐT "BAN VĨNH VIỄN":
+    // Hàm này KHÔNG CHỨA bất kỳ logic nào để ẩn "bannedModal".
+    // Khi `signOut()` được gọi (từ logic "Ban"), hàm này chạy,
+    // nhưng "Nhà Giam" (`bannedModal`) vẫn được giữ nguyên,
+    // dẫn đến việc bị khóa vĩnh viễn.
+
     if (authButtonContainer) {
         authButtonContainer.innerHTML = `
             <a href="#" id="nav-login" class="nav-link" onclick="showPage('auth', event)">
@@ -777,7 +784,26 @@ function openModal(modalId) {
     setTimeout(() => modal.classList.add('open'), 10);
 }
 
+// === BẮT ĐẦU: NÂNG CẤP "BAN CỰC MẠNH" ===
+function showBannedModal() {
+    // 1. Đảm bảo modal mật khẩu (nếu đang mở) phải bị đóng
+    const passwordModalEl = document.getElementById('password-modal');
+    if (passwordModalEl && passwordModalEl.classList.contains('open')) {
+        closeModal('password-modal');
+    }
+    
+    // 2. Mở "Nhà Giam"
+    openModal('banned-modal');
+}
+// === KẾT THÚC: NÂNG CẤP "BAN CỰC MẠNH" ===
+
 function closeModal(modalId) {
+    // Thêm kiểm tra: Không bao giờ cho phép đóng "Nhà Giam"
+    if (modalId === 'banned-modal') {
+        console.warn("Attempted to close the banned modal. Action blocked.");
+        return;
+    }
+
     const modal = document.getElementById(modalId);
     if (!modal) return;
     modal.classList.remove('open');
@@ -838,7 +864,7 @@ let speechTimeout;
 
 const assistantMessages = {
     'hero': "Trợ Lý Oai Mini: Chào mừng bạn! Đây là trang chủ của DesignPro.",
-    'services': "Trợ Lý Oai Mini: Đây là các dịch vụ chính của tôi. Nhấp vào để xem chi tiết nhé!",
+    'services': "Trợ Lý Oai Mini: Đây là các công việc chính của tôi. Nhấp vào để xem chi tiết nhé!",
     'image-carousel': "Trợ Lý Oai Mini: Lướt xem các sản phẩm thiết kế nổi bật của tôi nhé!",
     'video-gallery': "Trợ Lý Oai Mini: Khám phá thư viện video hướng dẫn của tôi nhé!",
     'software-showcase': "Trợ Lý Oai Mini: Khám phá các công cụ thiết kế mạnh mẽ mà tôi cung cấp bản quyền.",
@@ -1194,7 +1220,7 @@ function initializeOAIStudio() {
 
     // === NÂNG CẤP BẢO MẬT: XÓA BỎ API KEY KHỎI CLIENT ===
     // const apiKeys = {
-    //     google: 'AIzaSyAJ9z9WHlWVKqFbGIjQiSQdrtNT1g_vFu0',
+    //     google: 'co cai lon ma an duoc',
     //     stability: '' // ĐIỀN API KEY STABILITY AI CỦA BẠN VÀO ĐÂY NẾU CÓ
     // };
     // === KẾT THÚC NÂNG CẤP BẢO MẬT ===
