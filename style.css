@@ -467,15 +467,20 @@ body {
     pointer-events: none;
 }
 
-.resource-card {
-    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
-}
+/* =================================================================== */
+/* === BẮT ĐẦU SỬA LỖI MASONRY (ĐÃ XÓA CSS XUNG ĐỘT) === */
+/* =================================================================== */
+/* Khối CSS cũ cho #resource-grid và .resource-card đã bị xóa.
+    File `index.html` (trong `page-resources`) giờ sẽ
+    toàn quyền kiểm soát layout bằng các class:
+    <div id="resource-grid" class="columns-2 sm:columns-3 lg:columns-4 gap-6">
+    ...và...
+    <div class="mb-6 break-inside-avoid ...">
+*/
+/* =================================================================== */
+/* === KẾT THÚC SỬA LỖI MASONRY === */
+/* =================================================================== */
 
-.resource-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 10px 15px -3px rgba(14, 165, 233, 0.1), 0 4px 6px -2px rgba(14, 165, 233, 0.05);
-    border-color: #0ea5e9;
-}
 
 #social-container {
     position: fixed;
@@ -1242,10 +1247,12 @@ body {
 }
 
 /* CSS scrollbar mới sẽ được áp dụng, ghi đè lên scrollbar cũ nếu cần */
+/* Đã bị vô hiệu hóa để ưu tiên scrollbar của Oai Website
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
 ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 10px; }
-::-webkit-scrollbar-thumb:hover { background: #a1a1a1; }
+::-webkit-scrollbar-thumb:hover { background: #a1a1a1; } 
+*/
 
 input[type="search"]::-webkit-search-decoration,
 input[type="search"]::-webkit-search-cancel-button,
@@ -1462,24 +1469,17 @@ input[type="search"]::-webkit-search-results-decoration {
 /* 9. Ghi đè Scrollbar */
 /* Chúng ta sẽ dùng scrollbar của Oai Website */
 /* Xóa scrollbar của theme mới */
-#page-resources ::-webkit-scrollbar-track,
+#page-resources ::-webkit-scrollbar {
+    width: 6px !important; /* Dùng !important để đảm bảo ghi đè */
+    height: 6px !important;
+}
+#page-resources ::-webkit-scrollbar-track {
+    background: #1f2937 !important;
+}
 #page-resources ::-webkit-scrollbar-thumb {
-    background: transparent;
+    background: #4b5563 !important;
+    border-radius: 3px !important;
 }
-/* Áp dụng scrollbar của Oai Website */
-.chat-messages::-webkit-scrollbar,
-#oai-conversation-area::-webkit-scrollbar,
-#preset-prompts-container::-webkit-scrollbar {
-    width: 6px;
-}
-.chat-messages::-webkit-scrollbar-track,
-#oai-conversation-area::-webkit-scrollbar-track,
-#preset-prompts-container::-webkit-scrollbar-track {
-    background: #1f2937;
-}
-.chat-messages::-webkit-scrollbar-thumb,
-#oai-conversation-area::-webkit-scrollbar-thumb,
-#preset-prompts-container::-webkit-scrollbar-thumb {
-    background: #4b5563;
-    border-radius: 3px;
+#page-resources ::-webkit-scrollbar-thumb:hover {
+    background: #6b7280 !important;
 }
