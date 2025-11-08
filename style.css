@@ -1,6 +1,6 @@
 /* NÂNG CẤP: Quay trở lại Giao diện Tối (Dark Theme) */
 body {
-    font-family: 'Open Sans', sans-serif;
+    font-family: 'Open Sans', 'Inter', sans-serif; /* THÊM FONT 'INTER' */
     background-color: #131314;
     /* Màu nền chính */
     color: #e5e7eb;
@@ -1228,3 +1228,258 @@ body {
     z-index: 999 !important; /* Đảm bảo z-index cao nhất, đè lên cả modal mật khẩu (z-100) */
 }
 /* === KẾT THÚC: CSS "Nhà Giam" === */
+
+
+/* =================================================================== */
+/* === BẮT ĐẦU CSS GIAO DIỆN MỚI (ĐƯỢC CẤY GHÉP) === */
+/* =================================================================== */
+
+/* Lưu ý: Font 'Inter' đã được thêm vào thẻ <link> và <body> ở trên
+    Phần CSS này được copy từ <style> của file àbjasbfjbasbnfkasnlf.html
+*/
+.break-inside-avoid {
+    break-inside: avoid;
+}
+
+/* CSS scrollbar mới sẽ được áp dụng, ghi đè lên scrollbar cũ nếu cần */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #a1a1a1; }
+
+input[type="search"]::-webkit-search-decoration,
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-results-button,
+input[type="search"]::-webkit-search-results-decoration {
+    -webkit-appearance: none;
+}
+
+/* Hiệu ứng cho modal MỚI */
+#page-resources #image-modal, #page-resources #contact-modal { transition: opacity 0.3s ease; }
+#page-resources #modal-content, #page-resources #modal-contact-content { transition: transform 0.3s ease; }
+
+/* Hiệu ứng cho sidebar mobile MỚI */
+#page-resources #sidebar { transition: transform 0.3s ease-in-out; }
+#page-resources #sidebar-overlay { transition: opacity 0.3s ease-in-out; }
+
+/* Thông báo "Đã sao chép" MỚI */
+#page-resources #copy-toast {
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+/* Class active cho sidebar MỚI (Sẽ được ghi đè bên dưới) */
+#page-resources .sidebar-link.active {
+    color: #2563eb; /* text-blue-600 */
+    font-weight: 600; /* font-semibold */
+}
+#page-resources .sidebar-link.active-special {
+    color: #ca8a04; /* text-yellow-600 */
+    font-weight: 700; /* font-bold */
+}
+#page-resources .sidebar-link.active + span {
+    background-color: #dbeafe; /* bg-blue-100 */
+    color: #2563eb; /* text-blue-600 */
+}
+#page-resources .sidebar-link.active-special + span {
+    background-color: #fef9c3; /* bg-yellow-100 */
+    color: #ca8a04; /* text-yellow-600 */
+}
+
+/* =================================================================== */
+/* === BẮT ĐẦU CSS GHI ĐÈ (OVERRIDE) CHO GIAO DIỆN MỚI === */
+/* =================================================================== */
+
+/* 1. Ghi đè màu nền body (chỉ áp dụng cho các text bên trong page-resources) */
+#page-resources {
+    color: #e5e7eb; /* Màu chữ mặc định (sáng) */
+}
+
+/* 2. Ghi đè Header mới */
+#page-resources header {
+    background-color: rgba(17, 24, 39, 0.5); /* bg-gray-900/50 */
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom-color: #374151; /* border-gray-700 */
+    box-shadow: none;
+}
+
+/* 3. Ghi đè Thanh tìm kiếm mới */
+#page-resources #resource-search-input {
+    background-color: #374151; /* bg-gray-700 */
+    border-color: #4b5563; /* border-gray-600 */
+    color: #ffffff;
+}
+#page-resources #resource-search-input::placeholder {
+    color: #9ca3af; /* placeholder-gray-400 */
+}
+#page-resources #resource-search-input:focus {
+    background-color: #1f2937; /* bg-gray-800 */
+    border-color: #38bdf8; /* focus:border-sky-500 */
+    --tw-ring-color: #38bdf8; /* focus:ring-sky-500 */
+}
+#page-resources header .w-5.h-5.text-gray-400 {
+    color: #9ca3af; /* text-gray-400 */
+}
+
+/* 4. Ghi đè Sidebar (Nền trong suốt) */
+#page-resources #sidebar {
+    background-color: rgba(17, 24, 39, 0.5); /* bg-gray-900/50 */
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-color: #374151; /* border-gray-700 */
+    box-shadow: none;
+}
+/* Tiêu đề "Danh mục" */
+#page-resources #sidebar h2 {
+    color: #e5e7eb; /* text-gray-200 */
+}
+#page-resources #sidebar h2 svg {
+    color: #9ca3af; /* text-gray-400 */
+}
+/* Link danh mục */
+#page-resources #sidebar .sidebar-link {
+    color: #d1d5db; /* text-gray-300 */
+}
+#page-resources #sidebar .sidebar-link:hover {
+    color: #38bdf8; /* text-sky-400 */
+}
+/* Link active (màu xanh) */
+#page-resources #sidebar .sidebar-link.active {
+    color: #38bdf8; /* text-sky-400 */
+    font-weight: 600;
+}
+/* Link active (màu vàng) */
+#page-resources #sidebar .sidebar-link.active-special {
+    color: #facc15; /* text-yellow-400 */
+    font-weight: 700;
+}
+/* Huy hiệu số lượng (mặc định) */
+#page-resources #sidebar .text-xs.bg-gray-100 {
+    background-color: #374151; /* bg-gray-700 */
+    color: #d1d5db; /* text-gray-300 */
+}
+/* Huy hiệu số lượng (active xanh) */
+#page-resources #sidebar .sidebar-link.active + span {
+    background-color: #0c4a6e; /* bg-sky-800 */
+    color: #7dd3fc; /* text-sky-300 */
+}
+/* Huy hiệu số lượng (active vàng) */
+#page-resources #sidebar .sidebar-link.active-special + span {
+    background-color: #713f12; /* bg-yellow-800 */
+    color: #fde047; /* text-yellow-300 */
+}
+/* Nút "Bộ lọc" trên mobile */
+#page-resources #mobile-filter-btn {
+    background-color: #1f2937; /* bg-gray-800 */
+    border-color: #374151; /* border-gray-700 */
+    color: #d1d5db; /* text-gray-300 */
+}
+#page-resources #mobile-filter-btn svg {
+    color: #d1d5db; /* text-gray-300 */
+}
+
+/* 5. Ghi đè Nội dung chính */
+/* Tiêu đề chính (Tên danh mục) */
+#page-resources main h1 {
+    color: #ffffff;
+}
+/* Nền thẻ ảnh (card) */
+#page-resources .break-inside-avoid {
+    background-color: #1f2937; /* bg-gray-800 */
+    border-color: #374151; /* border-gray-700 */
+    box-shadow: none;
+}
+#page-resources .break-inside-avoid:hover {
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    border-color: #38bdf8; /* Thêm viền khi hover */
+}
+/* Phần thông tin tác giả (dưới card) */
+#page-resources .p-4.bg-white {
+    background-color: #1f2937; /* bg-gray-800 */
+}
+#page-resources .text-gray-700 {
+    color: #d1d5db; /* text-gray-300 */
+}
+#page-resources .group-hover\/author:hover .text-gray-700 {
+    color: #38bdf8; /* text-sky-400 */
+}
+
+/* 6. Ghi đè Modal (Chi tiết ảnh) */
+#page-resources #modal-content {
+    background-color: #1f2937; /* bg-gray-800 */
+}
+#page-resources #modal-content h2, 
+#page-resources #modal-content #modal-author-name, 
+#page-resources #modal-content .text-xl.font-bold {
+    color: #ffffff;
+}
+#page-resources #modal-content .text-gray-500, 
+#page-resources #modal-content .text-xs.text-gray-500 {
+    color: #9ca3af; /* text-gray-400 */
+}
+#page-resources #modal-content #modal-img {
+    background-color: #111827; /* Nền ảnh tối hơn */
+}
+/* Nút đóng modal mobile */
+#page-resources #modal-content button[onclick="closeModal()"] {
+    background-color: #374151;
+    color: #d1d5db;
+}
+
+/* 7. Ghi đè Modal (Liên hệ) */
+#page-resources #modal-contact-content {
+    background-color: #1f2937; /* bg-gray-800 */
+    border: 1px solid #374151;
+}
+#page-resources #modal-contact-content h2, 
+#page-resources #modal-contact-content h3 {
+    color: #ffffff;
+}
+#page-resources #modal-contact-content .text-gray-600 {
+    color: #d1d5db; /* text-gray-300 */
+}
+#page-resources #modal-contact-content .text-blue-600 {
+    color: #38bdf8; /* text-sky-400 */
+}
+#page-resources #modal-contact-content button[onclick="closeContactModal()"] {
+    background-color: #374151; /* bg-gray-700 */
+    color: #d1d5db; /* text-gray-300 */
+}
+#page-resources #modal-contact-content button[onclick="closeContactModal()"]:hover {
+    background-color: #4b5563; /* bg-gray-600 */
+}
+#page-resources #modal-contact-content button[onclick="closeContactModal()"] svg {
+    color: #9ca3af;
+}
+
+/* 8. Ghi đè Toast "Đã sao chép" */
+#page-resources #copy-toast {
+    background-color: #f9fafb; /* bg-gray-50 */
+    color: #111827; /* text-gray-900 */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+/* 9. Ghi đè Scrollbar */
+/* Chúng ta sẽ dùng scrollbar của Oai Website */
+/* Xóa scrollbar của theme mới */
+#page-resources ::-webkit-scrollbar-track,
+#page-resources ::-webkit-scrollbar-thumb {
+    background: transparent;
+}
+/* Áp dụng scrollbar của Oai Website */
+.chat-messages::-webkit-scrollbar,
+#oai-conversation-area::-webkit-scrollbar,
+#preset-prompts-container::-webkit-scrollbar {
+    width: 6px;
+}
+.chat-messages::-webkit-scrollbar-track,
+#oai-conversation-area::-webkit-scrollbar-track,
+#preset-prompts-container::-webkit-scrollbar-track {
+    background: #1f2937;
+}
+.chat-messages::-webkit-scrollbar-thumb,
+#oai-conversation-area::-webkit-scrollbar-thumb,
+#preset-prompts-container::-webkit-scrollbar-thumb {
+    background: #4b5563;
+    border-radius: 3px;
+}
