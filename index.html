@@ -538,13 +538,13 @@
                     </main>
             </div>
 
-            <div id="image-modal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none" onclick="closeModal()">
+            <div id="image-modal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none" onclick="closeImageModal()">
                 <div id="modal-content" class="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] flex flex-col md:flex-row overflow-hidden transform scale-95" onclick="event.stopPropagation()">
                     <div class="w-full md:w-2/3 bg-gray-200 flex items-center justify-center overflow-auto">
                         <img id="modal-img" src="" alt="Ảnh phóng to" class="max-w-full max-h-[50vh] md:max-h-[85vh] object-contain">
                     </div>
                     <div class="w-full md:w-1/3 p-6 flex flex-col overflow-y-auto">
-                        <button onclick="closeModal()" class="absolute top-3 right-3 md:hidden p-1 bg-gray-100 rounded-full">
+                        <button onclick="closeImageModal()" class="absolute top-3 right-3 md:hidden p-1 bg-gray-100 rounded-full">
                             <svg class="w-5 h-5 text-gray-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                         </button>
                         <h2 id="modal-title" class="text-2xl font-bold text-gray-900 mb-4"></h2>
@@ -589,13 +589,13 @@
                     <div class="space-y-4">
                         <div>
                             <h3 class="font-semibold text-lg text-gray-800">Sếp Oai Design</h3>
-                            <p class="text-gray-600">Liên hệ qua Zalo: <a href="#" class="text-blue-600 hover:underline">0919 233 997</a></p>
-                            <p class="text-gray-600">Facebook: <a href="#" class="text-blue-600 hover:underline">https://www.facebook.com/share/17mSpFNSoC/?mibextid=wwXIfr</a></p>
+                            <p class="text-gray-600">Liên hệ qua Zalo: <a href="https://zalo.me/0919233997" target="_blank" class="text-blue-600 hover:underline">0919 233 997</a></p>
+                            <p class="text-gray-600">Facebook: <a href="https://www.facebook.com/share/17mSpFNSoC/?mibextid=wwXIfr" target="_blank" class="text-blue-600 hover:underline">Phạm Quốc Oai</a></p>
                         </div>
                         <div class="border-t pt-4">
                             <h3 class="font-semibold text-lg text-gray-800">Hoàng Nam Dev</h3>
-                            <p class="text-gray-600">Liên hệ qua Zalo: <a href="#" class="text-blue-600 hover:underline">0987 654 321</a></p>
-                            <p class="text-gray-600">Facebook: <a href="#" class="text-blue-600 hover:underline">https://www.facebook.com/share/17b9zfR1s7/?mibextid=wwXIfr</a></p>
+                            <p class="text-gray-600">Liên hệ qua Zalo: <a href="https://zalo.me/0987654321" target="_blank" class="text-blue-600 hover:underline">0987 654 321</a></p>
+                            <p class="text-gray-600">Facebook: <a href="https://www.facebook.com/share/17b9zfR1s7/?mibextid=wwXIfr" target="_blank" class="text-blue-600 hover:underline">Hoàng Nam Dev</a></p>
                         </div>
                     </div>
 
@@ -1231,8 +1231,8 @@
         // Make supabase client globally available to script.js
         window.supabase = supabase.createClient(supabaseUrl, supabaseKey);
     </script>
-    
-    <script src="script.js?v=1.6"></script> <script>
+
+    <script src="script.js?v=1.7"></script> <script>
         // Đảm bảo hàm initializeApp tồn tại rồi mới gọi
         if (typeof initializeApp === 'function') {
             initializeApp();
