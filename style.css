@@ -470,12 +470,9 @@ body {
 /* =================================================================== */
 /* === BẮT ĐẦU SỬA LỖI MASONRY (ĐÃ XÓA CSS XUNG ĐỘT) === */
 /* =================================================================== */
-/* Khối CSS cũ cho #resource-grid và .resource-card đã bị xóa.
-    File `index.html` (trong `page-resources`) giờ sẽ
-    toàn quyền kiểm soát layout bằng các class:
-    <div id="resource-grid" class="columns-2 sm:columns-3 lg:columns-4 gap-6">
-    ...và...
-    <div class="mb-6 break-inside-avoid ...">
+/* Khối CSS cũ cho .resource-card và #resource-grid đã bị XÓA.
+    Layout bây giờ sẽ do các class Tailwind trong `index.html`
+    (ví dụ: `columns-2 sm:columns-3...`) toàn quyền quyết định.
 */
 /* =================================================================== */
 /* === KẾT THÚC SỬA LỖI MASONRY === */
@@ -1027,8 +1024,8 @@ body {
 /* Lớp phủ bảo vệ trang tài nguyên & O-AI Studio */
 #auth-overlay, #auth-overlay-oai {
     /* Đã chuyển style="display: none;" vào HTML để mặc định ẩn */
-    /* FIX 2: Thêm z-index ở đây để đảm bảo nó cao nhất */
-    z-index: 30;
+    /* === FIX LỖI 1 (OVERLAY) === */
+    z-index: 60; /* Tăng từ 30 lên 60, để che sidebar (z-50) */
 }
 
 .auth-button {

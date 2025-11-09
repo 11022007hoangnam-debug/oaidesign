@@ -528,24 +528,13 @@
                             <span id="current-category-title">Template PSD</span>
                         </h1>
                         <button id="mobile-filter-btn" class="md:hidden flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg shadow-sm text-sm font-medium hover:bg-gray-50">
-                            <svg class="w-5 h-5 text-gray-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678q.26.045.505.134c.244.089.48.22.698.388q.218.169.41.386c.192.217.355.46.485.728q.13.268.226.55C22.76 6.576 23 8.27 23 10v4c0 1.73-.24 3.424-.678 4.083q-.096.282-.226.55c-.13.268.293.51-.485.728q-.218.169-.41.386c-.218.169-.454.3-.698.388q-.245.089-.505.134C17.455 20.768 14.755 21 12 21s-5.455-.232-8.083-.678q-.26-.045-.505-.134c-.244-.089-.48-.22-.698-.388q-.218-.169-.41.386c-.192-.217-.355-.46-.485.728q-.13-.268-.226.55C1.24 17.424 1 15.73 1 14v-4c0-1.73.24-3.424.678-4.083q.096-.282.226.55c.13-.268.293-.51.485.728q.218.169.41.386c.218.169.454.3.698.388q.245.089.505.134C6.545 3.232 9.245 3 12 3zM6 8l4 4-4 4m6 0l4-4-4-4" /></svg>
+                            <svg class="w-5 h-5 text-gray-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678q.26.045.505.134c.244.089.48.22.698.388q.218.169.41.386c.192.217.355.46.485.728q.13.268.226.55C22.76 6.576 23 8.27 23 10v4c0 1.73-.24 3.424-.678 4.083q-.096.282-.226.55c-.13.268.293.51-.485.728q-.218.169-.41.386c-.218.169-.454.3-.698.388q-.245.089-.505.134C17.455 20.768 14.755 21 12 21s-5.455-.232-8.083-.678q-.26-.045-.505-.134c-.244-.089-.48-.22-.698-.388q-.218-.169-.41.386c-.192-.217-.355.46-.485.728q-.13-.268-.226.55C1.24 17.424 1 15.73 1 14v-4c0-1.73.24-3.424.678-4.083q.096-.282.226.55c.13-.268.293.51.485.728q.218.169.41.386c.218.169.454.3.698.388q.245.089.505.134C6.545 3.232 9.245 3 12 3zM6 8l4 4-4 4m6 0l4-4-4-4" /></svg>
                             Bộ lọc
                         </button>
                     </div>
 
                     <div id="resource-grid" class="columns-2 sm:columns-3 lg:columns-4 gap-6">
-                        <div class="mb-6 break-inside-avoid rounded-xl overflow-hidden bg-white shadow-lg border border-gray-100 group transition-all duration-300 ease-in-out hover:shadow-2xl">
-                            <div class="relative overflow-hidden cursor-pointer">
-                                <img src="https://placehold.co/600x800/fecaca/991b1b?text=Poster+Tết" alt="Poster Tết" class="w-full h-auto object-cover">
-                            </div>
-                            <div class="p-4 bg-white">
-                                <a href="#" class="flex items-center gap-2 group/author">
-                                    <img src="https://placehold.co/24x24/c7d2fe/312e81?text=A" alt="Avatar tác giả" class="w-6 h-6 rounded-full">
-                                    <span class="text-sm font-medium text-gray-700">Đang tải...</span>
-                                </a>
-                            </div>
                         </div>
-                    </div>
                     </main>
             </div>
 
@@ -1242,8 +1231,8 @@
         // Make supabase client globally available to script.js
         window.supabase = supabase.createClient(supabaseUrl, supabaseKey);
     </script>
-
-    <script src="script.js?v=1.4"></script> <script>
+    
+    <script src="script.js?v=1.6"></script> <script>
         // Đảm bảo hàm initializeApp tồn tại rồi mới gọi
         if (typeof initializeApp === 'function') {
             initializeApp();
