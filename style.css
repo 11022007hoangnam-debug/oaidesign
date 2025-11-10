@@ -478,6 +478,28 @@ body {
 /* === KẾT THÚC SỬA LỖI MASONRY === */
 /* =================================================================== */
 
+/* ===>>> BẮT ĐẦU NÂNG CẤP: FIX 2: Ép bố cục Masonry (ghi đè Tailwind) <<<=== */
+/* Giải pháp này được thêm vào để khắc phục lỗi cache trình duyệt,
+   nó sẽ "ép" trình duyệt hiển thị đúng số cột theo kích cỡ màn hình
+   mà không phụ thuộc vào class 'columns-*' trong file HTML. */
+#page-resources #resource-grid {
+    column-gap: 1.5rem; /* gap-6 */
+    column-count: 2;
+}
+
+@media (min-width: 640px) {
+    #page-resources #resource-grid {
+        column-count: 3;
+    }
+}
+
+@media (min-width: 1024px) {
+    #page-resources #resource-grid {
+        column-count: 4;
+    }
+}
+/* ===>>> KẾT THÚC NÂNG CẤP <<<=== */
+
 
 #social-container {
     position: fixed;
@@ -1254,7 +1276,7 @@ body {
 input[type="search"]::-webkit-search-decoration,
 input[type="search"]::-webkit-search-cancel-button,
 input[type="search"]::-webkit-search-results-button,
-input[type="search"]::-webkit-search-results-decoration {
+input[typeD="search"]::-webkit-search-results-decoration {
     -webkit-appearance: none;
 }
 
