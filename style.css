@@ -1501,3 +1501,27 @@ input[typeD="search"]::-webkit-search-results-decoration {
 #page-resources ::-webkit-scrollbar-thumb:hover {
     background: #6b7280 !important;
 }
+
+/* =================================================================== */
+/* === SỬA LỖI: GHIM SIDEBAR (STICKY) KHI CUỘN TRANG TÀI NGUYÊN === */
+/* =================================================================== */
+
+/* * Áp dụng cho màn hình từ 768px trở lên (tương đương 'md:' của Tailwind)
+ * để không làm ảnh hưởng đến menu 'fixed' của mobile.
+ */
+@media (min-width: 768px) {
+    #page-resources #sidebar {
+        /* Ép trình duyệt phải dùng 'position: sticky' */
+        position: sticky;
+        
+        /* * Đặt vị trí dính là 128px (tương đương 8rem hoặc md:top-32)
+         * Vị trí này nằm ngay dưới header (72px) và thanh thông báo (40px)
+         */
+        top: 128px; 
+        
+        /* * "Bảo hiểm" cho flexbox:
+         * Đảm bảo sidebar luôn căn ở trên cùng của container 
+         */
+        align-self: flex-start;
+    }
+}
