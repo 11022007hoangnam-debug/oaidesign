@@ -1510,18 +1510,34 @@ input[typeD="search"]::-webkit-search-results-decoration {
  * để không làm ảnh hưởng đến menu 'fixed' của mobile.
  */
 @media (min-width: 768px) {
+    
     #page-resources #sidebar {
-        /* Ép trình duyệt phải dùng 'position: sticky' */
-        position: sticky;
+        /* 1. Ghi đè 'sticky' thành 'fixed' (ghim vào màn hình) */
+        position: fixed;
         
-        /* * Đặt vị trí dính là 128px (tương đương 8rem hoặc md:top-32)
-         * Vị trí này nằm ngay dưới header (72px) và thanh thông báo (40px)
-         */
+        /* 2. Dính ở vị trí 128px (dưới header + thanh thông báo) */
         top: 128px; 
         
-        /* * "Bảo hiểm" cho flexbox:
-         * Đảm bảo sidebar luôn căn ở trên cùng của container 
+        /* 3. Gán cứng chiều rộng (lấy từ class 'w-72' = 18rem) */
+        width: 18rem; 
+        
+        /* 4. Gán cứng chiều cao (lấp đầy phần còn lại của màn hình) */
+        height: calc(100vh - 128px); 
+        
+        /* 5. Thêm thanh cuộn nếu danh mục quá dài */
+        overflow-y: auto; 
+    }
+
+    #page-resources main {
+        /* 6. QUAN TRỌNG: 
+         * Đẩy nội dung chính sang bên phải 18rem 
+         * để "chừa chỗ" cho sidebar cố định.
          */
-        align-self: flex-start;
+        margin-left: 18rem; 
+        
+        /* 7. Ghi đè các class 'md:w-3/4' của Tailwind
+         * để nó tự động lấp đầy phần không gian còn lại.
+         */
+        width: auto; 
     }
 }
