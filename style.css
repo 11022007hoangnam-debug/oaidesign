@@ -1511,33 +1511,39 @@ input[typeD="search"]::-webkit-search-results-decoration {
  */
 @media (min-width: 768px) {
     
+    /* 1. Sửa lỗi "Dính" (Sticky):
+     * Buộc sidebar phải ở vị trí 'sticky' và dính 
+     * bên dưới header/thanh thông báo.
+     */
     #page-resources #sidebar {
-        /* 1. Ghi đè 'sticky' thành 'fixed' (ghim vào màn hình) */
-        position: fixed;
-        
-        /* 2. Dính ở vị trí 128px (dưới header + thanh thông báo) */
+        position: sticky;
+        /* Vị trí dính: 72px (header) + 40px (notif) + 16px (đệm) = 128px */
         top: 128px; 
-        
-        /* 3. Gán cứng chiều rộng (lấy từ class 'w-72' = 18rem) */
-        width: 18rem; 
-        
-        /* 4. Gán cứng chiều cao (lấp đầy phần còn lại của màn hình) */
-        height: calc(100vh - 128px); 
-        
-        /* 5. Thêm thanh cuộn nếu danh mục quá dài */
-        overflow-y: auto; 
+        align-self: flex-start; /* Quan trọng cho layout flex */
+
+        /* 2. Sửa lỗi "Quá dài" (chồng lên footer):
+         * Giới hạn chiều cao tối đa của sidebar. Nó sẽ
+         * dính từ 'top: 128px' và chừa 2rem (32px)
+         * so với mép dưới của màn hình (viewport).
+         */
+        max-height: calc(100vh - 128px - 32px); /* (100vh - top - bottom_margin) */
+        overflow-y: auto; /* Tự thêm cuộn nếu danh mục quá dài */
     }
 
-    #page-resources main {
-        /* 6. QUAN TRỌNG: 
-         * Đẩy nội dung chính sang bên phải 18rem 
-         * để "chừa chỗ" cho sidebar cố định.
+    /* 3. Sửa lỗi "Cuộn theo nội dung ngắn" (LỖI GỐC):
+     * Buộc container chính (chứa sidebar và main)
+     * phải cao ÍT NHẤT bằng chiều cao màn hình
+     * (trừ đi phần header/thanh thông báo).
+     * Điều này tạo ra "đường ray" đủ dài để sidebar dính vào,
+     * kể cả khi nội dung (main) bên phải rất ngắn.
+     */
+    #page-resources > .container {
+        /* (100vh - 72px header - 40px notif bar) */
+        min-height: calc(100vh - 112px); 
+
+        /* 4. Sửa lỗi "Quá gần" (tăng khoảng cách ngang):
+         * Ghi đè 'gap-8' (2rem) thành 'gap-10' (2.5rem).
          */
-        margin-left: 18rem; 
-        
-        /* 7. Ghi đè các class 'md:w-3/4' của Tailwind
-         * để nó tự động lấp đầy phần không gian còn lại.
-         */
-        width: auto; 
+        gap: 2.5rem; /* 40px */
     }
 }
