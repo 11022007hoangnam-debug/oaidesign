@@ -4,8 +4,7 @@ body {
     background-color: #131314;
     /* Màu nền chính */
     color: #e5e7eb;
-    overflow-x: hidden;
-    /* Ngăn cuộn ngang */
+    /* Ngăn cuộn ngang (ĐÃ XÓA) */
 }
 
 .background-container {
