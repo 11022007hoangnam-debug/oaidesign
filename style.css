@@ -467,37 +467,17 @@ body {
 }
 
 /* =================================================================== */
-/* === BẮT ĐẦU SỬA LỖI MASONRY (ĐÃ XÓA CSS XUNG ĐỘT) === */
+/* === BẮT ĐẦU NÂNG CẤP: GỠ BỎ CSS CŨ CỦA PAGE-RESOURCES === */
 /* =================================================================== */
-/* Khối CSS cũ cho .resource-card và #resource-grid đã bị XÓA.
-    Layout bây giờ sẽ do các class Tailwind trong `index.html`
-    (ví dụ: `columns-2 sm:columns-3...`) toàn quyền quyết định.
+
+/* Khối CSS cũ cho .resource-card, #resource-grid, header, sidebar
+   (theme sáng) đã bị XÓA HOÀN TOÀN khỏi đây.
+   Nó sẽ được thay thế bằng CSS (theme tối) MỚI bên dưới.
 */
+
 /* =================================================================== */
-/* === KẾT THÚC SỬA LỖI MASONRY === */
+/* === KẾT THÚC NÂNG CẤP: GỠ BỎ CSS CŨ CỦA PAGE-RESOURCES === */
 /* =================================================================== */
-
-/* ===>>> BẮT ĐẦU NÂNG CẤP: FIX 2: Ép bố cục Masonry (ghi đè Tailwind) <<<=== */
-/* Giải pháp này được thêm vào để khắc phục lỗi cache trình duyệt,
-   nó sẽ "ép" trình duyệt hiển thị đúng số cột theo kích cỡ màn hình
-   mà không phụ thuộc vào class 'columns-*' trong file HTML. */
-#page-resources #resource-grid {
-    column-gap: 1.5rem; /* gap-6 */
-    column-count: 2;
-}
-
-@media (min-width: 640px) {
-    #page-resources #resource-grid {
-        column-count: 3;
-    }
-}
-
-@media (min-width: 1024px) {
-    #page-resources #resource-grid {
-        column-count: 4;
-    }
-}
-/* ===>>> KẾT THÚC NÂNG CẤP <<<=== */
 
 
 #social-container {
@@ -1254,81 +1234,113 @@ body {
 
 
 /* =================================================================== */
-/* === BẮT ĐẦU CSS GIAO DIỆN MỚI (ĐƯỢC CẤY GHÉP) === */
+/* === BẮT ĐẦU NÂNG CẤP CSS TRANG TÀI NGUYÊN (GIAO DIỆN MỚI) === */
 /* =================================================================== */
 
-/* Lưu ý: Font 'Inter' đã được thêm vào thẻ <link> và <body> ở trên
-    Phần CSS này được copy từ <style> của file àbjasbfjbasbnfkasnlf.html
-*/
-.break-inside-avoid {
-    break-inside: avoid;
-}
-
-/* CSS scrollbar mới sẽ được áp dụng, ghi đè lên scrollbar cũ nếu cần */
-/* Đã bị vô hiệu hóa để ưu tiên scrollbar của Oai Website
-::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
-::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 10px; }
-::-webkit-scrollbar-thumb:hover { background: #a1a1a1; } 
-*/
-
-input[type="search"]::-webkit-search-decoration,
-input[type="search"]::-webkit-search-cancel-button,
-input[type="search"]::-webkit-search-results-button,
-input[typeD="search"]::-webkit-search-results-decoration {
-    -webkit-appearance: none;
-}
-
-/* Hiệu ứng cho modal MỚI */
-#page-resources #image-modal, #page-resources #contact-modal { transition: opacity 0.3s ease; }
-#page-resources #modal-content, #page-resources #modal-contact-content { transition: transform 0.3s ease; }
-
-/* Hiệu ứng cho sidebar mobile MỚI */
-#page-resources #sidebar { transition: transform 0.3s ease-in-out; }
-#page-resources #sidebar-overlay { transition: opacity 0.3s ease-in-out; }
-
-/* Thông báo "Đã sao chép" MỚI */
-#page-resources #copy-toast {
-    transition: transform 0.3s ease, opacity 0.3s ease;
-}
-
-/* Class active cho sidebar MỚI (Sẽ được ghi đè bên dưới) */
-#page-resources .sidebar-link.active {
-    color: #2563eb; /* text-blue-600 */
-    font-weight: 600; /* font-semibold */
-}
-#page-resources .sidebar-link.active-special {
-    color: #ca8a04; /* text-yellow-600 */
-    font-weight: 700; /* font-bold */
-}
-#page-resources .sidebar-link.active + span {
-    background-color: #dbeafe; /* bg-blue-100 */
-    color: #2563eb; /* text-blue-600 */
-}
-#page-resources .sidebar-link.active-special + span {
-    background-color: #fef9c3; /* bg-yellow-100 */
-    color: #ca8a04; /* text-yellow-600 */
-}
-
-/* =================================================================== */
-/* === BẮT ĐẦU CSS GHI ĐÈ (OVERRIDE) CHO GIAO DIỆN MỚI === */
-/* =================================================================== */
-
-/* 1. Ghi đè màu nền body (chỉ áp dụng cho các text bên trong page-resources) */
+/* 1. GHI ĐÈ BỐ CỤC CƠ BẢN */
 #page-resources {
-    color: #e5e7eb; /* Màu chữ mặc định (sáng) */
+    display: flex;
+    /* Đảm bảo #page-resources chiếm toàn bộ chiều cao còn lại */
+    /* Chiều cao 100vh trừ đi header (72px) */
+    min-height: calc(100vh - 72px); 
 }
 
-/* 2. Ghi đè Header mới */
-#page-resources header {
-    background-color: rgba(17, 24, 39, 0.5); /* bg-gray-900/50 */
+/* Lớp phủ auth overlay phải nằm trên sidebar mới (z-50) */
+#page-resources #auth-overlay {
+    z-index: 60;
+}
+
+
+/* 2. GHI ĐÈ CỘT 1: SIDEBAR */
+#page-resources #sidebar {
+    /* Style cho nền tối, hiệu ứng kính */
+    background-color: rgba(17, 24, 39, 0.7); /* bg-gray-900/70 */
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border-bottom-color: #374151; /* border-gray-700 */
-    box-shadow: none;
+    border-right-width: 1px;
+    border-color: #374151; /* border-gray-700 */
+    
+    /* Vị trí & Kích thước (Mobile-first: ẩn bên trái) */
+    position: fixed;
+    top: 0; /* Dính sát top 0 của viewport */
+    left: 0;
+    height: 100vh; /* Cao 100% viewport */
+    width: 18rem; /* w-72 */
+    z-index: 50;
+    transition: transform 0.3s ease-in-out;
+    transform: translateX(-100%); /* Ẩn đi theo mặc định (giống -translate-x-full) */
+    
+    /* Thêm padding-top để nội dung sidebar không bị header chính che */
+    /* 72px (header) + 40px (notif) = 112px */
+    padding-top: 112px; 
 }
 
-/* 3. Ghi đè Thanh tìm kiếm mới */
+/* Hiện sidebar khi JS thêm class (cho mobile) */
+#page-resources #sidebar.open {
+    transform: translateX(0);
+}
+
+/* Lớp phủ mờ cho mobile */
+#page-resources #sidebar-overlay {
+    transition: opacity 0.3s ease-in-out;
+}
+
+/* 3. GHI ĐÈ CỘT 2: MAIN CONTENT */
+#page-resources main {
+    width: 100%;
+    /* Thêm padding-top để chừa chỗ cho header chính (72px) + notif (40px) */
+    /* Quan trọng: main content bắt đầu BÊN DƯỚI header chính */
+    padding-top: 112px; 
+    flex-grow: 1; /* Đảm bảo main content lấp đầy không gian còn lại */
+}
+
+/* 4. GHI ĐÈ HEADER CỦA MAIN CONTENT (chứa thanh tìm kiếm) */
+#page-resources #resource-header {
+    /* Dính vào top 0 CỦA MAIN CONTENT (tức là dính bên dưới header chính) */
+    /* 112px = 72px (header) + 40px (notif) */
+    position: sticky;
+    top: 112px; 
+    z-index: 30;
+    /* Hiệu ứng kính cho header của main */
+    background-color: rgba(19, 19, 20, 0.7); /* Gần với #131314 */
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom-width: 1px;
+    border-color: #374151; /* border-gray-700 */
+}
+
+/* 5. GHI ĐÈ RESPONSIVE (Desktop) */
+@media (min-width: 768px) { /* md: breakpoint */
+    
+    /* Biến sidebar từ 'fixed' (mobile) thành 'sticky' (desktop) */
+    #page-resources #sidebar {
+        position: sticky; /* Đổi sang sticky */
+        /* Dính bên dưới header chính (72px) + notif bar (40px) = 112px */
+        top: 112px;
+        transform: translateX(0); /* Luôn hiện trên desktop */
+        /* Giới hạn chiều cao để nó tự cuộn, không đè footer */
+        height: calc(100vh - 112px);
+        /* Xóa padding-top vì nó đã là sticky bên dưới header */
+        padding-top: 0; 
+    }
+
+    /* Đẩy main content sang phải để chừa chỗ cho sidebar */
+    #page-resources main {
+        width: calc(100% - 18rem); /* 100% - w-72 */
+        margin-left: 18rem; /* w-72 */
+        /* Xóa padding-top vì main content giờ nằm chung flex với sidebar */
+        padding-top: 0; 
+    }
+
+    /* Header của Main content phải dính ở top 0 của main */
+    #page-resources #resource-header {
+        top: 0; /* Dính sát top 0 của <main> */
+    }
+}
+
+/* 6. GHI ĐÈ "LỘT DA" (RE-SKIN) CÁC THÀNH PHẦN */
+
+/* Thanh tìm kiếm */
 #page-resources #resource-search-input {
     background-color: #374151; /* bg-gray-700 */
     border-color: #4b5563; /* border-gray-600 */
@@ -1342,26 +1354,32 @@ input[typeD="search"]::-webkit-search-results-decoration {
     border-color: #38bdf8; /* focus:border-sky-500 */
     --tw-ring-color: #38bdf8; /* focus:ring-sky-500 */
 }
-#page-resources header .w-5.h-5.text-gray-400 {
-    color: #9ca3af; /* text-gray-400 */
+
+/* Nút "Liên hệ" */
+#page-resources #open-contact-btn {
+    background-color: #0ea5e9; /* bg-sky-500 */
+}
+#page-resources #open-contact-btn:hover {
+    background-color: #0284c7; /* hover:bg-sky-600 */
 }
 
-/* 4. Ghi đè Sidebar (Nền trong suốt) */
-#page-resources #sidebar {
-    background-color: rgba(17, 24, 39, 0.5); /* bg-gray-900/50 */
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+
+/* Tiêu đề danh mục chính (H1) */
+#page-resources main h1 {
+    color: #ffffff;
+}
+
+/* Nút "Bộ lọc" trên mobile */
+#page-resources #mobile-filter-btn {
+    background-color: #1f2937; /* bg-gray-800 */
     border-color: #374151; /* border-gray-700 */
-    box-shadow: none;
+    color: #d1d5db; /* text-gray-300 */
 }
-/* Tiêu đề "Danh mục" */
-#page-resources #sidebar h2 {
-    color: #e5e7eb; /* text-gray-200 */
+#page-resources #mobile-filter-btn svg {
+    color: #d1d5db; /* text-gray-300 */
 }
-#page-resources #sidebar h2 svg {
-    color: #9ca3af; /* text-gray-400 */
-}
-/* Link danh mục */
+
+/* Sidebar Links (trong #category-list) */
 #page-resources #sidebar .sidebar-link {
     color: #d1d5db; /* text-gray-300 */
 }
@@ -1373,7 +1391,7 @@ input[typeD="search"]::-webkit-search-results-decoration {
     color: #38bdf8; /* text-sky-400 */
     font-weight: 600;
 }
-/* Link active (màu vàng) */
+/* Link active (màu vàng - cho Livestream) */
 #page-resources #sidebar .sidebar-link.active-special {
     color: #facc15; /* text-yellow-400 */
     font-weight: 700;
@@ -1393,32 +1411,37 @@ input[typeD="search"]::-webkit-search-results-decoration {
     background-color: #713f12; /* bg-yellow-800 */
     color: #fde047; /* text-yellow-300 */
 }
-/* Nút "Bộ lọc" trên mobile */
-#page-resources #mobile-filter-btn {
-    background-color: #1f2937; /* bg-gray-800 */
-    border-color: #374151; /* border-gray-700 */
-    color: #d1d5db; /* text-gray-300 */
+
+/* Thẻ tài nguyên (Resource Card) */
+/* Bố cục Masonry (Ghi đè Tailwind) */
+#page-resources #resource-grid {
+    column-gap: 1.5rem; /* gap-6 */
+    column-count: 2; /* Mặc định 2 cột */
 }
-#page-resources #mobile-filter-btn svg {
-    color: #d1d5db; /* text-gray-300 */
+/* 3 cột cho tablet */
+@media (min-width: 640px) {
+    #page-resources #resource-grid {
+        column-count: 3;
+    }
+}
+/* 4 cột cho desktop */
+@media (min-width: 1024px) {
+    #page-resources #resource-grid {
+        column-count: 4;
+    }
 }
 
-/* 5. Ghi đè Nội dung chính */
-/* Tiêu đề chính (Tên danh mục) */
-#page-resources main h1 {
-    color: #ffffff;
-}
-/* Nền thẻ ảnh (card) */
 #page-resources .break-inside-avoid {
+    break-inside: avoid; /* Đảm bảo thẻ không bị vỡ cột */
     background-color: #1f2937; /* bg-gray-800 */
-    border-color: #374151; /* border-gray-700 */
+    border: 1px solid #374151; /* border-gray-700 */
     box-shadow: none;
 }
 #page-resources .break-inside-avoid:hover {
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
     border-color: #38bdf8; /* Thêm viền khi hover */
 }
-/* Phần thông tin tác giả (dưới card) */
+/* Phần tác giả (dưới card) */
 #page-resources .p-4.bg-white {
     background-color: #1f2937; /* bg-gray-800 */
 }
@@ -1429,7 +1452,9 @@ input[typeD="search"]::-webkit-search-results-decoration {
     color: #38bdf8; /* text-sky-400 */
 }
 
-/* 6. Ghi đè Modal (Chi tiết ảnh) */
+/* 7. GHI ĐÈ CÁC MODAL (Theme tối) */
+
+/* Modal Chi tiết ảnh */
 #page-resources #modal-content {
     background-color: #1f2937; /* bg-gray-800 */
 }
@@ -1442,16 +1467,25 @@ input[typeD="search"]::-webkit-search-results-decoration {
 #page-resources #modal-content .text-xs.text-gray-500 {
     color: #9ca3af; /* text-gray-400 */
 }
-#page-resources #modal-content #modal-img {
+#page-resources #modal-content #modal-img-container { /* Thêm ID này vào HTML nếu cần */
     background-color: #111827; /* Nền ảnh tối hơn */
 }
 /* Nút đóng modal mobile */
-#page-resources #modal-content button[onclick="closeModal()"] {
+#page-resources #modal-content button[onclick*="closeImageModal"] { /* Bắt cả 2 hàm */
     background-color: #374151;
     color: #d1d5db;
 }
 
-/* 7. Ghi đè Modal (Liên hệ) */
+/* Nút tải về trong modal */
+#page-resources #modal-download-btn {
+    background-color: #0ea5e9; /* bg-sky-500 */
+}
+#page-resources #modal-download-btn:hover {
+    background-color: #0284c7; /* hover:bg-sky-600 */
+}
+
+
+/* Modal Liên hệ */
 #page-resources #modal-contact-content {
     background-color: #1f2937; /* bg-gray-800 */
     border: 1px solid #374151;
@@ -1466,29 +1500,27 @@ input[typeD="search"]::-webkit-search-results-decoration {
 #page-resources #modal-contact-content .text-blue-600 {
     color: #38bdf8; /* text-sky-400 */
 }
-#page-resources #modal-contact-content button[onclick="closeContactModal()"] {
+#page-resources #modal-contact-content button[onclick*="closeContactModal"] {
     background-color: #374151; /* bg-gray-700 */
     color: #d1d5db; /* text-gray-300 */
 }
-#page-resources #modal-contact-content button[onclick="closeContactModal()"]:hover {
+#page-resources #modal-contact-content button[onclick*="closeContactModal"]:hover {
     background-color: #4b5563; /* bg-gray-600 */
 }
-#page-resources #modal-contact-content button[onclick="closeContactModal()"] svg {
+#page-resources #modal-contact-content button[onclick*="closeContactModal"] svg {
     color: #9ca3af;
 }
 
-/* 8. Ghi đè Toast "Đã sao chép" */
+/* 8. GHI ĐÈ TOAST "Đã sao chép" */
 #page-resources #copy-toast {
     background-color: #f9fafb; /* bg-gray-50 */
     color: #111827; /* text-gray-900 */
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
-/* 9. Ghi đè Scrollbar */
-/* Chúng ta sẽ dùng scrollbar của Oai Website */
-/* Xóa scrollbar của theme mới */
+/* 9. GHI ĐÈ SCROLLBAR (cho toàn bộ page-resources) */
 #page-resources ::-webkit-scrollbar {
-    width: 6px !important; /* Dùng !important để đảm bảo ghi đè */
+    width: 6px !important; 
     height: 6px !important;
 }
 #page-resources ::-webkit-scrollbar-track {
@@ -1503,47 +1535,186 @@ input[typeD="search"]::-webkit-search-results-decoration {
 }
 
 /* =================================================================== */
-/* === SỬA LỖI: GHIM SIDEBAR (STICKY) KHI CUỘN TRANG TÀI NGUYÊN === */
+/* === KẾT THÚC NÂNG CẤP CSS TRANG TÀI NGUYÊN === */
 /* =================================================================== */
 
-/* * Áp dụng cho màn hình từ 768px trở lên (tương đương 'md:' của Tailwind)
- * để không làm ảnh hưởng đến menu 'fixed' của mobile.
- */
-@media (min-width: 768px) {
+
+/* =================================================================== */
+/* === BẮT ĐẦU NÂNG CẤP RESPONSIVE TOÀN CỤC (Task 9) === */
+/* =================================================================== */
+
+/* Tối ưu hóa cho Tablet (ví dụ: 768px -> 1024px) */
+@media (max-width: 1024px) {
+    /* Giảm kích thước font cho header chính */
+    .nav-link {
+        padding: 8px 12px; /* Giảm padding ngang */
+    }
+    .nav-link span {
+        font-size: 0.875rem; /* text-sm */
+    }
+
+    /* Giảm kích thước chữ của Hero text */
+    #hero-text-content {
+        font-size: 1rem; /* text-base */
+        min-height: 150px; /* Giảm chiều cao tối thiểu */
+    }
+    #hero-signature {
+        font-size: 1rem;
+    }
+
+    /* Cho các card dịch vụ xếp chồng sớm hơn */
+    #services .flex-wrap > div {
+        width: 45%; /* Gần 2 cột */
+    }
+    #services .relative.w-full { /* Card Nổi bật */
+        width: 90%;
+        order: -1; /* Đưa lên đầu */
+    }
+
+    /* Lưới video thành 2 cột */
+    #video-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    /* Carousel ảnh nhỏ hơn */
+    .carousel-track img {
+        height: 160px; /* h-40 */
+    }
+}
+
+/* Tối ưu hóa cho Mobile (ví dụ: < 768px) */
+@media (max-width: 767px) {
+    /* Header chính: Giảm chiều cao */
+    header nav {
+        width: 100%;
+        padding-left: 1rem; /* px-4 */
+        padding-right: 1rem; /* px-4 */
+    }
     
-    /* 1. Sửa lỗi "Dính" (Sticky):
-     * Buộc sidebar phải ở vị trí 'sticky' và dính 
-     * bên dưới header/thanh thông báo.
-     */
-    #page-resources #sidebar {
-        position: sticky;
-        /* Vị trí dính: 72px (header) + 40px (notif) + 16px (đệm) = 128px */
-        top: 128px; 
-        align-self: flex-start; /* Quan trọng cho layout flex */
-
-        /* 2. Sửa lỗi "Quá dài" (chồng lên footer):
-         * Giới hạn chiều cao tối đa của sidebar. Nó sẽ
-         * dính từ 'top: 128px' và chừa 2rem (32px)
-         * so với mép dưới của màn hình (viewport).
-         */
-        max-height: calc(100vh - 128px - 32px); /* (100vh - top - bottom_margin) */
-        overflow-y: auto; /* Tự thêm cuộn nếu danh mục quá dài */
+    /* Ẩn logo Oai Studio trên mobile để tiết kiệm không gian */
+    #nav-oai-studio {
+        display: none;
+    }
+    /* Ẩn trên mobile menu luôn */
+    #mobile-menu a[onclick*="oai-studio"] {
+        display: none;
     }
 
-    /* 3. Sửa lỗi "Cuộn theo nội dung ngắn" (LỖI GỐC):
-     * Buộc container chính (chứa sidebar và main)
-     * phải cao ÍT NHẤT bằng chiều cao màn hình
-     * (trừ đi phần header/thanh thông báo).
-     * Điều này tạo ra "đường ray" đủ dài để sidebar dính vào,
-     * kể cả khi nội dung (main) bên phải rất ngắn.
-     */
-    #page-resources > .container {
-        /* (100vh - 72px header - 40px notif bar) */
-        min-height: calc(100vh - 112px); 
-
-        /* 4. Sửa lỗi "Quá gần" (tăng khoảng cách ngang):
-         * Ghi đè 'gap-8' (2rem) thành 'gap-10' (2.5rem).
-         */
-        gap: 2.5rem; /* 40px */
+    /* Thanh thông báo: Chữ nhỏ hơn */
+    #notification-bar-wrapper {
+        top: 66px; /* Header nhỏ hơn */
     }
+    #notification-text {
+        font-size: 0.875rem; /* text-sm */
+    }
+
+    /* Hero Section */
+    #hero {
+        height: auto; /* Tự động chiều cao */
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+    }
+    #hero .grid {
+        grid-template-columns: 1fr; /* 1 cột */
+        width: 95%;
+        gap: 1rem;
+    }
+    #hero-character {
+        max-height: 300px; /* Giảm chiều cao nhân vật */
+        order: 2; /* Đưa xuống dưới */
+    }
+    #hero .md\:col-span-2 {
+        order: 1; /* Đưa lên trên */
+        transform: none; /* Reset vị trí */
+    }
+    #hero-logo {
+        max-width: 160px; /* w-40 */
+        margin-bottom: -40px; /* Giảm chồng lấn */
+    }
+    #ai-textbox {
+        padding: 1rem; /* Giảm padding */
+    }
+    #hero-text-content {
+        min-height: auto; /* Tự động chiều cao */
+    }
+
+    /* Tiêu đề các Section */
+    .text-4xl {
+        font-size: 2.25rem; /* text-3xl */
+    }
+
+    /* Services: 1 cột */
+    #services .flex-wrap > div {
+        width: 100%;
+    }
+
+    /* Lưới video: 1 cột */
+    #video-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* Software showcase: 1 cột */
+    #software-showcase .grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* Carousel ảnh: nhỏ hơn nữa */
+    .carousel-track img {
+        height: 128px; /* h-32 */
+    }
+
+    /* Why Us: 1 cột */
+    #why-us .grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+
+    /* Community: Ảnh nhỏ hơn */
+    #community img {
+        margin-bottom: 2rem; /* Giảm mb-12 */
+    }
+
+    /* Contact page: 1 cột */
+    #page-contact .flex-col.md\:flex-row {
+        flex-direction: column;
+    }
+    #page-contact .md\:w-1\/2,
+    #page-contact .md\:w-2\/5,
+    #page-contact .md\:w-3\/5 {
+        width: 100%;
+    }
+    #page-contact .p-8 {
+        padding: 1.5rem; /* p-6 */
+    }
+
+    /* OAI Studio: Ẩn cột trái, cột phải thành tab */
+    .oai-studio-container {
+        flex-direction: column;
+        height: calc(100vh - 66px - 40px); /* Header mobile + notif */
+    }
+    #preset-prompts-container {
+        display: none; /* Ẩn hẳn trên mobile */
+    }
+    #page-oai-studio main {
+        margin-left: 0;
+        margin-right: 0;
+        width: 100%;
+        height: 100%; /* Chiếm 100% chiều cao */
+    }
+    #page-oai-studio aside {
+        position: fixed; /* Chuyển thành
+        bottom: 0;
+        left: 0;
+        right: 0;
+        top: auto;
+        height: 50vh; /* Cao 50% */
+        transform: translateY(100%); /* Ẩn ở dưới */
+        transition: transform 0.3s ease;
+        z-index: 100;
+        border-top: 1px solid #374151;
+    }
+    #page-oai-studio aside.open {
+        transform: translateY(0);
+    }
+    /* Cần 1 nút để mở/đóng aside trên mobile */
 }

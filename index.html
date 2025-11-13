@@ -13,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
     
-    <link rel="stylesheet" href="style.css?v=1.13">
+    <link rel="stylesheet" href="style.css?v=1.14">
     
     </head>
 
@@ -449,94 +449,96 @@
                 </div>
             </div>
 
-            <header class="bg-white shadow-sm sticky top-0 z-40 border-b border-gray-200">
-                <nav class="container mx-auto px-4 md:px-8 py-3 grid grid-cols-3 items-center">
-                    <div class="flex items-center justify-start">
-                        </div>
-
-                    <div class="hidden md:block">
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                <svg class="w-5 h-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
-                            </div>
-                            <input type="search" id="resource-search-input" placeholder="Tìm kiếm tài nguyên, vector, mockup..." class="w-full bg-gray-100 border-transparent focus:border-blue-500 focus:bg-white focus:ring-1 focus:ring-blue-500 rounded-lg py-2.5 pl-12 pr-4 text-sm transition-all">
-                        </div>
-                    </div>
-
-                    <div class="flex items-center justify-end">
-                        <div class="hidden md:flex items-center space-x-4">
-                            <button id="open-contact-btn" class="text-sm font-semibold bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-blue-700 transition-colors shadow-sm whitespace-nowrap">
-                                Liên Hệ Để Tải Tài Nguyên
-                            </button>
-                        </div>
-                        <div class="md:hidden flex items-center gap-2 col-start-3 justify-end">
-                            <button aria-label="Tìm kiếm" class="p-2 text-gray-700 hover:text-blue-600 rounded-full hover:bg-gray-100">
-                                <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
-                            </button>
-                            <button id="open-filter-btn" aria-label="Menu" class="p-2 text-gray-700 hover:text-blue-600 rounded-full hover:bg-gray-100">
-                                <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16m-7 6h7" /></svg>
-                            </button>
-                        </div>
-                    </div>
-                </nav>
-            </header>
+            <!-- ▼▼▼ NÂNG CẤP BỐ CỤC: Xóa <header> cũ, <div.container> cũ. Thêm bố cục 2 cột mới. ▼▼▼ -->
+            
+            <!-- [BỊ XÓA] <header class="bg-white shadow-sm sticky top-0 z-40 border-b border-gray-200"> ... </header> -->
 
             <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-40 opacity-0 pointer-events-none md:hidden"></div>
 
-            <div class="container mx-auto px-4 md:px-8 py-8 md:py-12 flex flex-col md:flex-row gap-8">
+            <!-- [BỊ XÓA] <div class="container mx-auto px-4 md:px-8 py-8 md:py-12 flex flex-col md:flex-row gap-8"> ... </div> -->
 
-                <aside id="sidebar" class="w-72 md:w-1/4 lg:w-1/5 fixed md:sticky top-0 md:top-32 h-full md:h-fit bg-white p-6 rounded-none md:rounded-xl shadow-lg border-r md:border border-gray-100 z-50 -translate-x-full md:translate-x-0 overflow-y-auto">
-                    
-                    <div class="flex justify-between items-center md:hidden mb-6">
-                        <h2 class="text-xl font-bold text-blue-600">Bộ lọc</h2>
-                        <button id="close-filter-btn" class="p-2">
-                            <svg class="w-6 h-6 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-                        </button>
+            <!-- === BỐ CỤC 2 CỘT MỚI === -->
+            <!-- Cột 1: Sidebar (Dính) -->
+            <!-- Chú ý: CSS cho bố cục mới (chiều cao, vị trí dính, màu nền dark-theme) sẽ được thêm vào style.css -->
+            <!-- ID "sidebar" cũ được tái sử dụng ở đây -->
+            <aside id="sidebar" class="w-72 fixed md:sticky top-0 h-full z-50 -translate-x-full md:translate-x-0 overflow-y-auto">
+                <!-- Tiêu đề & Logo -->
+                <div class="flex justify-between items-center p-6">
+                    <a href="#" class="flex items-center space-x-2" onclick="showPage('home', event)">
+                        <img src="https://i.imgur.com/9Rul623.png" alt="Logo" class="h-10 w-auto">
+                        <span class="text-xl font-bold text-white">Tài Nguyên</span>
+                    </a>
+                    <!-- ID "close-filter-btn" cũ được tái sử dụng ở đây -->
+                    <button id="close-filter-btn" class="p-2 md:hidden">
+                        <svg class="w-6 h-6 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+
+                <!-- Danh mục (JS sẽ điền vào đây) -->
+                <div class="px-6 mb-8">
+                    <h2 class="text-xl font-semibold mb-5 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25v2.25A2.25 2.25 0 018.25 20.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25A2.25 2.25 0 0113.5 8.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25v2.25A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" /></svg>
+                        Danh mục
+                    </h2>
+                    <!-- ID "category-list" cũ được tái sử dụng ở đây -->
+                    <ul id="category-list" class="space-y-3 text-gray-700">
+                        <!-- JS sẽ điền danh mục vào đây -->
+                        <li class="flex justify-between items-center animate-pulse">
+                            <span class="sidebar-link h-4 bg-gray-700 rounded w-3/4"></span>
+                            <span class="text-xs bg-gray-700 text-transparent px-2 py-0.5 rounded-full">...</span>
+                        </li>
+                    </ul>
+                </div>
+            </aside>
+
+            <!-- Cột 2: Main Content (Cuộn) -->
+            <!-- Chú ý: CSS sẽ thêm 'padding-left' cho 'main' trên desktop -->
+            <main class="w-full">
+                <!-- Header của Main (Dính) -->
+                <!-- Chú ý: CSS sẽ làm cho 'div' này dính, có blur và nền tối -->
+                <div id="resource-header" class="sticky z-30"> 
+                    <div class="px-4 md:px-8 py-3 grid grid-cols-1 md:grid-cols-3 items-center gap-4">
+                        <div class="col-span-1 md:col-span-2">
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                    <svg class="w-5 h-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
+                                </div>
+                                <!-- ID "resource-search-input" cũ được tái sử dụng ở đây -->
+                                <input type="search" id="resource-search-input" placeholder="Tìm kiếm tài nguyên, vector, mockup..." class="w-full bg-gray-100 border-transparent focus:border-blue-500 focus:bg-white focus:ring-1 focus:ring-blue-500 rounded-lg py-2.5 pl-12 pr-4 text-sm transition-all">
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-end">
+                             <!-- ID "open-contact-btn" cũ được tái sử dụng ở đây -->
+                            <button id="open-contact-btn" class="text-sm font-semibold bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-blue-700 transition-colors shadow-sm whitespace-nowrap w-full md:w-auto">
+                                Liên Hệ Để Upload Tài Nguyên Lên Web
+                            </button>
+                        </div>
                     </div>
+                </div>
 
-                    <div class="mb-8">
-                        <h2 class="text-xl font-semibold mb-5 flex items-center gap-2">
-                            <svg class="w-5 h-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25v2.25A2.25 2.25 0 018.25 20.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25A2.25 2.25 0 0113.5 8.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25v2.25A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" /></svg>
-                            Danh mục
-                        </h2>
-                        <ul id="category-list" class="space-y-3 text-gray-700">
-                            <li class="flex justify-between items-center">
-                                <a href="#" class="sidebar-link text-yellow-600 font-bold hover:text-yellow-700 transition-colors" onclick="filterCategory(event, 'Livestream', true)">
-                                    📌 Livestream
-                                </a>
-                                <span class="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">10</span>
-                            </li>
-                            <li class="flex justify-between items-center">
-                                <a href="#" class="sidebar-link hover:text-blue-600 transition-colors" onclick="filterCategory(event, 'Model')">
-                                    Model
-                                </a>
-                                <span class="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">10</span>
-                            </li>
-                            <li class="flex justify-between items-center">
-                                <a href="#" class="sidebar-link hover:text-blue-600 transition-colors" onclick="filterCategory(event, 'Brushes')">
-                                    Brushes
-                                </a>
-                                <span class="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">10</span>
-                            </li>
-                        </ul>
-                    </div>
-                </aside>
-
-                <main class="w-full md:w-3/4 lg:w-4/5">
+                <!-- Lưới ảnh (Masonry Grid) -->
+                <div class="px-4 md:px-8 py-8 md:py-10">
                     <div class="flex justify-between items-center mb-6 md:mb-10">
+                        <!-- ID "current-category-title" cũ được tái sử dụng ở đây -->
                         <h1 class="text-3xl md:text-4xl font-bold text-gray-900">
                             <span id="current-category-title">Template PSD</span>
                         </h1>
+                        <!-- ID "mobile-filter-btn" cũ được tái sử dụng ở đây -->
                         <button id="mobile-filter-btn" class="md:hidden flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg shadow-sm text-sm font-medium hover:bg-gray-50">
-                            <svg class="w-5 h-5 text-gray-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678q.26.045.505.134c.244.089.48.22.698.388q.218.169.41.386c.192.217.355.46.485.728q.13.268.226.55C22.76 6.576 23 8.27 23 10v4c0 1.73-.24 3.424-.678 4.083q-.096.282-.226.55c-.13.268.293.51-.485.728q-.218.169-.41.386c-.218.169-.454.3-.698.388q-.245.089-.505.134C17.455 20.768 14.755 21 12 21s-5.455-.232-8.083-.678q-.26-.045-.505-.134c-.244-.089-.48-.22-.698-.388q-.218-.169-.41.386c-.192-.217-.355.46-.485.728q-.13-.268-.226.55C1.24 17.424 1 15.73 1 14v-4c0-1.73.24-3.424.678-4.083q.096-.282.226.55c.13-.268.293.51.485.728q.218.169.41.386c.218.169.454.3.698.388q.245.089.505.134C6.545 3.232 9.245 3 12 3zM6 8l4 4-4 4m6 0l4-4-4-4" /></svg>
+                            <svg class="w-5 h-5 text-gray-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678q.26.045.505.134c.244.089.48.22.698.388q.218.169.41.386c.192.217.355.46.485.728q.13.268.226.55C22.76 6.576 23 8.27 23 10v4c0 1.73-.24 3.424-.678 4.083q-.096.282-.226.55c-.13.268.293.51-.485.728q-.218.169-.41.386c-.218.169-.454.3-.698.388q-.245.089-.505.134C17.455 20.768 14.755 21 12 21s-5.455-.232-8.083-.678q-.26-.045-.505-.134c-.244-.089-.48-.22-.698.388q-.218-.169-.41.386c-.192-.217-.355.46-.485.728q-.13-.268-.226.55C1.24 17.424 1 15.73 1 14v-4c0-1.73.24-3.424.678-4.083q.096-.282.226.55c.13-.268.293.51.485.728q.218.169.41.386c.218.169.454.3.698.388q.245.089.505.134C6.545 3.232 9.245 3 12 3zM6 8l4 4-4 4m6 0l4-4-4-4" /></svg>
                             Bộ lọc
                         </button>
                     </div>
 
+                    <!-- ID "resource-grid" cũ được tái sử dụng ở đây -->
                     <div id="resource-grid" class="columns-2 sm:columns-3 lg:columns-4 gap-6">
-                        </div>
-                    </main>
-            </div>
+                        <!-- JS sẽ điền lưới ảnh vào đây -->
+                    </div>
+                </div>
+            </main>
+            <!-- === KẾT THÚC BỐ CỤC 2 CỘT MỚI === -->
+            
+            <!-- ▲▲▲ NÂNG CẤP BỐ CỤC: Giữ nguyên tất cả Modal và Toast bên dưới ▼▼▼ -->
 
             <div id="image-modal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none" onclick="closeImageModal()">
                 <div id="modal-content" class="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] flex flex-col md:flex-row overflow-hidden transform scale-95" onclick="event.stopPropagation()">
@@ -1230,9 +1232,9 @@
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVjem92bmFod250ZXN0cG9raWtkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwNDAyNDIsImV4cCI6MjA3NjYxNjI0Mn0._Y-SzUccct4DGaAjOP7grRSFUdfV2Quvo3N31lLUquQ';
         // Make supabase client globally available to script.js
         window.supabase = supabase.createClient(supabaseUrl, supabaseKey);
-    </script>
+    </script> <!-- <<< LỖI GỐC LÀ </img> Ở ĐÂY. ĐÃ SỬA THÀNH </script> CHUẨN -->
 
-    <script src="script.js?v=1.8"></script> <script>
+    <script src="script.js?v=1.9"></script> <script>
         // Đảm bảo hàm initializeApp tồn tại rồi mới gọi
         if (typeof initializeApp === 'function') {
             initializeApp();
