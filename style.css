@@ -7,6 +7,16 @@ body {
     /* Ngăn cuộn ngang (ĐÃ XÓA) */
 }
 
+/* FIX LỖI 1: Đảm bảo các trang che phủ hoàn toàn */
+#page-home,
+#page-software,
+#page-contact,
+#page-auth {
+    background-color: #131314; /* Màu nền body */
+    width: 100%;
+}
+
+
 .background-container {
     position: fixed;
     top: 0;
@@ -1267,7 +1277,8 @@ body {
     height: 100vh; /* Cao 100% viewport */
     width: 18rem; /* w-72 */
     z-index: 50;
-    transition: transform 0.3s ease-in-out;
+    /* SỬA LỖI 2b: Thêm 'width' vào transition */
+    transition: transform 0.3s ease-in-out, width 0.3s ease;
     transform: translateX(-100%); /* Ẩn đi theo mặc định (giống -translate-x-full) */
     
     /* Thêm padding-top để nội dung sidebar không bị header chính che */
@@ -1285,6 +1296,32 @@ body {
     transition: opacity 0.3s ease-in-out;
 }
 
+/* SỬA LỖI 2b: Thêm class .collapsed cho sidebar */
+#page-resources #sidebar.collapsed {
+    width: 80px; /* Chiều rộng khi thu lại */
+    overflow-x: hidden; /* Ẩn nội dung bị tràn */
+}
+/* Ẩn text và huy hiệu khi sidebar thu lại */
+#page-resources #sidebar.collapsed #category-list .sidebar-link {
+    font-size: 0; /* Ẩn text */
+    justify-content: center; /* Căn giữa (cho icon nếu có) */
+}
+#page-resources #sidebar.collapsed #category-list span {
+     display: none; /* Ẩn huy hiệu */
+}
+/* Ẩn text 'Danh mục' */
+#page-resources #sidebar.collapsed .px-6.mb-8 h2 {
+    font-size: 0; 
+}
+#page-resources #sidebar.collapsed .px-6.mb-8 h2 svg {
+    margin: 0 auto; /* Căn giữa icon */
+}
+/* Căn giữa logo */
+ #page-resources #sidebar.collapsed .flex.justify-between.items-center.p-6 a {
+    margin: 0 auto;
+}
+
+
 /* 3. GHI ĐÈ CỘT 2: MAIN CONTENT */
 #page-resources main {
     width: 100%;
@@ -1296,17 +1333,14 @@ body {
 
 /* 4. GHI ĐÈ HEADER CỦA MAIN CONTENT (chứa thanh tìm kiếm) */
 #page-resources #resource-header {
-    /* Dính vào top 0 CỦA MAIN CONTENT (tức là dính bên dưới header chính) */
-    /* 112px = 72px (header) + 40px (notif) */
-    position: sticky;
-    top: 112px; 
+    /* SỬA LỖI 5: Xóa 'position: sticky' và 'top' khỏi quy tắc chung */
     z-index: 30;
-    /* Hiệu ứng kính cho header của main */
-    background-color: rgba(19, 19, 20, 0.7); /* Gần với #131314 */
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border-bottom-width: 1px;
-    border-color: #374151; /* border-gray-700 */
+    /* SỬA LỖI 3: Xóa nền, blur và border */
+    /* background-color: rgba(19, 19, 20, 0.7); */
+    /* backdrop-filter: blur(16px); */
+    /* -webkit-backdrop-filter: blur(16px); */
+    /* border-bottom-width: 1px; */
+    /* border-color: #374151; */
 }
 
 /* 5. GHI ĐÈ RESPONSIVE (Desktop) */
@@ -1322,6 +1356,8 @@ body {
         height: calc(100vh - 112px);
         /* Xóa padding-top vì nó đã là sticky bên dưới header */
         padding-top: 0; 
+        /* SỬA LỖI 2b: Thêm transition cho desktop */
+        transition: width 0.3s ease;
     }
 
     /* Đẩy main content sang phải để chừa chỗ cho sidebar */
@@ -1330,11 +1366,21 @@ body {
         margin-left: 18rem; /* w-72 */
         /* Xóa padding-top vì main content giờ nằm chung flex với sidebar */
         padding-top: 0; 
+        /* SỬA LỖI 2b: Thêm transition */
+        transition: margin-left 0.3s ease, width 0.3s ease;
+    }
+
+    /* SỬA LỖI 2b: CSS cho main khi sidebar thu lại */
+    #page-resources #sidebar.collapsed + main {
+        margin-left: 80px; /* Khớp với chiều rộng .collapsed */
+        width: calc(100% - 80px);
     }
 
     /* Header của Main content phải dính ở top 0 của main */
     #page-resources #resource-header {
+        /* SỬA LỖI 5: Thêm lại sticky CHỈ cho desktop */
         top: 0; /* Dính sát top 0 của <main> */
+        position: sticky;
     }
 }
 
@@ -1382,6 +1428,10 @@ body {
 /* Sidebar Links (trong #category-list) */
 #page-resources #sidebar .sidebar-link {
     color: #d1d5db; /* text-gray-300 */
+    /* SỬA LỖI 2b: Thêm transition cho text */
+    transition: color 0.2s ease, font-size 0.1s ease;
+    white-space: nowrap; /* Ngăn text xuống dòng khi co lại */
+    overflow: hidden; /* Ẩn text khi co lại */
 }
 #page-resources #sidebar .sidebar-link:hover {
     color: #38bdf8; /* text-sky-400 */
@@ -1400,6 +1450,7 @@ body {
 #page-resources #sidebar .text-xs.bg-gray-100 {
     background-color: #374151; /* bg-gray-700 */
     color: #d1d5db; /* text-gray-300 */
+    transition: opacity 0.1s ease; /* SỬA LỖI 2b */
 }
 /* Huy hiệu số lượng (active xanh) */
 #page-resources #sidebar .sidebar-link.active + span {
@@ -1615,27 +1666,32 @@ body {
         padding-bottom: 2rem;
     }
     #hero .grid {
-        grid-template-columns: 1fr; /* 1 cột */
+        /* SỬA LỖI 4b: Đổi thành 2 cột */
+        grid-template-columns: 1fr 2fr; /* 1 phần ảnh, 2 phần text */
         width: 95%;
         gap: 1rem;
+        align-items: center; /* Căn giữa theo chiều dọc */
     }
     #hero-character {
-        max-height: 300px; /* Giảm chiều cao nhân vật */
-        order: 2; /* Đưa xuống dưới */
+        /* SỬA LỖI 4b: Giảm chiều cao, xóa order */
+        max-height: 200px; 
+        /* order: 2; */ /* <-- XÓA */
     }
     #hero .md\:col-span-2 {
-        order: 1; /* Đưa lên trên */
+        /* order: 1; */ /* <-- XÓA */
         transform: none; /* Reset vị trí */
     }
     #hero-logo {
-        max-width: 160px; /* w-40 */
-        margin-bottom: -40px; /* Giảm chồng lấn */
+        /* SỬA LỖI 4b: Thu nhỏ logo */
+        max-width: 100px; /* w-24 */
+        margin-bottom: -20px; /* Giảm chồng lấn */
     }
     #ai-textbox {
         padding: 1rem; /* Giảm padding */
     }
     #hero-text-content {
-        min-height: auto; /* Tự động chiều cao */
+        /* SỬA LỖI 4a: Xóa min-height: auto để kế thừa 200px */
+        /* min-height: auto; */ /* <-- XÓA */
     }
 
     /* Tiêu đề các Section */
