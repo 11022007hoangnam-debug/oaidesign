@@ -5,6 +5,7 @@ body {
     /* Màu nền chính */
     color: #e5e7eb;
     /* Ngăn cuộn ngang (ĐÃ XÓA) */
+    --header-offset: 112px; /* SỬA LỖI 2b: Thêm biến CSS cho khoảng cách header */
 }
 
 .background-container {
@@ -322,6 +323,11 @@ body {
 }
 
 #assistant-container {
+    /* SỬA LỖI 3: Ghi đè các thuộc tính từ Tailwind và Sửa lỗi Z-index */
+    position: fixed;
+    bottom: 4px;
+    left: 4px;
+    z-index: 55; /* Tăng z-index (từ 40 lên 55) để nổi trên sidebar (z-30) và header (z-50) */
     transition: transform 0.5s ease-out;
     cursor: pointer;
 }
@@ -1266,13 +1272,13 @@ body {
     left: 0;
     height: 100vh; /* Cao 100% viewport */
     width: 18rem; /* w-72 */
-    z-index: 50;
+    z-index: 30; /* SỬA LỖI 2a: Giảm z-index (từ 50 xuống 30) để nằm dưới header(z-50) và notif(z-40) */
     transition: transform 0.3s ease-in-out, width 0.3s ease; /* FIX LỖI DESKTOP-2b: Thêm transition width */
     transform: translateX(-100%); /* Ẩn đi theo mặc định (giống -translate-x-full) */
     
     /* Thêm padding-top để nội dung sidebar không bị header chính che */
-    /* 72px (header) + 40px (notif) = 112px */
-    padding-top: 112px; 
+    /* 112px (header 72px + notif 40px) */
+    padding-top: var(--header-offset); /* SỬA LỖI 2b: Dùng biến CSS */
 }
 
 /* === FIX LỖI DESKTOP-2b: Thêm lớp .collapsed cho sidebar === */
@@ -1318,7 +1324,7 @@ body {
     width: 100%;
     /* Thêm padding-top để chừa chỗ cho header chính (72px) + notif (40px) */
     /* Quan trọng: main content bắt đầu BÊN DƯỚI header chính */
-    padding-top: 112px; 
+    padding-top: var(--header-offset); /* SỬA LỖI 2b: Dùng biến CSS */
     flex-grow: 1; /* Đảm bảo main content lấp đầy không gian còn lại */
     transition: margin-left 0.3s ease, width 0.3s ease; /* FIX LỖI DESKTOP-2b: Thêm transition */
 }
@@ -1346,10 +1352,10 @@ body {
     #page-resources #sidebar {
         position: sticky; /* Đổi sang sticky */
         /* Dính bên dưới header chính (72px) + notif bar (40px) = 112px */
-        top: 112px;
+        top: var(--header-offset); /* SỬA LỖI 2b: Dùng biến CSS */
         transform: translateX(0); /* Luôn hiện trên desktop */
         /* Giới hạn chiều cao để nó tự cuộn, không đè footer */
-        height: calc(100vh - 112px);
+        height: calc(100vh - var(--header-offset)); /* SỬA LỖI 2b: Dùng biến CSS */
         /* Xóa padding-top vì nó đã là sticky bên dưới header */
         padding-top: 0; 
     }
