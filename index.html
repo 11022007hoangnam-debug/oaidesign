@@ -13,11 +13,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
     
-    <link rel="stylesheet" href="style.css?v=1.14">
+    <link rel="stylesheet" href="style.css?v=1.16">
     
     </head>
 
-<body class="antiasa-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;">
+<body class="antialiased">
     <div class="background-container">
         <div id="logo-animation-container"></div> <div class="absolute top-0 -left-16 w-[36rem] h-[36rem] bg-sky-500 rounded-full blob opacity-40"></div>
         <div class="absolute top-0 -right-16 w-[36rem] h-[36rem] bg-yellow-400 rounded-full blob opacity-40 animation-delay-2000">
@@ -230,7 +230,6 @@
                             kiến thức thiết kế đã phát sóng.</p>
                     </div>
                     <div id="video-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        <!-- JS sẽ điền video vào đây -->
                         </div>
                 </div>
             </section>
@@ -465,10 +464,9 @@
             <aside id="sidebar" class="w-72 fixed md:sticky top-0 h-full z-50 -translate-x-full md:translate-x-0 overflow-y-auto">
                 <!-- Tiêu đề & Logo -->
                 <div class="flex justify-between items-center p-6">
-                    <!-- === FIX LỖI 2a: Xóa span "Tài Nguyên" === -->
                     <a href="#" class="flex items-center space-x-2" onclick="showPage('home', event)">
                         <img src="https://i.imgur.com/9Rul623.png" alt="Logo" class="h-10 w-auto">
-                        <!-- <span class="text-xl font-bold text-white">Tài Nguyên</span> --> <!-- <<< ĐÃ XÓA -->
+                        <!-- === FIX LỖI DESKTOP-2a: Đã xóa span "Tài Nguyên" ở đây === -->
                     </a>
                     <!-- ID "close-filter-btn" cũ được tái sử dụng ở đây -->
                     <button id="close-filter-btn" class="p-2 md:hidden">
@@ -495,10 +493,12 @@
 
             <!-- Cột 2: Main Content (Cuộn) -->
             <!-- Chú ý: CSS sẽ thêm 'padding-left' cho 'main' trên desktop -->
-            <main class="w-full">
+            <!-- === FIX LỖI DESKTOP-2b: Thêm ID "resource-main-content" === -->
+            <main class="w-full" id="resource-main-content">
                 <!-- Header của Main (Dính) -->
                 <!-- Chú ý: CSS sẽ làm cho 'div' này dính, có blur và nền tối -->
-                <div id="resource-header" class="sticky z-30"> 
+                <!-- === FIX LỖI MOBILE-2: Đã xóa class "sticky", thay bằng "relative" === -->
+                <div id="resource-header" class="relative z-30"> 
                     <div class="px-4 md:px-8 py-3 grid grid-cols-1 md:grid-cols-3 items-center gap-4">
                         <div class="col-span-1 md:col-span-2">
                             <div class="relative">
@@ -512,7 +512,7 @@
                         <div class="flex items-center justify-end">
                              <!-- ID "open-contact-btn" cũ được tái sử dụng ở đây -->
                             <button id="open-contact-btn" class="text-sm font-semibold bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-blue-700 transition-colors shadow-sm whitespace-nowrap w-full md:w-auto">
-                                Liên Hệ Để Tải Tài Nguyên
+                                Liên Hệ Để Upload Tài Nguyên Lên Web
                             </button>
                         </div>
                     </div>
@@ -523,8 +523,7 @@
                     <div class="flex justify-between items-center mb-6 md:mb-10">
                         <!-- ID "current-category-title" cũ được tái sử dụng ở đây -->
                         <h1 class="text-3xl md:text-4xl font-bold text-gray-900">
-                            <!-- === FIX LỖI 1: Thay "Template PSD" bằng &nbsp; === -->
-                            <span id="current-category-title">&nbsp;</span>
+                            <span id="current-category-title">Template PSD</span>
                         </h1>
                         <!-- ID "mobile-filter-btn" cũ được tái sử dụng ở đây -->
                         <button id="mobile-filter-btn" class="md:hidden flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg shadow-sm text-sm font-medium hover:bg-gray-50">
@@ -545,7 +544,7 @@
 
             <div id="image-modal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none" onclick="closeImageModal()">
                 <div id="modal-content" class="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] flex flex-col md:flex-row overflow-hidden transform scale-95" onclick="event.stopPropagation()">
-                    <div class="w-full md:w-2/3 bg-gray-200 flex items-center justify-center overflow-auto" id="modal-img-container"> <!-- Thêm ID cho CSS -->
+                    <div class="w-full md:w-2/3 bg-gray-200 flex items-center justify-center overflow-auto">
                         <img id="modal-img" src="" alt="Ảnh phóng to" class="max-w-full max-h-[50vh] md:max-h-[85vh] object-contain">
                     </div>
                     <div class="w-full md:w-1/3 p-6 flex flex-col overflow-y-auto">
@@ -1236,7 +1235,7 @@
         window.supabase = supabase.createClient(supabaseUrl, supabaseKey);
     </script> 
 
-    <script src="script.js?v=1.10"></script> <script>
+    <script src="script.js?v=1.12"></script> <script>
         // Đảm bảo hàm initializeApp tồn tại rồi mới gọi
         if (typeof initializeApp === 'function') {
             initializeApp();
