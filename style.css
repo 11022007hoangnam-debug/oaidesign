@@ -1283,7 +1283,7 @@ body {
 
 /* === FIX LỖI DESKTOP-2b: Thêm lớp .collapsed cho sidebar === */
 #page-resources #sidebar.collapsed {
-    width: 5.5rem; /* w-22, chiều rộng khi thu lại */
+    width: 5.25rem; /* YÊU CẦU 3B: Giảm từ 5.5rem (w-22) xuống 5.25rem (w-21) */
 }
 /* Ẩn văn bản và huy hiệu khi sidebar thu lại */
 #page-resources #sidebar.collapsed .sidebar-link-text,
@@ -1371,8 +1371,8 @@ body {
 
     /* === FIX LỖI DESKTOP-2b: Thêm logic co giãn cho main content === */
     #page-resources #sidebar.collapsed + main {
-        width: calc(100% - 5.5rem);
-        margin-left: 5.5rem;
+        width: calc(100% - 5.25rem); /* YÊU CẦU 3B: Giảm từ 5.5rem */
+        margin-left: 5.25rem; /* YÊU CẦU 3B: Giảm từ 5.5rem */
     }
     #page-resources #sidebar:not(.collapsed) .sidebar-link-text,
     #page-resources #sidebar:not(.collapsed) .sidebar-badge {
@@ -1603,6 +1603,32 @@ body {
 /* =================================================================== */
 /* === KẾT THÚC NÂNG CẤP CSS TRANG TÀI NGUYÊN === */
 /* =================================================================== */
+
+/* YÊU CẦU 2: Bố cục lưới đồng đều cho Livestream */
+#page-resources .uniform-grid {
+    display: grid;
+    grid-template-columns: repeat(1, minmax(0, 1fr)); /* 1 cột trên mobile */
+    gap: 1.5rem; /* gap-6 */
+}
+@media (min-width: 640px) { /* sm: */
+    #page-resources .uniform-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)); /* 2 cột trên tablet */
+    }
+}
+@media (min-width: 1024px) { /* lg: */
+    #page-resources .uniform-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr)); /* 3 cột trên desktop */
+    }
+}
+@media (min-width: 1280px) { /* xl: */
+    #page-resources .uniform-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr)); /* 4 cột trên desktop lớn */
+    }
+}
+/* Đảm bảo card trong lưới đồng đều co giãn đúng */
+#page-resources .uniform-grid .break-inside-avoid {
+    margin-bottom: 0; /* Xóa margin-bottom của masonry */
+}
 
 
 /* =================================================================== */

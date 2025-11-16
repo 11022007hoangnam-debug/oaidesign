@@ -13,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
     
-    <link rel="stylesheet" href="style.css?v=1.17">
+    <link rel="stylesheet" href="style.css?v=1.18">
     
     </head>
 
@@ -465,7 +465,7 @@
                 <!-- Tiêu đề & Logo -->
                 <div class="flex justify-between items-center p-6">
                     <a href="#" class="flex items-center space-x-2" onclick="showPage('home', event)">
-                        <img src="https://i.imgur.com/9Rul623.png" alt="Logo" class="h-10 w-auto">
+                        <img src="https://i.imgur.com/OBvisDb.png" alt="Logo" class="h-10 w-auto"> <!-- YÊU CẦU 3A: Đã thay đổi logo -->
                         <!-- === FIX LỖI DESKTOP-2a: Đã xóa span "Tài Nguyên" ở đây === -->
                     </a>
                     <!-- ID "close-filter-btn" cũ được tái sử dụng ở đây -->
@@ -478,7 +478,7 @@
                 <div class="px-6 mb-8">
                     <h2 class="text-xl font-semibold mb-5 flex items-center gap-2">
                         <svg class="w-5 h-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25v2.25A2.25 2.25 0 018.25 20.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25A2.25 2.25 0 0113.5 8.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25v2.25A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" /></svg>
-                        Danh mục
+                        <!-- YÊU CẦU 3A: Đã xóa văn bản "Danh mục" -->
                     </h2>
                     <!-- ID "category-list" cũ được tái sử dụng ở đây -->
                     <ul id="category-list" class="space-y-3 text-gray-700">
@@ -499,7 +499,7 @@
                 <!-- Chú ý: CSS sẽ làm cho 'div' này dính, có blur và nền tối -->
                 <!-- === FIX LỖI MOBILE-2: Đã xóa class "sticky", thay bằng "relative" === -->
                 <div id="resource-header" class="relative z-30"> 
-                    <div class="px-4 md:px-8 py-3 grid grid-cols-1 md:grid-cols-3 items-center gap-4">
+                    <div class="px-4 md:px-6 py-3 grid grid-cols-1 md:grid-cols-3 items-center gap-4"> <!-- YÊU CẦU 3B: Giảm padding từ md:px-8 xuống md:px-6 -->
                         <div class="col-span-1 md:col-span-2">
                             <div class="relative">
                                 <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -519,7 +519,7 @@
                 </div>
 
                 <!-- Lưới ảnh (Masonry Grid) -->
-                <div class="px-4 md:px-8 py-8 md:py-10">
+                <div class="px-4 md:px-6 py-8 md:py-10"> <!-- YÊU CẦU 3B: Giảm padding từ md:px-8 xuống md:px-6 -->
                     <div class="flex justify-between items-center mb-6 md:mb-10">
                         <!-- ID "current-category-title" cũ được tái sử dụng ở đây -->
                         <h1 class="text-3xl md:text-4xl font-bold text-gray-900">
@@ -1235,7 +1235,7 @@
         window.supabase = supabase.createClient(supabaseUrl, supabaseKey);
     </script> 
 
-    <script src="script.js?v=1.13"></script> <script>
+    <script src="script.js?v=1.14"></script> <script>
         // Đảm bảo hàm initializeApp tồn tại rồi mới gọi
         if (typeof initializeApp === 'function') {
             initializeApp();
