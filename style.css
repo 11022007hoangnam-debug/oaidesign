@@ -1283,8 +1283,25 @@ body {
 
 /* === FIX LỖI DESKTOP-2b: Thêm lớp .collapsed cho sidebar === */
 #page-resources #sidebar.collapsed {
-    width: 5.25rem; /* YÊU CẦU 3B: Giảm từ 5.5rem (w-22) xuống 5.25rem (w-21) */
+    width: 3rem; /* YÊU CẦU 1C (Lần 2): Giảm từ 5.5rem xuống 3rem (w-12) */
 }
+
+/* YÊU CẦU 1B (Lần 2): Fix logo méo khi đóng */
+#page-resources #sidebar.collapsed .p-6 {
+    padding: 0.5rem; /* Giảm padding p-6 (1.5rem) xuống p-2 (0.5rem) */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+#page-resources #sidebar.collapsed .p-6 img {
+    width: 100%; /* Chiếm 100% không gian padding mới (khoảng 2rem) */
+    height: auto;
+    max-height: 28px; /* Giới hạn chiều cao (tương đương h-7) */
+    object-fit: contain; /* Ngăn logo bị méo */
+}
+/* === KẾT THÚC YÊU CẦU 1B === */
+
+
 /* Ẩn văn bản và huy hiệu khi sidebar thu lại */
 #page-resources #sidebar.collapsed .sidebar-link-text,
 #page-resources #sidebar.collapsed .sidebar-badge {
@@ -1371,8 +1388,8 @@ body {
 
     /* === FIX LỖI DESKTOP-2b: Thêm logic co giãn cho main content === */
     #page-resources #sidebar.collapsed + main {
-        width: calc(100% - 5.25rem); /* YÊU CẦU 3B: Giảm từ 5.5rem */
-        margin-left: 5.25rem; /* YÊU CẦU 3B: Giảm từ 5.5rem */
+        width: calc(100% - 3rem); /* YÊU CẦU 1C (Lần 2): Giảm từ 5.5rem xuống 3rem */
+        margin-left: 3rem; /* YÊU CẦU 1C (Lần 2): Giảm từ 5.5rem xuống 3rem */
     }
     #page-resources #sidebar:not(.collapsed) .sidebar-link-text,
     #page-resources #sidebar:not(.collapsed) .sidebar-badge {
