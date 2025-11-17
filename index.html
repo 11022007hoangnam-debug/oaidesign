@@ -13,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
     
-    <link rel="stylesheet" href="style.css?v=1.20">
+    <link rel="stylesheet" href="style.css?v=1.21">
     
     </head>
 
@@ -126,12 +126,12 @@
 
                         <div id="ai-textbox"
                             class="relative rounded-2xl p-6 w-full max-w-4xl italic text-gray-200 shadow-lg backdrop-blur-sm overflow-hidden">
-                            <!-- === NÂNG CẤP 1 === -->
+                            <!-- === NÂNG CẤP 1 (Từ lần trước) === -->
                             <!-- ĐÃ XÓA: min-h-[200px] -->
                             <p id="hero-text-content" class="text-xl leading-relaxed text-justify">
                                 <span id="typed-text"></span><span class="cursor">&nbsp;</span>
                             </p>
-                            <!-- === NÂNG CẤP 1 === -->
+                            <!-- === NÂNG CẤP 1 (Từ lần trước) === -->
                             <!-- ĐÃ THAY ĐỔI: mt-4 thành mt-2 -->
                             <p id="hero-signature"
                                 class="text-right mt-2 text-xl leading-relaxed opacity-0 transition-opacity duration-1000">
@@ -1219,6 +1219,36 @@
             </form>
         </div>
     </div>
+    
+    <!-- === BẮT ĐẦU NÂNG CẤP 3: Modal Mật Khẩu DANH MỤC === -->
+    <div id="category-password-modal"
+        class="modal fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-sm hidden"
+        onclick="closeModal('category-password-modal')">
+        <div class="modal-content bg-gray-800 w-11/12 md:max-w-md mx-auto rounded-lg shadow-lg p-8 border border-gray-700"
+            onclick="event.stopPropagation()">
+            <h3 class="text-2xl font-bold mb-4 text-yellow-400">Yêu Cầu Truy Cập</h3>
+            <p class="text-gray-400 mb-4 text-sm">Danh mục này đã bị khóa. Vui lòng nhập mật khẩu truy cập danh mục Livestream để tiếp tục.</p>
+            <form id="category-password-form">
+                <div class="mb-4">
+                    <label for="category-password" class="block text-gray-300 text-sm font-bold mb-2">Mật khẩu danh mục:</label>
+                    <input
+                        class="bg-gray-700 border border-gray-600 rounded w-full py-2 px-3 text-white leading-tight focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                        id="category-password" type="password" placeholder="••••••••" required>
+                </div>
+                <p id="category-password-error" class="text-red-400 text-sm mb-4 hidden">Mật khẩu không chính xác!</p>
+                <div class="flex items-center justify-between">
+                    <button
+                        id="category-password-submit-btn"
+                        class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full transition-all duration-200 hover:scale-105"
+                        type="submit">
+                        Xác Nhận
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- === KẾT THÚC NÂNG CẤP 3 === -->
+    
     <div id="banned-modal"
         class="modal fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-90 backdrop-blur-lg hidden"
         > <div class="modal-content bg-gray-800 w-11/12 md:max-w-md mx-auto rounded-lg shadow-lg p-8 border border-red-700 text-center"
@@ -1236,7 +1266,7 @@
         window.supabase = supabase.createClient(supabaseUrl, supabaseKey);
     </script> 
 
-    <script src="script.js?v=1.16"></script> <script>
+    <script src="script.js?v=1.18"></script> <script>
         // Đảm bảo hàm initializeApp tồn tại rồi mới gọi
         if (typeof initializeApp === 'function') {
             initializeApp();
