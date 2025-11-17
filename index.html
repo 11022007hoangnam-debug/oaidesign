@@ -13,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
     
-    <link rel="stylesheet" href="style.css?v=1.19">
+    <link rel="stylesheet" href="style.css?v=1.20">
     
     </head>
 
@@ -126,11 +126,15 @@
 
                         <div id="ai-textbox"
                             class="relative rounded-2xl p-6 w-full max-w-4xl italic text-gray-200 shadow-lg backdrop-blur-sm overflow-hidden">
-                            <p id="hero-text-content" class="text-xl leading-relaxed text-justify min-h-[200px]">
+                            <!-- === NÂNG CẤP 1 === -->
+                            <!-- ĐÃ XÓA: min-h-[200px] -->
+                            <p id="hero-text-content" class="text-xl leading-relaxed text-justify">
                                 <span id="typed-text"></span><span class="cursor">&nbsp;</span>
                             </p>
+                            <!-- === NÂNG CẤP 1 === -->
+                            <!-- ĐÃ THAY ĐỔI: mt-4 thành mt-2 -->
                             <p id="hero-signature"
-                                class="text-right mt-4 text-xl leading-relaxed opacity-0 transition-opacity duration-1000">
+                                class="text-right mt-2 text-xl leading-relaxed opacity-0 transition-opacity duration-1000">
                                 Oai Design - Người đồng hành cùng bạn
                             </p>
                         </div>
@@ -1228,7 +1232,7 @@
 
     <script>
         const supabaseUrl = 'https://eczovnahwntestpokikd.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVjem92bmFod250ZXN0cG9raWtkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwNDAyNDIsImV4cCI6MjA3NjYxNjI0Mn0._Y-SzUccct4DGaAjOP7grRSFUdfV2Quvo3N31lLUquQ';
+        const supabaseKey = 'eyJhbGciOiJIZDI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVjem92bmFod250ZXN0cG9raWtkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwNDAyNDIsImV4cCI6MjA3NjYxNjI0Mn0._Y-SzUccct4DGaAjOP7grRSFUdfV2Quvo3N31lLUquQ';
         window.supabase = supabase.createClient(supabaseUrl, supabaseKey);
     </script> 
 

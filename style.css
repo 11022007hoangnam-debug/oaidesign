@@ -1299,6 +1299,12 @@ body {
     max-height: 28px; /* Giới hạn chiều cao (tương đương h-7) */
     object-fit: contain; /* Ngăn logo bị méo */
 }
+/* === BẮT ĐẦU NÂNG CẤP 2 (Căn chỉnh Icon) === */
+#page-resources #sidebar.collapsed .px-6 {
+    padding-left: 0.5rem; /* Giảm padding-left (từ px-6) xuống 0.5rem */
+    padding-right: 0.5rem; /* Giảm padding-right (từ px-6) xuống 0.5rem */
+}
+/* === KẾT THÚC NÂNG CẤP 2 === */
 /* === KẾT THÚC YÊU CẦU 1B === */
 
 
